@@ -1,0 +1,18 @@
+{
+    "name" : "XForm Test Repository",
+    "storage" : {
+        "cacheName" : "inmemoryRepository",
+    },
+    "workspaces" : {
+        "predefined" : ["otherWorkspace"],
+        "default" : "default",
+        "allowCreation" : true
+    },
+    "security" : {
+        "anonymous" : {
+            "roles" : ["readonly","readwrite","admin"],
+            "useOnFailedLogin" : false
+        }
+    },
+    "node-types" : ["jcr/metamodel.cnd"]
+}

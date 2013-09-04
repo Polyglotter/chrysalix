@@ -11,12 +11,13 @@
  */
 package org.jboss.xform;
 
-import java.util.HashMap;
+import static org.modeshape.jcr.api.RepositoryFactory.URL;
+import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceLoader;
 import javax.jcr.Repository;
+import javax.jcr.RepositoryFactory;
 import javax.jcr.Session;
-import org.modeshape.jcr.api.RepositoryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,15 +36,13 @@ public final class XFormEngine {
     }
 
     /**
-     * Must have started the engine before calling this method.
+     * Starts the engine if not already started.
      * 
      * @return the XForm JCR repository session (never <code>null</code>)
      * @throws Exception if there is a problem obtaining the session
      */
     public Session session() throws Exception {
-        if (this.repository == null) {
-            throw new Exception("Repository has not been started or cannot be found"); // TODO i18n this
-        }
+        start();
 
         if (this.session == null) {
             this.session = this.repository.login("default");
@@ -60,25 +59,21 @@ public final class XFormEngine {
      */
     public void start() throws Exception {
         if (this.repository == null) {
-            final String configUrl = "file://" + this.configurationFilePath;
-            final String repoName = "XForm";
-
-            final Map<String, String> params = new HashMap<String, String>();
-            params.put(RepositoryFactory.URL, configUrl);
-            params.put(RepositoryFactory.REPOSITORY_NAME, repoName);
+            final String configUrl = ("file:" + this.configurationFilePath);
+            final Map<String, String> params = Collections.singletonMap(URL, configUrl);
 
             for (final RepositoryFactory factory : ServiceLoader.load(RepositoryFactory.class)) {
                 this.repository = factory.getRepository(params);
 
                 if (this.repository != null) {
-                    LOGGER.debug("XForm engine started using configuration file '" + this.configurationFilePath
-                                 + "'. Found repository '" + repoName + '\'');
+                    LOGGER.debug("XForm engine started using configuration file '" + this.configurationFilePath + '\'');
                     break;
                 }
             }
 
             if (this.repository == null) {
-                throw new Exception("Repository '" + repoName + "' cannot be found"); // TODO i18n this
+                throw new Exception("XForm engine cannot be started using configuration file '" + this.configurationFilePath
+                                    + '\''); // TODO i18n this
             }
         } else {
             LOGGER.info("Attempt to start XForm engine when it is already started."); // TODO i18n this
