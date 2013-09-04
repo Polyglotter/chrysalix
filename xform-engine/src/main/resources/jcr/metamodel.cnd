@@ -1,0 +1,19 @@
+<nt='http://www.jcp.org/jcr/nt/1.0'>
+<xform='http://jboss.org/xform/1.0'>
+
+[xform:Object] > nt:unstructured orderable
+- xform:primaryType (string) = "xform:Object" mandatory autoCreated
+- xform:secondaryTypes (string) *
++ xform:attributes (xform:Attribute) = xform:Attribute
+
+[xform:Attribute] > nt:unstructured orderable abstract
+- xform:type (string) mandatory
+- xform:readOnly (boolean) = false
+
+[xform:Containment] > xform:Attribute
+- xform:defaultValue (string) // Value must be valid text representation of xform:Attribute.type
+- xform:value (string) // Value must be valid text representation of xform:Attribute.type
+
+[xform:Reference] > xform:Attribute
+- xform:defaultValue (weakReference) < "xform:Object" // Value must be subclass of xform:Attribute.type
+- xform:value (weakReference) < "xform:Object" // Value must be subclass of xform:Attribute.type
