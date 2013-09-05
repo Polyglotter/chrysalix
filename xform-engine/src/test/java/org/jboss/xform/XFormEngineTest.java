@@ -14,6 +14,7 @@ package org.jboss.xform;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,19 +22,25 @@ import org.junit.Test;
  * Tests for the {@link XFormEngine}.
  */
 public final class XFormEngineTest {
-
+    
     private static final String REPO_CONFIG_FILE = "src/test/resources/config/xformTestRepository.json";
-
+    
     private XFormEngine engine = null;
-
+    
+    /**
+     * 
+     */
     @Before
     public void constructEngine() {
-        this.engine = new XFormEngine(REPO_CONFIG_FILE);
+        this.engine = new XFormEngine( REPO_CONFIG_FILE );
     }
-
+    
+    /**
+     * @throws Exception
+     */
     @Test
     public void shouldObtainSession() throws Exception {
-        assertThat(this.engine.session(), is(notNullValue()));
+        assertThat( this.engine.session(), is( notNullValue() ) );
     }
-
+    
 }
