@@ -301,7 +301,7 @@
 
   <!-- modules in alphabetical order -->
   <modules>
-    <module>xform-eclipse</module>
+    
     <module>xform-engine</module>
   </modules>
 </project>
