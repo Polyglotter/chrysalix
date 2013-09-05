@@ -2,14 +2,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.jboss.xform</groupId>
-    <artifactId>xform</artifactId>
+    <groupId>org.polyglotter</groupId>
+    <artifactId>polyglotter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>xform-engine</artifactId>
-  <name>XForm Engine</name>
-  <description>The XForm data mapping engine.</description>
+  <artifactId>polyglotter-engine</artifactId>
+  <name>Polyglotter Engine</name>
+  <description>The Polyglotter data transformation engine.</description>
 
   <dependencies>
 

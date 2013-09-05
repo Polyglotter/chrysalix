@@ -9,7 +9,7 @@
  * See the AUTHORS.txt file in the distribution for a full listing of
  * individual contributors.
  */
-package org.jboss.xform;
+package org.polyglotter;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -17,22 +17,23 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.polyglotter.Polyglotter;
 
 /**
- * Tests for the {@link XFormEngine}.
+ * Tests for the {@link Polyglotter}.
  */
-public final class XFormEngineTest {
+public final class PolyglotterTest {
     
-    private static final String REPO_CONFIG_FILE = "src/test/resources/config/xformTestRepository.json";
+    private static final String REPO_CONFIG_FILE = "src/test/resources/ModeShape/testRepository.json";
     
-    private XFormEngine engine = null;
+    private Polyglotter engine = null;
     
     /**
      * 
      */
     @Before
     public void constructEngine() {
-        this.engine = new XFormEngine( REPO_CONFIG_FILE );
+        this.engine = new Polyglotter( REPO_CONFIG_FILE );
     }
     
     /**

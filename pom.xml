@@ -2,14 +2,13 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.jboss.xform</groupId>
-  <artifactId>xform</artifactId>
+  <groupId>org.polyglotter</groupId>
+  <artifactId>polyglotter</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>XForm</name>
-  <description>XForm is a data mapping tool.</description>
-  <url>http://www.jboss.org/xform</url>
+  <name>Polyglotter</name>
+  <description>Polyglotter is a data mapping tool.</description>
   <inceptionYear>2013</inceptionYear>
 
   <organization>
@@ -27,13 +26,13 @@
 
   <issueManagement>
     <system>jira</system>
-    <url>http://issues.jboss.org/browse/XForm</url>
+    <url>http://issues.jboss.org/browse/Polyglotter</url>
   </issueManagement>
 
   <scm>
-    <connection>scm:git:git@github.com:XForm/xform.git</connection>
-    <developerConnection>scm:git:git@github.com:XForm/xform.git</developerConnection>
-    <url>scm:git:git@github.com:XForm/xform.git</url>
+    <connection>scm:git:git@github.com:Polyglotter/polyglotter.git</connection>
+    <developerConnection>scm:git:git@github.com:Polyglotter/polyglotter.git</developerConnection>
+    <url>scm:git:git@github.com:Polyglotter/polyglotter.git</url>
   </scm>
 
   <developers>
@@ -302,7 +301,7 @@
   <!-- modules in alphabetical order -->
   <modules>
     
-    <module>xform-engine</module>
+    <module>polyglotter-engine</module>
   </modules>
 </project>
 

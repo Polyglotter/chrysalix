@@ -9,7 +9,7 @@
  * See the AUTHORS.txt file in the distribution for a full listing of
  * individual contributors.
  */
-package org.jboss.xform;
+package org.polyglotter;
 
 import static org.modeshape.jcr.api.RepositoryFactory.URL;
 
@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-public final class XFormEngine {
+public final class Polyglotter {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger( XFormEngine.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( Polyglotter.class );
     
     private final String configurationFilePath;
     
@@ -40,14 +40,14 @@ public final class XFormEngine {
     /**
      * @param configurationFilePath
      */
-    public XFormEngine( final String configurationFilePath ) {
+    public Polyglotter( final String configurationFilePath ) {
         this.configurationFilePath = configurationFilePath;
     }
     
     /**
      * Starts the engine if not already started.
      * 
-     * @return the XForm JCR repository session (never <code>null</code>)
+     * @return the Polyglotter JCR repository session (never <code>null</code>)
      * @throws Exception
      *             if there is a problem obtaining the session
      */
@@ -56,17 +56,17 @@ public final class XFormEngine {
         
         if ( this.session == null ) {
             this.session = this.repository.login( "default" );
-            LOGGER.debug( "XForm engined stopped" );
+            LOGGER.debug( "Polyglotter session started" );
         }
         
         return this.session;
     }
     
     /**
-     * Obtains the XForm repository from ModeShape.
+     * Obtains the Polyglotter repository from ModeShape.
      * 
      * @throws Exception
-     *             if there is a problem starting the XForm engine
+     *             if there is a problem starting Polyglotter
      */
     public void start() throws Exception {
         if ( this.repository == null ) {
@@ -77,17 +77,18 @@ public final class XFormEngine {
                 this.repository = factory.getRepository( params );
                 
                 if ( this.repository != null ) {
-                    LOGGER.debug( "XForm engine started using configuration file '" + this.configurationFilePath + '\'' );
+                    LOGGER.info( "Polyglotter started using configuration file '" + this.configurationFilePath + '\'' );
                     break;
                 }
             }
             
             if ( this.repository == null ) {
-                throw new Exception( "XForm engine cannot be started using configuration file '" + this.configurationFilePath
-                                     + '\'' ); // TODO i18n this
+                throw new Exception( "Polyglotter cannot be started using configuration file '" + this.configurationFilePath + '\'' ); // TODO
+                                                                                                                                       // i18n
+                                                                                                                                       // this
             }
         } else {
-            LOGGER.info( "Attempt to start XForm engine when it is already started." ); // TODO i18n this
+            LOGGER.debug( "Attempt to start Polyglotter when it is already started." ); // TODO i18n this
         }
     }
     
@@ -95,7 +96,7 @@ public final class XFormEngine {
      * 
      */
     public void stop() {
-        if ( this.repository == null ) LOGGER.debug( "Attempt to stop XForm engine when it is already stopped" );
+        if ( this.repository == null ) LOGGER.debug( "Attempt to stop Polyglotter when it is already stopped" );
         else {
             if ( this.session != null ) {
                 this.session.logout();
@@ -103,7 +104,7 @@ public final class XFormEngine {
             }
             
             this.repository = null;
-            LOGGER.debug( "XForm engine stopped" );
+            LOGGER.debug( "Polyglotter stopped" );
         }
     }
     

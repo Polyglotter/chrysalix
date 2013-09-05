@@ -1,5 +1,5 @@
 {
-    "name" : "Workspace Repository",
+    "name" : "Polyglotter Repository",
     "workspaces" : {
         "predefined" : ["otherWorkspace"],
         "default" : "default",
@@ -11,5 +11,5 @@
             "useOnFailedLogin" : false
         }
     },
-    "node-types" : ["cnd/metamodel.cnd"]
+    "node-types" : ["ModeShape/metamodel.cnd"]
 }

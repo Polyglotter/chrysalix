@@ -1,5 +1,5 @@
 {
-    "name" : "XForm Test Repository",
+    "name" : "Polyglotter Test Repository",
     "storage" : {
         "cacheName" : "inmemoryRepository",
     },
@@ -14,5 +14,5 @@
             "useOnFailedLogin" : false
         }
     },
-    "node-types" : ["jcr/metamodel.cnd"]
+    "node-types" : ["ModeShape/metamodel.cnd"]
 }
