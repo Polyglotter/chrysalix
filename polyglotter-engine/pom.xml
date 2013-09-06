@@ -18,40 +18,17 @@
         <groupId>javax.jcr</groupId>
         <artifactId>jcr</artifactId>
     </dependency>
-
-    <!-- ModeShape -->
-    <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-client</artifactId>
-      <version>${modeshape.version}</version>
-    </dependency>
-
+ 
     <dependency>
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-jcr</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
     </dependency>
 
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

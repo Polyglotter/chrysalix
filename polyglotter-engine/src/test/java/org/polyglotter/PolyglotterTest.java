@@ -17,31 +17,30 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.polyglotter.Polyglotter;
 
 /**
- * Tests for the {@link Polyglotter}.
+ * Tests for {@link Polyglotter}.
  */
 public final class PolyglotterTest {
     
-    private static final String REPO_CONFIG_FILE = "src/test/resources/ModeShape/testRepository.json";
-    
-    private Polyglotter engine = null;
+    private Polyglotter engine;
     
     /**
      * 
      */
     @Before
     public void constructEngine() {
-        this.engine = new Polyglotter( REPO_CONFIG_FILE );
+        this.engine = new Polyglotter();
+        engine.setModeShapeConfigurationPath( "jcr/testModeShapeConfig.json" );
     }
     
     /**
-     * @throws Exception
+     * @throws Throwable
      */
     @Test
-    public void shouldObtainSession() throws Exception {
+    public void shouldObtainSession() throws Throwable {
         assertThat( this.engine.session(), is( notNullValue() ) );
+        assertThat( TestLogger.warningMessages().isEmpty(), is( true ) );
+        assertThat( TestLogger.errorMessages().isEmpty(), is( true ) );
     }
-    
 }

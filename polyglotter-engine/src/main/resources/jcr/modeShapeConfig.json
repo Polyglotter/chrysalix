@@ -1,8 +1,5 @@
 {
-    "name" : "Polyglotter Test Repository",
-    "storage" : {
-        "cacheName" : "inmemoryRepository",
-    },
+    "name" : "Polyglotter Repository",
     "workspaces" : {
         "predefined" : ["otherWorkspace"],
         "default" : "default",
@@ -14,5 +11,5 @@
             "useOnFailedLogin" : false
         }
     },
-    "node-types" : ["ModeShape/metamodel.cnd"]
+    "node-types" : ["jcr/metamodel.cnd"]
 }
