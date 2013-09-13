@@ -21,24 +21,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.polyglotter;
 
-import org.modeshape.common.i18n.I18n;
-
-/**
- * Internationalized string constants for the <code>org.polyglotter</code> project.
- */
-public class PolyglotterI18n {
+public class PolyglotterException extends Exception {
     
-    public static I18n polyglotterStarted;
-    public static I18n polyglotterStopped;
-    public static I18n unableToSequenceUploadedFile;
+    /**
+     * @param message
+     */
+    public PolyglotterException( final String message ) {
+        super( message );
+        
+    }
     
-    static {
-        try {
-            I18n.initialize( PolyglotterI18n.class );
-        } catch ( final Exception err ) {
-            System.err.println( err );
-        }
+    /**
+     * @param message
+     * @param cause
+     */
+    public PolyglotterException( final String message,
+                                 final Throwable cause ) {
+        super( message, cause );
+        
+    }
+    
+    /**
+     * @param cause
+     */
+    public PolyglotterException( final Throwable cause ) {
+        super( cause );
     }
 }
