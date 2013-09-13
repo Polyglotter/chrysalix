@@ -1,10 +1,10 @@
-#Fri Sep 06 14:12:10 CDT 2013
+#Tue Sep 10 09:32:36 CDT 2013
 /instance/org.eclipse.jdt.ui/cleanup.always_use_parentheses_in_expressions=false
 /instance/org.eclipse.jdt.ui/cleanup.make_parameters_final=false
 /instance/org.eclipse.jdt.core/org.eclipse.jdt.core.compiler.problem.unnecessaryElse=warning
 /instance/org.eclipse.jdt.ui/cleanup.add_serial_version_id=false
 /instance/org.eclipse.jdt.core/org.eclipse.jdt.core.compiler.problem.finalParameterBound=error
-/instance/org.eclipse.jdt.core/org.eclipse.jdt.core.compiler.problem.missingJavadocComments=warning
+/instance/org.eclipse.jdt.core/org.eclipse.jdt.core.compiler.problem.missingJavadocComments=ignore
 /instance/org.eclipse.jdt.core/org.eclipse.jdt.core.compiler.problem.missingJavadocTagsOverriding=enabled
 /instance/org.eclipse.jdt.core/org.eclipse.jdt.core.compiler.problem.indirectStaticAccess=warning
 /instance/org.eclipse.jdt.ui/org.eclipse.jdt.ui.ondemandthreshold=99

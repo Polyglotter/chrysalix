@@ -21,24 +21,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.polyglotter;
 
-import org.modeshape.common.i18n.I18n;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import org.junit.Test;
+import org.modeshape.common.i18n.I18nResource;
 
 /**
- * Internationalized string constants for the <code>org.polyglotter</code> project.
+ * Tests for {@link PolyglotterI18n}.
  */
-public class PolyglotterI18n {
+public class PolyglotterI18nTest {
     
-    public static I18n polyglotterStarted;
-    public static I18n polyglotterStopped;
-    public static I18n unableToSequenceUploadedFile;
-    
-    static {
-        try {
-            I18n.initialize( PolyglotterI18n.class );
-        } catch ( final Exception err ) {
-            System.err.println( err );
+    @Test
+    public void shouldHaveAllMessagesInitialized() throws Exception {
+        for ( final Field field : PolyglotterI18n.class.getFields() ) {
+            if ( !Modifier.isStatic( field.getModifiers() ) || !( I18nResource.class.isAssignableFrom( field.getType() ) ) ) return;
+            final String message = field.get( null ).toString();
+            assertThat( message, message.startsWith( "<" ), is( false ) );
         }
     }
 }
