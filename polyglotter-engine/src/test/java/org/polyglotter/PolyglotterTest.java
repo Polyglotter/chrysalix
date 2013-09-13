@@ -24,35 +24,116 @@
 package org.polyglotter;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
+import java.util.List;
+
+import javax.jcr.Node;
+import javax.jcr.Session;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link Polyglotter}.
  */
+@RunWith( TestRunner.class )
 public final class PolyglotterTest {
+    
+    private static final String TEST_MODESHAPE_CONFIGURATION_PATH = "testModeShapeConfig.json";
     
     private Polyglotter engine;
     
-    /**
-     * 
-     */
-    @Before
-    public void constructEngine() {
-        this.engine = new Polyglotter();
-        engine.setModeShapeConfigurationPath( "jcr/testModeShapeConfig.json" );
+    @After
+    public void after() throws PolyglotterException {
+        final List< String > errMsgs = TestLogger.errorMessages();
+        final List< String > warnMsgs = TestLogger.warningMessages();
+        engine.stop();
+        // Clear remaining captured messages
+        TestLogger.errorMessages();
+        TestLogger.warningMessages();
+        TestLogger.infoMessages();
+        assertThat( "Errors: " + errMsgs.toString(), errMsgs.isEmpty(), is( true ) );
+        assertThat( "Warnings: " + warnMsgs.toString(), warnMsgs.isEmpty(), is( true ) );
     }
     
-    /**
-     * @throws Throwable
-     */
+    @Before
+    public void before() {
+        this.engine = new Polyglotter();
+    }
+    
     @Test
-    public void shouldObtainSession() throws Throwable {
+    public void shouldFailToUploadBadXml() throws Exception {
+        upload( "bad.xml" );
+        assertThat( TestLogger.errorMessages().isEmpty(), is( false ) );
+    }
+    
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToUploadNonExistingFile() throws Exception {
+        engine.upload( new File( "dummy.file" ), "" );
+    }
+    
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToUploadNullFile() throws Exception {
+        engine.upload( null, "" );
+    }
+    
+    @Test
+    public void shouldObtainNewSessionAfterStop() throws Exception {
+        final Session session = engine.session();
+        assertThat( session, notNullValue() );
+        engine.stop();
+        final Session newSession = engine.session();
+        assertThat( newSession, notNullValue() );
+        assertThat( newSession, not( session ) );
+    }
+    
+    @Test
+    public void shouldObtainSession() throws Exception {
         assertThat( this.engine.session(), is( notNullValue() ) );
-        assertThat( TestLogger.warningMessages().isEmpty(), is( true ) );
-        assertThat( TestLogger.errorMessages().isEmpty(), is( true ) );
+    }
+    
+    @Test
+    public void shouldReturnChangedModeShapeConfigurationPath() {
+        engine.setModeShapeConfigurationPath( TEST_MODESHAPE_CONFIGURATION_PATH );
+        assertThat( engine.modeShapeConfigurationPath(), is( TEST_MODESHAPE_CONFIGURATION_PATH ) );
+    }
+    
+    @Test
+    public void shouldReturnDefaultModeShapeConfigurationPath() {
+        assertThat( new Polyglotter().modeShapeConfigurationPath(), is( Polyglotter.DEFAULT_MODESHAPE_CONFIGURATION_PATH ) );
+    }
+    
+    @Test
+    public void shouldReturnDefaultModeShapeConfigurationPathIfSetToNull() {
+        engine.setModeShapeConfigurationPath( TEST_MODESHAPE_CONFIGURATION_PATH );
+        assertThat( engine.modeShapeConfigurationPath(), is( TEST_MODESHAPE_CONFIGURATION_PATH ) );
+        engine.setModeShapeConfigurationPath( null );
+        assertThat( new Polyglotter().modeShapeConfigurationPath(), is( Polyglotter.DEFAULT_MODESHAPE_CONFIGURATION_PATH ) );
+    }
+    
+    @Test
+    public void shouldUploadAndSequenceXml() throws Exception {
+        final Node node = upload( "pom.xml" );
+        assertThat( node.getNode( "modexml:document" ), notNullValue() );
+    }
+    
+    @Test
+    public void shouldUploadAndSequenceXsd() throws Exception {
+        final Node node = upload( "Books.xsd" );
+        assertThat( node.getNode( "xs:schemaDocument" ), notNullValue() );
+    }
+    
+    private Node upload( final String file ) throws Exception {
+        final Node node = engine.upload( new File( getClass().getClassLoader().getResource( file ).toURI() ), null );
+        assertThat( node, notNullValue() );
+        assertThat( node.getNode( "jcr:content" ), notNullValue() );
+        assertThat( node.getNode( "jcr:content" ).getProperty( "jcr:data" ), notNullValue() );
+        return node;
     }
 }
