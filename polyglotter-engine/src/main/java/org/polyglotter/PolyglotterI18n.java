@@ -26,13 +26,9 @@ package org.polyglotter;
 import org.modeshape.common.i18n.I18n;
 
 /**
- * Internationalized string constants for the <code>org.polyglotter</code> project.
+ * Internationalized string constants for the <strong>Polyglotter</strong> project.
  */
 public class PolyglotterI18n {
-    
-    public static I18n polyglotterStarted;
-    public static I18n polyglotterStopped;
-    public static I18n unableToSequenceUploadedFile;
     
     static {
         try {
