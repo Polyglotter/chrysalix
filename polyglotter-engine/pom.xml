@@ -24,21 +24,6 @@
       <artifactId>modeshape-jcr</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-sequencer-xml</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-sequencer-xsd</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-sequencer-sramp</artifactId>
-    </dependency>
-
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
