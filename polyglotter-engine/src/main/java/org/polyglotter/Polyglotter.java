@@ -26,4 +26,6 @@ package org.polyglotter;
 /**
  * 
  */
-public final class Polyglotter {}
+public final class Polyglotter {
+    // Not yet implemented
+}
