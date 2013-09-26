@@ -24,10 +24,14 @@
 
 package org.polyglotter;
 
+/**
+ * 
+ */
 public class PolyglotterException extends Exception {
     
     /**
      * @param message
+     *        the detail message
      */
     public PolyglotterException( final String message ) {
         super( message );
@@ -36,7 +40,9 @@ public class PolyglotterException extends Exception {
     
     /**
      * @param message
+     *        the detail message
      * @param cause
+     *        the underlying Throwable that caused of this exception
      */
     public PolyglotterException( final String message,
                                  final Throwable cause ) {
@@ -46,6 +52,7 @@ public class PolyglotterException extends Exception {
     
     /**
      * @param cause
+     *        the underlying Throwable that caused of this exception
      */
     public PolyglotterException( final Throwable cause ) {
         super( cause );
