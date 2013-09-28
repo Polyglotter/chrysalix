@@ -7,21 +7,20 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>polyglotter-engine</artifactId>
-  <name>Polyglotter Engine</name>
-  <description>The Polyglotter data transformation engine.</description>
+  <artifactId>polyglotter-common</artifactId>
+  <name>Polyglotter Common</name>
+  <description>Common facilities, utilities, and classes used by other Polyglotter modules.</description>
 
   <dependencies>
 
-    <!-- Java Content Repository API -->
     <dependency>
-        <groupId>javax.jcr</groupId>
-        <artifactId>jcr</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
- 
+
     <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-jcr</artifactId>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
     </dependency>
 
     <!-- Test -->
@@ -31,10 +30,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-    	<groupId>org.polyglotter</groupId>
-    	<artifactId>polyglotter-common</artifactId>
-    </dependency>
   </dependencies>
 
 </project>

@@ -21,40 +21,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.polyglotter.common.logging;
 
-package org.polyglotter;
+import org.polyglotter.common.LogFactory;
+import org.polyglotter.common.Logger;
 
 /**
- * 
+ * Factory used to create the {@link Logger} implementation that uses the Log4j logging framework.
  */
-public class PolyglotterException extends Exception {
+public final class Log4jLoggerFactory extends LogFactory {
     
     /**
-     * @param message
-     *        the detail message
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.common.LogFactory#getLogger(java.lang.String)
      */
-    public PolyglotterException( final String message ) {
-        super( message );
-        
-    }
-    
-    /**
-     * @param message
-     *        the detail message
-     * @param cause
-     *        the underlying Throwable that caused of this exception
-     */
-    public PolyglotterException( final String message,
-                                 final Throwable cause ) {
-        super( message, cause );
-        
-    }
-    
-    /**
-     * @param cause
-     *        the underlying Throwable that caused of this exception
-     */
-    public PolyglotterException( final Throwable cause ) {
-        super( cause );
+    @Override
+    protected Logger getLogger( final String name ) {
+        return new Log4jLoggerImpl( name );
     }
 }
