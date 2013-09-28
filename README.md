@@ -1,12 +1,12 @@
 #Polyglotter Projects
 
-#[![Build Status](https://drone.io/github.com/Polyglotter/polyglotter/status.png)](https://drone.io/github.com/Polyglotter/polyglotter/latest) [Download latest build](https://drone.io/github.com/Polyglotter/polyglotter/files)
+##[![Build Status](https://drone.io/github.com/Polyglotter/polyglotter/status.png)](https://drone.io/github.com/Polyglotter/polyglotter/latest) [Downloads](https://drone.io/github.com/Polyglotter/polyglotter/files)
 
 Polyglotter is a set of libraries offering pluggable support for transforming data from one form to another.
 
 ## Use Polyglotter
 
-[Download](https://drone.io/github.com/Polyglotter/polyglotter-engine/files) the latest build and try it out.  See our [user documentation](https://github.com/Polyglotter/polyglotter/wiki/User-Documentation) for how to get started.
+[Download](https://drone.io/github.com/Polyglotter/polyglotter-engine/files) the latest build of the polyglotter engine and try it out.  See our [user documentation](https://github.com/Polyglotter/polyglotter/wiki/User-Documentation) for how to get started.
 
 ## Get Involved
 
