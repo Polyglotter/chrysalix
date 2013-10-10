@@ -23,18 +23,7 @@
  */
 package org.polyglotter;
 
-import org.modeshape.common.i18n.I18n;
-
 /**
  * Internationalized string constants for the <strong>Polyglotter</strong> project.
  */
-public class PolyglotterI18n {
-    
-    static {
-        try {
-            I18n.initialize( PolyglotterI18n.class );
-        } catch ( final Exception err ) {
-            System.err.println( err );
-        }
-    }
-}
+public class PolyglotterI18n {}
