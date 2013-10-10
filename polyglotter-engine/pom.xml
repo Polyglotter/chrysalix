@@ -18,6 +18,11 @@
       <artifactId>modeshape-modeler</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.polyglotter</groupId>
+      <artifactId>polyglotter-common</artifactId>
+    </dependency>
+
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
@@ -30,6 +35,15 @@
     	<artifactId>mockito-all</artifactId>
     	<scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.polyglotter</groupId>
+      <artifactId>polyglotter-common</artifactId>
+      <type>test-jar</type>
+      <version>${project.version}</version><!--$NO-MVN-MAN-VER$-->
+      <scope>test</scope>
+    </dependency>
+    
   </dependencies>
 
 </project>

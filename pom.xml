@@ -403,21 +403,6 @@
     <module>polyglotter-common</module>
     <module>polyglotter-engine</module>
   </modules>
-  
-  <dependencies>
-    <dependency>
-      <groupId>org.polyglotter</groupId>
-      <artifactId>polyglotter-common</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.polyglotter</groupId>
-      <artifactId>polyglotter-common</artifactId>
-      <version>${project.version}</version> <!--$NO-MVN-MAN-VER$-->
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 
 </project>
 
