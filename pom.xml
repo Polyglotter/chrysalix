@@ -98,6 +98,7 @@
     <slf4j.api.version>1.5.11</slf4j.api.version>
     <slf4j.log4j.version>1.5.11</slf4j.log4j.version>
     <slf4j.nop.version>1.5.11</slf4j.nop.version>
+    <mockito.version>1.9.5</mockito.version>
     
   </properties>
 
@@ -278,6 +279,14 @@
         <scope>compile</scope>
       </dependency>
 
+      <!-- ModeShape Modeler -->
+      <dependency>
+        <groupId>org.modeshape</groupId>
+        <artifactId>modeshape-modeler</artifactId>
+        <version>${project.version}</version>
+        <scope>compile</scope>
+      </dependency>
+
       <!-- ModeShape -->
       <dependency>
         <groupId>org.modeshape.bom</groupId>
@@ -287,7 +296,7 @@
         <scope>import</scope>
       </dependency>
 
-      <!-- Logging (require SLF4J API for compiling, but use Log4J and its SLF4J binding for testing) -->
+      <!-- Logging -->
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
@@ -315,6 +324,12 @@
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+      	<groupId>org.mockito</groupId>
+      	<artifactId>mockito-all</artifactId>
+      	<version>${mockito.version}</version>
+      	<scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -350,6 +365,13 @@
         <updatePolicy>never</updatePolicy>
       </releases>
     </repository>
+    <repository>
+      <id>local</id>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <url>file:${project.basedir}/repo</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -378,8 +400,24 @@
 
   <!-- modules in alphabetical order -->
   <modules>
-    <module>polyglotter-engine</module>
     <module>polyglotter-common</module>
+    <module>polyglotter-engine</module>
   </modules>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.polyglotter</groupId>
+      <artifactId>polyglotter-common</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.polyglotter</groupId>
+      <artifactId>polyglotter-common</artifactId>
+      <version>${project.version}</version> <!--$NO-MVN-MAN-VER$-->
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
 </project>
 
