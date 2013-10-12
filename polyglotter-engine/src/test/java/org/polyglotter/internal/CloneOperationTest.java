@@ -51,7 +51,7 @@ public class CloneOperationTest extends BaseTest {
         super.before();
         final ModelTypeManager modelTypeManager = polyglotter().modelTypeManager();
         modelTypeManager.install( XML_MODEL_TYPE_CATEGORY );
-        final ModelType modelType = modelTypeManager.modelTypesForCategory( XML_MODEL_TYPE_CATEGORY ).iterator().next();
+        final ModelType modelType = modelTypeManager.modelType( XML_MODEL_TYPE_NAME );
         model = polyglotter().generateModel( stream( XML_ARTIFACT ), XML_MODEL_NAME, modelType );
     }
 

@@ -41,9 +41,9 @@ public class ITPolyglotter extends BaseTest {
         final Model source = polyglotter().generateModel( stream( XML_ARTIFACT ),
                                                           "source",
                                                           polyglotter().modelTypeManager().modelType( XML_MODEL_TYPE_NAME ) );
-        final ModelTransform xform = polyglotter().createCloneModelTransform( source, "target" );
+        final ModelTransform xform = polyglotter().newCloneModelTransform( source, "target" );
         assertThat( xform, notNullValue() );
-        assertThat( xform.transforms().size(), is( 6 ) );
+        assertThat( xform.transforms().length, is( 6 ) );
         xform.execute();
         final Model target = polyglotter().model( "target" );
         assertThat( target, notNullValue() );

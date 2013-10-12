@@ -25,6 +25,7 @@ package org.polyglotter;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 
 import org.modeshape.modeler.ModeShapeModeler;
@@ -79,41 +80,36 @@ public final class Polyglotter implements Modeler {
     }
 
     /**
-     * @param sourceModel
-     *        the model that is the source of the transforms
-     * @param targetModelPath
-     *        the workspace path to a new model that will be the target of the transforms
-     * @return a new model transform with default one-to-one transforms between the supplied models
-     * @throws PolyglotterException
-     *         if any error occurs
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#export(org.modeshape.modeler.Model, java.io.File)
      */
-    public ModelTransform createCloneModelTransform( final Model sourceModel,
-                                                     final String targetModelPath ) throws PolyglotterException {
-        CheckArg.notNull( sourceModel, "sourceModel" );
-        CheckArg.notEmpty( targetModelPath, "targetModelPath" );
-        final ModelTransformImpl modelXform = new ModelTransformImpl();
-        createCopyModelTransform( modelXform, sourceModel, sourceModel, targetModelPath );
-        return modelXform;
+    @Override
+    public void export( final Model model,
+                        final File file ) throws ModelerException {
+        modeler.export( model, file );
     }
 
-    private void createCopyModelTransform( final ModelTransformImpl modelXform,
-                                           final Model sourceModel,
-                                           final ModelObject sourceObject,
-                                           final String targetModelPath ) throws PolyglotterException {
-        try {
-            TransformImpl xform = new TransformImpl();
-            xform.add( new CloneOperation( sourceModel, sourceObject.modelRelativePath(), targetModelPath ) );
-            modelXform.add( xform );
-            for ( final String name : sourceObject.propertyNames() ) {
-                xform = new TransformImpl();
-                xform.add( new CloneOperation( sourceModel, sourceObject.modelRelativePath() + "/@" + name, targetModelPath ) );
-                modelXform.add( xform );
-            }
-            for ( final ModelObject sourceChild : sourceObject.children() )
-                createCopyModelTransform( modelXform, sourceModel, sourceChild, targetModelPath );
-        } catch ( final ModelerException e ) {
-            throw new PolyglotterException( e );
-        }
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#export(org.modeshape.modeler.Model, java.io.OutputStream)
+     */
+    @Override
+    public void export( final Model model,
+                        final OutputStream stream ) throws ModelerException {
+        modeler.export( model, stream );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#export(org.modeshape.modeler.Model, java.net.URL)
+     */
+    @Override
+    public void export( final Model model,
+                        final URL url ) throws ModelerException {
+        modeler.export( model, url );
     }
 
     /**
@@ -286,6 +282,51 @@ public final class Polyglotter implements Modeler {
     @Override
     public String modeShapeConfigurationPath() {
         return modeler.modeShapeConfigurationPath();
+    }
+
+    /**
+     * @param sourceModel
+     *        the model that is the source of the transforms
+     * @param targetModelPath
+     *        the workspace path to a new model that will be the target of the transforms
+     * @return a new model transform with default one-to-one transforms between the supplied models
+     * @throws PolyglotterException
+     *         if any error occurs
+     */
+    public ModelTransform newCloneModelTransform( final Model sourceModel,
+                                                  final String targetModelPath ) throws PolyglotterException {
+        CheckArg.notNull( sourceModel, "sourceModel" );
+        CheckArg.notEmpty( targetModelPath, "targetModelPath" );
+        final ModelTransformImpl modelXform = new ModelTransformImpl();
+        newCopyModelTransform( modelXform, sourceModel, sourceModel, targetModelPath );
+        return modelXform;
+    }
+
+    private void newCopyModelTransform( final ModelTransformImpl modelXform,
+                                        final Model sourceModel,
+                                        final ModelObject sourceObject,
+                                        final String targetModelPath ) throws PolyglotterException {
+        try {
+            TransformImpl xform = new TransformImpl();
+            xform.add( new CloneOperation( sourceModel, sourceObject.modelRelativePath(), targetModelPath ) );
+            modelXform.add( xform );
+            for ( final String name : sourceObject.propertyNames() ) {
+                xform = new TransformImpl();
+                xform.add( new CloneOperation( sourceModel, sourceObject.modelRelativePath() + "/@" + name, targetModelPath ) );
+                modelXform.add( xform );
+            }
+            for ( final ModelObject sourceChild : sourceObject.children() )
+                newCopyModelTransform( modelXform, sourceModel, sourceChild, targetModelPath );
+        } catch ( final ModelerException e ) {
+            throw new PolyglotterException( e );
+        }
+    }
+
+    /**
+     * @return a new model transform
+     */
+    public ModelTransform newModelTransform() {
+        return new ModelTransformImpl();
     }
 
     /**
