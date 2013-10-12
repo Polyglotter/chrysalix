@@ -52,23 +52,23 @@ public class PolyglotterTest extends BaseTest {
         mockPropertyValuesByName( child2 );
         when( child2.children() ).thenReturn( new ModelObject[ 0 ] );
         when( sourceModel.children() ).thenReturn( new ModelObject[] { child1, child2 } );
-        final ModelTransform xform = polyglotter().createCloneModelTransform( sourceModel, "target" );
+        final ModelTransform xform = polyglotter().newCloneModelTransform( sourceModel, "target" );
         assertThat( xform, notNullValue() );
-        assertThat( xform.transforms().size(), is( 9 ) );
+        assertThat( xform.transforms().length, is( 9 ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToCreateCloneModelTransformIfSourceNull() throws Exception {
-        polyglotter().createCloneModelTransform( null, "target" );
+        polyglotter().newCloneModelTransform( null, "target" );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToCreateCloneModelTransformIfTargetEmpty() throws Exception {
-        polyglotter().createCloneModelTransform( mock( Model.class ), " " );
+        polyglotter().newCloneModelTransform( mock( Model.class ), " " );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToCreateCloneModelTransformIfTargetNull() throws Exception {
-        polyglotter().createCloneModelTransform( mock( Model.class ), null );
+        polyglotter().newCloneModelTransform( mock( Model.class ), null );
     }
 }

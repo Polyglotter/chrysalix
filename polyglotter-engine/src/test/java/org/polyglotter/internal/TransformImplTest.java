@@ -34,9 +34,9 @@ import org.polyglotter.test.BaseTest;
 
 @SuppressWarnings( "javadoc" )
 public class TransformImplTest extends BaseTest {
-    
+
     private TransformImpl xform;
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -47,40 +47,35 @@ public class TransformImplTest extends BaseTest {
         super.before();
         xform = new TransformImpl();
     }
-    
+
     @Test
     public void shouldAddOperation() {
         final Operation op = mock( Operation.class );
         xform.add( op );
-        assertThat( xform.operations().get( 0 ), is( op ) );
+        assertThat( xform.operations()[ 0 ], is( op ) );
     }
-    
+
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailIfAddOperationWithNullOperation() {
         xform.add( null );
     }
-    
+
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailIfRemoveOperationWithNullOperation() {
         xform.remove( null );
     }
-    
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldFailToModifyOperations() {
-        xform.operations().add( null );
-    }
-    
+
     @Test
     public void shouldGetEmptyOperations() {
         assertThat( xform.operations(), notNullValue() );
-        assertThat( xform.operations().isEmpty(), is( true ) );
+        assertThat( xform.operations().length == 0, is( true ) );
     }
-    
+
     @Test
     public void shouldRemoveOperation() {
         final Operation op = mock( Operation.class );
         xform.add( op );
         xform.remove( op );
-        assertThat( xform.operations().isEmpty(), is( true ) );
+        assertThat( xform.operations().length == 0, is( true ) );
     }
 }

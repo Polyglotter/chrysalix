@@ -23,35 +23,33 @@
  */
 package org.polyglotter;
 
-import java.util.List;
-
 import org.polyglotter.common.PolyglotterException;
 
 /**
  * 
  */
 public interface ModelTransform {
-    
+
     /**
      * @param transform
      *        a transform
      */
     void add( Transform transform );
-    
+
     /**
      * @throws PolyglotterException
      *         if any error occurs
      */
     void execute() throws PolyglotterException;
-    
+
     /**
      * @param transform
      *        a transform
      */
     void remove( Transform transform );
-    
+
     /**
      * @return a list of transforms
      */
-    List< Transform > transforms();
+    Transform[] transforms();
 }

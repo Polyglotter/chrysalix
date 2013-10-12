@@ -23,9 +23,7 @@
  */
 package org.polyglotter.internal;
 
-import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.polyglotter.ModelTransform;
 import org.polyglotter.Transform;
@@ -36,59 +34,59 @@ import org.polyglotter.common.PolyglotterException;
  * 
  */
 public class ModelTransformImpl implements ModelTransform {
-    
+
     private final LinkedList< Transform > transforms = new LinkedList<>();
-    
+
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.ModelTransform#add(org.polyglotter.Transform)
+     * @see ModelTransform#add(Transform)
      */
     @Override
     public void add( final Transform transform ) {
         CheckArg.notNull( transform, "transform" );
         transforms.add( transform );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.ModelTransform#execute()
+     * @see ModelTransform#execute()
      */
     @Override
     public void execute() throws PolyglotterException {
         for ( final Transform xform : transforms )
             xform.execute();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.ModelTransform#remove(org.polyglotter.Transform)
+     * @see ModelTransform#remove(Transform)
      */
     @Override
     public void remove( final Transform transform ) {
         CheckArg.notNull( transform, "transform" );
         transforms.remove( transform );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
-     * @see java.lang.Object#toString()
+     * @see Object#toString()
      */
     @Override
     public String toString() {
         return transforms.toString();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.ModelTransform#transforms()
+     * @see ModelTransform#transforms()
      */
     @Override
-    public List< Transform > transforms() {
-        return Collections.unmodifiableList( transforms );
+    public Transform[] transforms() {
+        return transforms.toArray( new Transform[ transforms.size() ] );
     }
 }

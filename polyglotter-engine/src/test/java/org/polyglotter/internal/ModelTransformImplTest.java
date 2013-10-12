@@ -34,9 +34,9 @@ import org.polyglotter.test.BaseTest;
 
 @SuppressWarnings( "javadoc" )
 public class ModelTransformImplTest extends BaseTest {
-    
+
     private ModelTransformImpl modelXform;
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -47,40 +47,35 @@ public class ModelTransformImplTest extends BaseTest {
         super.before();
         modelXform = new ModelTransformImpl();
     }
-    
+
     @Test
     public void shouldAddTransform() {
         final Transform xform = mock( Transform.class );
         modelXform.add( xform );
-        assertThat( modelXform.transforms().get( 0 ), is( xform ) );
+        assertThat( modelXform.transforms()[ 0 ], is( xform ) );
     }
-    
+
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailIfAddTransformWithNullTransform() {
         modelXform.add( null );
     }
-    
+
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailIfRemoveTransformWithNullTransform() {
         modelXform.remove( null );
     }
-    
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldFailToModifyTransforms() {
-        modelXform.transforms().add( null );
-    }
-    
+
     @Test
     public void shouldGetEmptyTransforms() {
         assertThat( modelXform.transforms(), notNullValue() );
-        assertThat( modelXform.transforms().isEmpty(), is( true ) );
+        assertThat( modelXform.transforms().length == 0, is( true ) );
     }
-    
+
     @Test
     public void shouldRemoveTransform() {
         final Transform xform = mock( Transform.class );
         modelXform.add( xform );
         modelXform.remove( xform );
-        assertThat( modelXform.transforms().isEmpty(), is( true ) );
+        assertThat( modelXform.transforms().length == 0, is( true ) );
     }
 }
