@@ -23,7 +23,6 @@
  */
 package org.polyglotter.common;
 
-
 /**
  * Utility class that checks arguments to methods. This class is to be used only in API methods, where failure to supply correct
  * arguments should result in a useful error message. In all cases, use the <code>assert</code> statement.
@@ -648,22 +647,25 @@ public final class CheckArg {
     // notNull( argument, name );
     // if ( argument.isEmpty() ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
     // }
-    //
-    // /**
-    // * Check that the array is not empty
-    // *
-    // * @param argument
-    // * Array
-    // * @param name
-    // * The name of the argument
-    // * @throws IllegalArgumentException
-    // * If array is null or empty
-    // */
-    // public static void isNotEmpty( final Object[] argument,
-    // final String name ) {
-    // notNull( argument, name );
-    // if ( argument.length == 0 ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
-    // }
+    
+    /**
+     * Check that the array is not empty
+     * 
+     * @param argument
+     *        Array
+     * @param name
+     *        The name of the argument
+     * @throws IllegalArgumentException
+     *         If array is null or empty
+     */
+    public static void isNotEmpty( final Object[] argument,
+                                   final String name ) {
+        notNull( argument, name );
+        if ( argument.length == 0 ) {
+            throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
+        }
+    }
+    
     //
     // /**
     // * Asserts that the specified first object is not {@link Object#equals(Object) equal to} the specified second object. This
@@ -874,8 +876,9 @@ public final class CheckArg {
     public static void notEmpty( final String argument,
                                  final String name ) {
         notZeroLength( argument, name );
-        if ( argument.trim().length() == 0 )
+        if ( argument.trim().length() == 0 ) {
             throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
+        }
     }
     
     /**
@@ -890,7 +893,9 @@ public final class CheckArg {
      */
     public static void notNull( final Object argument,
                                 final String name ) {
-        if ( argument == null ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNull.text( name ) );
+        if ( argument == null ) {
+            throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNull.text( name ) );
+        }
     }
     
     /**
@@ -906,8 +911,9 @@ public final class CheckArg {
     public static void notZeroLength( final String argument,
                                       final String name ) {
         notNull( argument, name );
-        if ( argument.length() <= 0 )
+        if ( argument.length() <= 0 ) {
             throw new IllegalArgumentException( CommonI18n.argumentMayNotBeZeroLength.text( name ) );
+        }
     }
     
     private CheckArg() {
