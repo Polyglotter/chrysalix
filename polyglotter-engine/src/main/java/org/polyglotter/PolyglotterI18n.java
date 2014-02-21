@@ -23,7 +23,39 @@
  */
 package org.polyglotter;
 
+import org.polyglotter.common.I18n;
+
 /**
  * Internationalized string constants for the <strong>Polyglotter</strong> project.
  */
-public class PolyglotterI18n {}
+@SuppressWarnings( "javadoc" )
+public class PolyglotterI18n {
+    
+    public static I18n addOperationDescription = new I18n( "Adds two or more numbers together" );
+    public static I18n addOperationHasNoTerms = new I18n( "Add operation \"%s\" has no terms" );
+    public static I18n addOperationName = new I18n( "Add" );
+    public static I18n addOperationResultDescription = new I18n( "The sum of the add operation's terms" );
+    public static I18n addOperationResultName = new I18n( "Sum" );
+    public static I18n addOperationHasValidationErrors = new I18n( "Add operation \"%s\" has errors" );
+    
+    public static I18n invalidTermCount = new I18n( "The operation \"%s\" has an invalid term count of \"%s.\"" );
+    public static I18n invalidTermType =
+        new I18n( "The term \"%s\" in operation \"%s\" does not have a result type of \"Number\" or is null" );
+    
+    public static I18n nullTerm = new I18n( "The null term was passed to operation \"%s.\"" );
+    public static I18n nullTermId = new I18n( "The null term identifier was passed to operation \"%s.\"" );
+    
+    public static I18n listenerAlreadyRegistered = new I18n( "The listener is already registered" );
+    public static I18n listenerError =
+        new I18n( "The listener \"%s\" is being unregistered. Event: \"%s\"" );
+    public static I18n listenerNotFoundToUnregister = new I18n( "The listener being unregistered was not a registered listener" );
+    
+    public static I18n operationHasErrors = new I18n( "The operation \"%s\" has errors and a result cannot be calculated" );
+    
+    public static I18n termNotFound = new I18n( "The term \"%s\" in operation \"%s\" could not be found" );
+    public static I18n termExists = new I18n( "The term \"%s\" in operation \"%s\" already exists" );
+    
+    public static I18n voidTermDescription = new I18n( "A term with a void or null value" );
+    public static I18n voidTermName = new I18n( "Void" );
+    
+}
