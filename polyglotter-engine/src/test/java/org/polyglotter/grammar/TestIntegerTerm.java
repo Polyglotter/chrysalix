@@ -26,7 +26,7 @@ package org.polyglotter.grammar;
 import javax.xml.namespace.QName;
 
 @SuppressWarnings( "javadoc" )
-public class TestIntegerTerm extends TestTerm< Integer > {
+public class TestIntegerTerm extends TestNumberTerm< Integer > {
     
     private int value;
     

@@ -33,9 +33,11 @@ public class TestStringTerm implements Term< String > {
     private String value;
     
     public TestStringTerm( final QName id,
-                           final QName operationId ) {
+                           final QName operationId,
+                           final String testValue ) {
         this.id = id;
         this.operationId = operationId;
+        this.value = testValue;
     }
     
     /**

@@ -34,10 +34,12 @@ public class PolyglotterI18n {
     public static I18n addOperationDescription = new I18n( "Adds two or more numbers together" );
     public static I18n addOperationHasNoTerms = new I18n( "Add operation \"%s\" has no terms" );
     public static I18n addOperationName = new I18n( "Add" );
-    public static I18n addOperationResultDescription = new I18n( "The sum of the add operation's terms" );
-    public static I18n addOperationResultName = new I18n( "Sum" );
-    public static I18n addOperationHasValidationErrors = new I18n( "Add operation \"%s\" has errors" );
     
+    public static I18n concatOperationDescription =
+        new I18n( "Concatenates the string representaion of two or more terms together" );
+    public static I18n concatOperationName = new I18n( "Concat" );
+    
+    public static I18n errorOnTermChanged = new I18n( "Error setting term to \"%s\" in operation \"%s\"" );
     public static I18n invalidTermCount = new I18n( "The operation \"%s\" has an invalid term count of \"%s.\"" );
     public static I18n invalidTermType =
         new I18n( "The term \"%s\" in operation \"%s\" does not have a result type of \"Number\" or is null" );

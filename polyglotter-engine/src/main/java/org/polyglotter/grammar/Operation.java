@@ -81,12 +81,12 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
     void remove( QName... termIds ) throws PolyglotterException;
     
     /**
-     * @return the result term (never <code>null</code>)
+     * @return the result (can be <code>null</code>)
      * @throws PolyglotterException
      *         if there are validation errors or problems obtaining the result
      * @see #problems()
      */
-    Term< T > result() throws PolyglotterException;
+    T result() throws PolyglotterException;
     
     /**
      * @return an unmodifiable ordered collection of the input terms (never <code>null</code> but can be empty)
