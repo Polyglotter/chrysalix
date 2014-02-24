@@ -26,12 +26,12 @@ package org.polyglotter.grammar;
 import javax.xml.namespace.QName;
 
 @SuppressWarnings( "javadoc" )
-public abstract class TestTerm< T extends Number > implements Term< T > {
+public abstract class TestNumberTerm< T extends Number > implements Term< T > {
     
     private final QName id;
     private final QName operationId;
     
-    protected TestTerm( final QName id,
+    protected TestNumberTerm( final QName id,
                         final QName operationId ) {
         this.id = id;
         this.operationId = operationId;

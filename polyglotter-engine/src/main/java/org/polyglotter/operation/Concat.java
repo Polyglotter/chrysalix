@@ -31,20 +31,18 @@ import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Adds sums a collection of terms.
+ * A string concatenation operation.
  */
-public class Add extends BaseOperation< Number > {
+public class Concat extends BaseOperation< String > {
     
     /**
      * @param id
      *        the add operation unique identifier (cannot be <code>null</code>)
      * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     *        the transform identifier containing this operation (cannot be <code>null</code>)
      */
-    public Add( final QName id,
-                final QName transformId ) {
+    public Concat( final QName id,
+                   final QName transformId ) {
         super( id, transformId );
     }
     
@@ -54,29 +52,17 @@ public class Add extends BaseOperation< Number > {
      * @see org.polyglotter.operation.BaseOperation#calculate()
      */
     @Override
-    protected Number calculate() {
+    protected String calculate() {
         assert !problems().isError();
         
-        Number result = new Long( 0 );
+        final StringBuilder result = new StringBuilder();
         
         for ( final Term< ? > term : terms() ) {
-            assert ( term.value() instanceof Number ); // validate check
-            Number value = ( Number ) term.value();
-            
-            if ( ( value instanceof Integer ) || ( value instanceof Short ) || ( value instanceof Byte ) ) {
-                value = value.longValue();
-            } else if ( value instanceof Float ) {
-                value = ( ( Float ) value ).doubleValue();
-            }
-            
-            if ( ( result instanceof Double ) || ( value instanceof Double ) ) {
-                result = ( result.doubleValue() + value.doubleValue() );
-            } else {
-                result = ( result.longValue() + value.longValue() );
-            }
+            final Object value = term.value();
+            result.append( ( value == null ) ? "null" : value.toString() );
         }
         
-        return result;
+        return result.toString();
     }
     
     /**
@@ -86,7 +72,7 @@ public class Add extends BaseOperation< Number > {
      */
     @Override
     public String description() {
-        return PolyglotterI18n.addOperationDescription.text();
+        return PolyglotterI18n.concatOperationDescription.text();
     }
     
     /**
@@ -96,15 +82,16 @@ public class Add extends BaseOperation< Number > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.addOperationName.text();
+        return PolyglotterI18n.concatOperationName.text();
     }
     
     /**
-     * Validates the operation's state.
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#validate()
      */
     @Override
     protected void validate() {
-        // make sure there are terms
         if ( terms().isEmpty() ) {
             final ValidationProblem problem =
                 GrammarFactory.createError( id(), PolyglotterI18n.addOperationHasNoTerms.text( id() ) );
@@ -115,17 +102,6 @@ public class Add extends BaseOperation< Number > {
                 final ValidationProblem problem =
                     GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
                 problems().add( problem );
-            }
-            
-            // make sure all the terms have types of Number
-            for ( final Term< ? > term : terms() ) {
-                final Object value = term.value();
-                
-                if ( !( value instanceof Number ) ) {
-                    final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
-                    problems().add( problem );
-                }
             }
         }
     }
