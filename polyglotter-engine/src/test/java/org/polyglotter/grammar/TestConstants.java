@@ -86,6 +86,16 @@ public interface TestConstants {
         /**
          * {@inheritDoc}
          * 
+         * @see org.polyglotter.grammar.Operation#category()
+         */
+        @Override
+        public Category category() {
+            return null;
+        }
+        
+        /**
+         * {@inheritDoc}
+         * 
          * @see org.polyglotter.grammar.GrammarPart#description()
          */
         @Override

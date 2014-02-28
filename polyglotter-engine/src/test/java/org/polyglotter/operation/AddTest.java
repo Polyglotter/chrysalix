@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.grammar.Operation.Category;
 import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.TestConstants;
 import org.polyglotter.grammar.TestIntegerTerm;
@@ -73,6 +74,11 @@ public final class AddTest implements TestConstants {
         this.operation.add( INT_1 );
         this.operation.add( INT_2 );
         assertThat( this.operation.result().intValue(), is( INT_1_VALUE + INT_2_VALUE ) );
+    }
+    
+    @Test
+    public void shouldHaveCorrectCategory() {
+        assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
     }
     
     @Test
@@ -135,4 +141,5 @@ public final class AddTest implements TestConstants {
     public void shouldThrowErrorAfterConstructionWhenRetrievingResult() throws PolyglotterException {
         this.operation.result();
     }
+    
 }

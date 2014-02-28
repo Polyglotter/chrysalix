@@ -28,6 +28,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.polyglotter.grammar.Operation.Category;
 import org.polyglotter.grammar.TestConstants;
 
 @SuppressWarnings( "javadoc" )
@@ -62,6 +63,11 @@ public final class ConcatTest implements TestConstants {
     public void shouldConcatTermsWithNumberValues() throws Exception {
         this.operation.add( STRING_1, INT_1, STRING_3 );
         assertThat( this.operation.result(), is( STRING_1_VALUE + INT_1_VALUE + STRING_3_VALUE ) );
+    }
+    
+    @Test
+    public void shouldHaveCorrectCategory() {
+        assertThat( this.operation.category(), is( Category.STRING ) );
     }
     
 }

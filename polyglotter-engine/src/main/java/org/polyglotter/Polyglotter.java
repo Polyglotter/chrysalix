@@ -163,13 +163,14 @@ public final class Polyglotter implements Modeler {
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(String, String, ModelType)
+     * @see Modeler#generateModel(java.lang.String, java.lang.String, org.modeshape.modeler.ModelType, boolean)
      */
     @Override
     public Model generateModel( final String artifactPath,
                                 final String modelPath,
-                                final ModelType modelType ) throws ModelerException {
-        return modeler.generateModel( artifactPath, modelPath, modelType );
+                                final ModelType modelType,
+                                final boolean persistArtifacts ) throws ModelerException {
+        return modeler.generateModel( artifactPath, modelPath, modelType, persistArtifacts );
     }
 
     /**

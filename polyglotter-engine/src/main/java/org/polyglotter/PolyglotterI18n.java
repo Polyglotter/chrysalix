@@ -44,13 +44,30 @@ public class PolyglotterI18n {
     public static I18n invalidTermType =
         new I18n( "The term \"%s\" in operation \"%s\" does not have a result type of \"Number\" or is null" );
     
-    public static I18n nullTerm = new I18n( "The null term was passed to operation \"%s.\"" );
-    public static I18n nullTermId = new I18n( "The null term identifier was passed to operation \"%s.\"" );
-    
     public static I18n listenerAlreadyRegistered = new I18n( "The listener is already registered" );
     public static I18n listenerError =
         new I18n( "The listener \"%s\" is being unregistered. Event: \"%s\"" );
     public static I18n listenerNotFoundToUnregister = new I18n( "The listener being unregistered was not a registered listener" );
+    
+    public static I18n nullTerm = new I18n( "The null term was passed to operation \"%s.\"" );
+    public static I18n nullTermId = new I18n( "The null term identifier was passed to operation \"%s.\"" );
+    
+    public static I18n opCatArithmeticLabel = new I18n( "Arithmetic" );
+    public static I18n opCatArithmeticDescription = new I18n( "Perform their operation on numbers" );
+    public static I18n opCatAssignmentLabel = new I18n( "Assignment" );
+    public static I18n opCatAssignmentDescription = new I18n( "Perform an assignment operation" );
+    public static I18n opCatBitwiseLabel = new I18n( "Bitwise" );
+    public static I18n opCatBitwiseDescription = new I18n( "Perform their operation on bit level" );
+    public static I18n opCatDateTimeLabel = new I18n( "DateTime" );
+    public static I18n opCatDateTimeDescription = new I18n( "Permorm their operation on dates and times" );
+    public static I18n opCatLogicalLabel = new I18n( "Logical" );
+    public static I18n opCatLogicalDescription = new I18n( "Perform their operation by comparing expressions" );
+    public static I18n opCatOtherLabel = new I18n( "Other" );
+    public static I18n opCatOtherDescription = new I18n( "An uncategorized operation" );
+    public static I18n opCatRelationalLabel = new I18n( "Relational" );
+    public static I18n opCatRelationalDescription = new I18n( "Perform their operation by comparing operand" );
+    public static I18n opCatStringLabel = new I18n( "String" );
+    public static I18n opCatStringDescription = new I18n( "Perform their operation on strings" );
     
     public static I18n operationHasErrors = new I18n( "The operation \"%s\" has errors and a result cannot be calculated" );
     
