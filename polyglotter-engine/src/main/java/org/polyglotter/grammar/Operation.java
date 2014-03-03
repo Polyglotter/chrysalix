@@ -28,6 +28,8 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.polyglotter.PolyglotterI18n;
+import org.polyglotter.common.I18n;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarEvent.EventType;
 
@@ -53,6 +55,11 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      *         if any of the terms have already been added
      */
     void add( Term< ? >... terms ) throws PolyglotterException;
+    
+    /**
+     * @return the operation's category (never <code>null</code>)
+     */
+    Category category();
     
     /**
      * @param termId
@@ -98,6 +105,70 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      * @return the identifier of the owning {@link Transform transform} (never <code>null</code>)
      */
     QName transformId();
+    
+    /**
+     * Categories of an operation.
+     */
+    enum Category {
+        
+        /**
+         *
+         */
+        ARITHMETIC( PolyglotterI18n.opCatArithmeticLabel, PolyglotterI18n.opCatArithmeticDescription ),
+        
+        /**
+         *
+         */
+        ASSIGNMENT( PolyglotterI18n.opCatAssignmentLabel, PolyglotterI18n.opCatAssignmentDescription ),
+        
+        /**
+         *
+         */
+        BITWISE( PolyglotterI18n.opCatBitwiseLabel, PolyglotterI18n.opCatBitwiseDescription ),
+        
+        /**
+         *
+         */
+        DATE_TIME( PolyglotterI18n.opCatDateTimeLabel, PolyglotterI18n.opCatDateTimeDescription ),
+        
+        /**
+         *
+         */
+        LOGICAL( PolyglotterI18n.opCatLogicalLabel, PolyglotterI18n.opCatLogicalDescription ),
+        
+        /**
+         *
+         */
+        OTHER( PolyglotterI18n.opCatOtherLabel, PolyglotterI18n.opCatOtherDescription ),
+        
+        /**
+         *
+         */
+        RELATIONAL( PolyglotterI18n.opCatRelationalLabel, PolyglotterI18n.opCatRelationalDescription ),
+        
+        /**
+         *
+         */
+        STRING( PolyglotterI18n.opCatStringLabel, PolyglotterI18n.opCatStringDescription );
+        
+        private final I18n description;
+        private final I18n label;
+        
+        private Category( final I18n categoryLabel,
+                          final I18n categoryDescription ) {
+            this.label = categoryLabel;
+            this.description = categoryDescription;
+        }
+        
+        public String description() {
+            return this.description.text();
+        }
+        
+        public String label() {
+            return this.label.text();
+        }
+        
+    }
     
     /**
      * The event types pertaining to operations.

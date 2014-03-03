@@ -82,6 +82,16 @@ public class Add extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
+     * @see org.polyglotter.grammar.Operation#category()
+     */
+    @Override
+    public Category category() {
+        return Category.ARITHMETIC;
+    }
+    
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override

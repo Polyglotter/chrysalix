@@ -68,6 +68,16 @@ public class Concat extends BaseOperation< String > {
     /**
      * {@inheritDoc}
      * 
+     * @see org.polyglotter.grammar.Operation#category()
+     */
+    @Override
+    public Category category() {
+        return Category.STRING;
+    }
+    
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override
