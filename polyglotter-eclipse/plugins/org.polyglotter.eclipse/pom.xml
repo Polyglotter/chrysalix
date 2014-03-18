@@ -1,84 +1,123 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <!-- ================================================================== -->
-  <!-- Parent                                                             -->
-  <!-- ================================================================== -->
-  <parent>
-    <groupId>org.polyglotter</groupId>
-    <artifactId>plugins</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-  
-  <!-- ================================================================== -->
-  <!-- Self                                                               -->
-  <!-- ================================================================== -->
-  <artifactId>org.polyglotter.eclipse</artifactId>
-  <name>Polyglotter Eclipse Plug-in</name>
-  <description>An Eclipse plug-in for the Polyglotter project.</description>
-  <packaging>eclipse-plugin</packaging>
-  
-  <!-- ================================================================== -->
-  <!-- Dependencies                                                       -->
-  <!-- ================================================================== -->
-  <dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <!-- ================================================================== -->
-    <!-- Polyglotter                                                        -->
-    <!-- ================================================================== -->
+	<!-- ================================================================== -->
+	<!-- Parent -->
+	<!-- ================================================================== -->
+	<parent>
+		<groupId>org.polyglotter</groupId>
+		<artifactId>plugins</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
 
-    <dependency>
-    	<groupId>org.polyglotter</groupId>
-    	<artifactId>polyglotter-common</artifactId>
-    </dependency>
+	<!-- ================================================================== -->
+	<!-- Self -->
+	<!-- ================================================================== -->
+	<artifactId>org.polyglotter.eclipse</artifactId>
+	<name>Polyglotter Eclipse Plug-in</name>
+	<description>An Eclipse plug-in for the Polyglotter project.</description>
+	<packaging>eclipse-plugin</packaging>
 
-    <dependency>
-      <groupId>org.polyglotter</groupId>
-      <artifactId>polyglotter-engine</artifactId>
-    </dependency>
+	<!-- ================================================================== -->
+	<!-- Dependencies -->
+	<!-- ================================================================== -->
+	<dependencies>
 
-    <dependency>
-      <groupId>org.polyglotter</groupId>
-      <artifactId>modeshape-modeler-engine</artifactId>
-    </dependency>
+		<!-- ================================================================== -->
+		<!-- Polyglotter -->
+		<!-- ================================================================== -->
 
-    <!-- ================================================================== -->
-    <!-- Other                                                              -->
-    <!-- ================================================================== -->
-    <dependency>
-      <groupId>javax.jcr</groupId>
-      <artifactId>jcr</artifactId>
-    </dependency>
+		<dependency>
+			<groupId>org.polyglotter</groupId>
+			<artifactId>polyglotter-common</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
-    <!-- ================================================================== -->
-    <!-- Testing                                                            -->
-    <!-- ================================================================== -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
+		<dependency>
+			<groupId>org.polyglotter</groupId>
+			<artifactId>polyglotter-engine</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
-    <dependency>
-      <groupId>org.polyglotter</groupId>
-      <artifactId>modeshape-modeler-engine</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
-<!--
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>target-platform-configuration</artifactId>
-        <version>${tycho.version}</version>
-        <resolver>p2</resolver>
-        <configuration>
-          <pomDependencies>consider</pomDependencies>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  -->
+		<dependency>
+			<groupId>org.polyglotter</groupId>
+			<artifactId>modeshape-modeler-engine</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- ================================================================== -->
+		<!-- Other -->
+		<!-- ================================================================== -->
+		<dependency>
+			<groupId>javax.jcr</groupId>
+			<artifactId>jcr</artifactId>
+		</dependency>
+
+		<!-- ================================================================== -->
+		<!-- Testing -->
+		<!-- ================================================================== -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.polyglotter</groupId>
+			<artifactId>modeshape-modeler-engine</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>get-runtime</id>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.polyglotter</groupId>
+									<artifactId>polyglotter-common</artifactId>
+									<version>0.0.1-SNAPSHOT</version>
+									<type>jar</type>
+									<outputDirectory>${basedir}/lib/polyglotter-common</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.polyglotter</groupId>
+									<artifactId>polyglotter-engine</artifactId>
+									<version>0.0.1-SNAPSHOT</version>
+									<type>jar</type>
+									<outputDirectory>${basedir}/lib/polyglotter-engine</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.polyglotter</groupId>
+									<artifactId>modeshape-modeler-engine</artifactId>
+									<version>0.0.1-SNAPSHOT</version>
+									<type>jar</type>
+									<outputDirectory>${basedir}/lib/modeshape-modeler-engine</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.polyglotter</groupId>
+									<artifactId>modeshape-modeler-engine</artifactId>
+									<version>0.0.1-SNAPSHOT</version>
+									<type>test-jar</type>
+									<outputDirectory>${basedir}/lib/modeshape-modeler-engine-test</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+							<skip>false</skip>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
