@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <!-- ================================================================== -->
+  <!-- Parent                                                             -->
+  <!-- ================================================================== -->
+  <parent>
+    <groupId>org.polyglotter</groupId>
+    <artifactId>plugins</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  
+  <!-- ================================================================== -->
+  <!-- Self                                                               -->
+  <!-- ================================================================== -->
+  <artifactId>org.polyglotter.eclipse</artifactId>
+  <name>Polyglotter Eclipse Plug-in</name>
+  <description>An Eclipse plug-in for the Polyglotter project.</description>
+  <packaging>eclipse-plugin</packaging>
+  
+  <!-- ================================================================== -->
+  <!-- Dependencies                                                       -->
+  <!-- ================================================================== -->
+  <dependencies>
+
+    <!-- ================================================================== -->
+    <!-- Polyglotter                                                        -->
+    <!-- ================================================================== -->
+
+    <dependency>
+    	<groupId>org.polyglotter</groupId>
+    	<artifactId>polyglotter-common</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.polyglotter</groupId>
+      <artifactId>polyglotter-engine</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.polyglotter</groupId>
+      <artifactId>modeshape-modeler-engine</artifactId>
+    </dependency>
+
+    <!-- ================================================================== -->
+    <!-- Other                                                              -->
+    <!-- ================================================================== -->
+    <dependency>
+      <groupId>javax.jcr</groupId>
+      <artifactId>jcr</artifactId>
+    </dependency>
+
+    <!-- ================================================================== -->
+    <!-- Testing                                                            -->
+    <!-- ================================================================== -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.polyglotter</groupId>
+      <artifactId>modeshape-modeler-engine</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+<!--
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho.version}</version>
+        <resolver>p2</resolver>
+        <configuration>
+          <pomDependencies>consider</pomDependencies>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  -->
+</project>

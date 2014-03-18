@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.metamatrix.com/XMLSchema/DataSets/music" xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:music="http://www.metamatrix.com/XMLSchema/DataSets/music">
+
+<xsd:complexType name="CountRequestType">
+	<xsd:sequence>
+		<xsd:element name="artist" type="xsd:string"/>
+	</xsd:sequence>
+</xsd:complexType>
+
+<xsd:complexType name="CountResponseType">
+	<xsd:sequence>
+		<xsd:element name="counts" type="xsd:integer">
+		</xsd:element>
+	</xsd:sequence>
+	<xsd:attribute name="artist" type="xsd:string"/>
+</xsd:complexType>
+
+<xsd:element name="countRequest" type="music:CountRequestType"/>
+<xsd:element name="countResponse" type="music:CountResponseType"/>
+
+</xsd:schema>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema targetNamespace="http://www.metamatrix.com/XMLSchema/DataSets/Movies"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:MovieTypesNS="http://www.metamatrix.com/XMLSchema/DataSets/Movies/MovieDatatypes"
+            xmlns:MoviesNS="http://www.metamatrix.com/XMLSchema/DataSets/Movies">
+
+  <xsd:import namespace="http://www.metamatrix.com/XMLSchema/DataSets/Movies/MovieDatatypes" schemaLocation="MovieDatatypes.xsd"/>
+
+  <!-- ============= -->
+  <!-- DOCUMENTATION -->
+  <!-- ============= -->
+
+
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+      MetaMatrix Data Set Library Version 1.1.
+      Movies Data Set Version 1.1.
+      Copyright 2002 MetaMatrix, Inc.
+      Permission is granted to use, copy, modify and distribute the schemas in the 
+      MetaMatrix Data Set Library subject to the terms and conditions specified
+      at http://www.metamatrix.com/Licensing/DataSetLicense.html.
+    </xsd:documentation>
+  </xsd:annotation>
+
+
+  <!-- =================== -->
+  <!-- ELEMENT DEFINITIONS -->
+  <!-- =================== -->
+
+
+  <!-- The set of possible root elements. -->
+  <xsd:element name="bibliography"   type="MoviesNS:Bibliography">
+    <xsd:annotation>
+      <xsd:documentation>Bibliography.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+  <xsd:element name="MovieListing"    type="MoviesNS:MoviesetFlat">
+    <xsd:annotation>
+      <xsd:documentation>
+        A set of Movies.  Each Movie in the set is represented in a 'flat' manner.
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+  <xsd:element name="MovieCollection" type="MoviesNS:MoviesetNested">
+    <xsd:annotation>
+      <xsd:documentation>
+        A set of Movies.  Each Movie in the set is represented in a 'nested' manner.
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+  <xsd:element name="MoviesetMixed"   type="MoviesNS:MoviesetMixed">
+    <xsd:annotation>
+      <xsd:documentation>
+        A set of Movies.  Each Movie in the set is represented by the 'nested' structure,
+        but each is identified in its enclosing tag by its Movie type.
+      </xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+
+
+  <!-- ======================= -->
+  <!-- DOMAIN TYPE DEFINITIONS -->
+  <!-- ======================= -->
+
+
+  <xsd:complexType name="Bibliography">
+    <xsd:annotation>
+      <xsd:documentation>Bibliography.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="entry" type="MoviesNS:BilbiographyEntry"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="BilbiographyEntry">
+    <xsd:annotation>
+      <xsd:documentation>
+        Bibliography entry, consisting of a single author, full title, publisher, 
+        publisher location, and publication year.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <!-- <xsd:element name="authorList"   type="MoviesNS:CommaSeparatedList"/> -->  <!-- List of authors -->
+      <xsd:element name="author"       type="xsd:string"/>   <!-- Only one author -->
+      <xsd:element name="fullTitle"    type="MovieTypesNS:CommaSeparatedList"/>   <!-- Includes title, sub, edition -->
+      <xsd:element name="publisher"    type="xsd:string"/>
+      <xsd:element name="publisherLoc" type="xsd:string"/>
+      <xsd:element name="published"    type="MovieTypesNS:PublicationYear"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="MoviesetFlat">
+    <xsd:annotation>
+      <xsd:documentation>
+        A set of Movies.  Each Movie in the set is represented in a 'flat' manner.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="Movie" type="MoviesNS:MovieFlat"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="MovieFlat">
+    <xsd:annotation>
+      <xsd:documentation>
+        Flat representation of a Movie, consisting of full title, set of authors, publisher, 
+        publication date, and edition.  ISBN and Movie type are represented as attributes.
+        Movie type is optional.  Edition defaults to blank.  There can be more than one
+        authors tag.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="title"       type="MovieTypesNS:CommaSeparatedList"/>   <!-- Includes title, subtitle -->
+      <xsd:element name="author"      type="xsd:string" maxOccurs="unbounded"/>   <!-- Can be more than one author -->
+      <xsd:element name="publisher"   type="xsd:string"/>
+      <xsd:element name="publishDate" type="MovieTypesNS:PublicationDate"/>
+      <xsd:element name="edition"     type="MovieTypesNS:MovieEdition" default=""/>
+    </xsd:sequence>
+    <xsd:attribute name="isbn" type="MovieTypesNS:ISBN"     use="required"/>
+    <xsd:attribute name="type" type="MovieTypesNS:MovieType" use="optional"/>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="MoviesetNested">
+    <xsd:annotation>
+      <xsd:documentation>
+        A set of Movies.  Each Movie in the set is represented in a 'nested' manner.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="Movie" type="MoviesNS:MovieNested"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="MovieNested">
+    <xsd:annotation>
+      <xsd:documentation>
+        Nested representation of a Movie, consisting of title, subtitle, edition, 
+        set of authors nested beneath an authors tag, set of publishing
+        information nested beneath a publishingInformation tag, and ISBN. 
+        ISBN is an attribute.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="title"                 type="xsd:string"/>  
+      <xsd:element name="subtitle"              type="xsd:string"/>   
+      <xsd:element name="edition"               type="MovieTypesNS:MovieEdition" default="1"/>
+      <xsd:element name="authors"               type="MoviesNS:Authors"/>
+      <xsd:element name="publishingInformation" type="MoviesNS:PublishingInformation"/>
+    </xsd:sequence>
+    <xsd:attribute name="isbn" type="MovieTypesNS:ISBN" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="Authors">
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="author"  type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="PublishingInformation">
+    <xsd:sequence>
+      <xsd:element name="publisher"   type="xsd:string"/>
+      <xsd:element name="publishDate" type="MovieTypesNS:PublicationDate"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+
+  <xsd:complexType name="MoviesetMixed">
+    <xsd:annotation>
+      <xsd:documentation>
+        A set of Movies.  Each Movie in the set is represented by the 'nested' structure,
+        but each is identified in its enclosing tag by its Movie type.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="hardcoverMovie" type="MoviesNS:MovieNested"/>
+      <xsd:element name="softcoverMovie" type="MoviesNS:MovieNested"/>   
+      <xsd:element name="audioMovie"     type="MoviesNS:AudioMovie"/>   
+    </xsd:choice>
+  </xsd:complexType>
+
+  <xsd:complexType name="AudioMovie">
+    <xsd:annotation>
+      <xsd:documentation>
+        An audio Movie, which is a special form (extension) of a Movie with a reader.
+        The nested structure is used, so this type is an extension of a MovieNested.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="MoviesNS:MovieNested">
+        <xsd:sequence>
+          <xsd:element name="reader"  type="xsd:string"/>   <!-- Reader or audio Movie -->
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+
+</xsd:schema>
