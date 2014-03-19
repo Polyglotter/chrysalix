@@ -1,0 +1,23 @@
+{
+    "name" : "ModeShape Modeler Repository",
+    "workspaces" : {
+        "predefined" : ["modeler"],
+        "default" : "default"
+    },
+    "storage" : {
+        "cacheName" : "ModeShapeModelerRepository",
+        "cacheConfiguration" : "jcr/infinispan.xml",
+        "binaryStorage" : {
+            "type" : "file",
+            "directory" : "${org.modeshape.modeler.repositoryStoreParentPath}/modelerRepository/binaries"
+        }
+    },
+    "query" : {
+        "indexStorage" : {
+            "type" : "filesystem",
+            "location" : "${org.modeshape.modeler.repositoryStoreParentPath}/modelerRepository/indexes",
+            "lockingStrategy" : "simple"
+        }
+    },
+    "node-types" : ["jcr/metamodel.cnd"]
+}
