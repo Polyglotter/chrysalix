@@ -1,67 +1,68 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <!-- ================================================================== -->
-  <!-- Parent                                                             -->
-  <!-- ================================================================== -->
-  <parent>
-    <groupId>org.polyglotter</groupId>
-    <artifactId>modeshape-modeler</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-
-  <!-- ================================================================== -->
-  <!-- Self                                                               -->
-  <!-- ================================================================== -->
-  <artifactId>modeshape-modeler-xsd</artifactId>
-  <name>ModeShape Modeler XSD Project</name>
-  <description>An implementation of an XSD dependency processor.</description>
-
-  <!-- ================================================================== -->
-  <!-- Dependencies                                                       -->
-  <!-- ================================================================== -->
-  <dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <!-- ================================================================== -->
-    <!-- Polyglotter                                                        -->
+    <!-- Parent -->
     <!-- ================================================================== -->
-    <dependency>
+    <parent>
         <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-engine</artifactId>
-    </dependency>
-
-    <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-engine</artifactId>
-        <type>test-jar</type>
-    </dependency>
+        <artifactId>modeshape-modeler</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
     <!-- ================================================================== -->
-    <!-- ModeShape                                                          -->
+    <!-- Self -->
     <!-- ================================================================== -->
-    <dependency>
-        <groupId>org.modeshape</groupId>
-        <artifactId>modeshape-sequencer-xsd</artifactId>
-    </dependency>
+    <artifactId>modeshape-modeler-xsd</artifactId>
+    <name>ModeShape Modeler XSD Project</name>
+    <description>An implementation of an XSD dependency processor.</description>
 
     <!-- ================================================================== -->
-    <!-- Testing                                                            -->
+    <!-- Dependencies -->
     <!-- ================================================================== -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
+    <dependencies>
 
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-    </dependency>
+        <!-- ================================================================== -->
+        <!-- Polyglotter -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>modeshape-modeler-engine</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-    </dependency>
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>modeshape-modeler-engine</artifactId>
+            <type>test-jar</type>
+        </dependency>
 
-  </dependencies>
+        <!-- ================================================================== -->
+        <!-- ModeShape -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>org.modeshape</groupId>
+            <artifactId>modeshape-sequencer-xsd</artifactId>
+        </dependency>
+
+        <!-- ================================================================== -->
+        <!-- Testing -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+
+    </dependencies>
 
 </project>

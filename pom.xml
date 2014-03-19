@@ -1,754 +1,573 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <!-- ================================================================== -->
-  <!-- Self                                                               -->
-  <!-- ================================================================== -->
-  <groupId>org.polyglotter</groupId>
-  <artifactId>polyglotter</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>Polyglotter</name>
-  <description>Polyglotter is a data transformation engine.</description>
-  <inceptionYear>2013</inceptionYear>
-
-  <organization>
-    <name>JBoss, a division of Red Hat</name>
-    <url>http://www.jboss.org</url>
-  </organization>
-
-  <licenses>
-    <license>
-      <name>GNU Lesser General Public License</name>
-      <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-      <!--url>http://www.gnu.org/licenses/lgpl.html</url-->
-      <distribution>repo</distribution>
-      <comments>A business-friendly OSS license</comments>
-    </license>
-  </licenses>
-
-  <issueManagement>
-    <system>GitHub</system>
-    <url>https://github.com/Polyglotter/polyglotter/issues</url>
-  </issueManagement>
-
-  <scm>
-    <connection>scm:git:git@github.com:Polyglotter/polyglotter.git</connection>
-    <developerConnection>scm:git:git@github.com:Polyglotter/polyglotter.git</developerConnection>
-    <url>scm:git:git@github.com:Polyglotter/polyglotter.git</url>
-  </scm>
-
-  <developers>
-    <developer>
-      <name>John Verhaeg</name>
-      <id>jpav</id>
-      <email>jverhaeg@redhat.com</email>
-      <organization>JBoss, a division of Red Hat</organization>
-      <roles>
-        <role>Project Lead</role>
-        <role>Developer</role>
-      </roles>
-      <timezone>-6</timezone>
-    </developer>
-    <developer>
-      <name>Daniel Florian</name>
-      <id>danflo</id>
-      <email>dflorian@redhat.com</email>
-      <organization>JBoss, a division of Red Hat</organization>
-      <roles>
-        <role>Developer</role>
-      </roles>
-      <timezone>-5</timezone>
-    </developer>
-  </developers>
-
-  <!-- ================================================================== -->
-  <!-- Properties                                                         -->
-  <!-- ================================================================== -->
-  <properties>
-    <!-- Instruct the build to use only UTF-8 encoding for source code -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-
-    <!-- Only unit tests are run by default. -->
-    <skip.integration.tests>true</skip.integration.tests>
-    <skip.unit.tests>false</skip.unit.tests>
-
-    <!-- Distribution URLs -->
-    <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
-    <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
-
-    <!-- Maven plugin versions -->
-    <maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
-    <maven.bundle.plugin.version>2.1.0</maven.bundle.plugin.version>
-    <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
-    <maven.deploy.plugin.version>2.5</maven.deploy.plugin.version>
-    <maven.failsafe.plugin.version>2.16</maven.failsafe.plugin.version>
-    <build.helper.maven.plugin.version>1.8</build.helper.maven.plugin.version>
-    <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
-    <maven.jar.plugin.version>2.3.1</maven.jar.plugin.version>
-    <maven.javadoc.plugin.version>2.7</maven.javadoc.plugin.version>
-    <maven.jxr.plugin.version>2.1</maven.jxr.plugin.version>
-    <maven.surefire.report.plugin.version>2.4.3</maven.surefire.report.plugin.version>
-    <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
-    <maven.war.plugin.version>2.1.1</maven.war.plugin.version>
-    <maven.source.plugin.version>2.1.2</maven.source.plugin.version>
-
-    <!-- Dependency versions -->
-    <eclipse.gef.version>3.9.0</eclipse.gef.version>
-    <jcr.version>2.0</jcr.version>
-    <jsoup.version>1.7.2</jsoup.version>
-    <junit.version>4.11</junit.version>
-    <log4j.version>1.2.16</log4j.version>
-    <mockito.version>1.9.5</mockito.version>
-    <modeshape.version>3.5.0.Final</modeshape.version>
-    <slf4j.api.version>1.6.1</slf4j.api.version>
-    <slf4j.log4j.version>1.6.1</slf4j.log4j.version>
-    <slf4j.nop.version>1.6.1</slf4j.nop.version>
-    <tycho.version>0.20.0</tycho.version>
-    <tycho.extras.version>${tycho.version}</tycho.extras.version>
-    
-  </properties>
-
-  <!-- ================================================================== -->
-  <!-- Profiles                                                           -->
-  <!-- ================================================================== -->
-  <profiles>
-    <profile>
-      <id>integration-test</id>
-      <properties>
-        <!-- Used to locate the profile specific configuration file. -->
-        <build.profile.id>integration-test</build.profile.id>
-        <!-- Only integration tests are run. -->
-        <skip.integration.tests>false</skip.integration.tests>
-        <skip.unit.tests>true</skip.unit.tests>
-      </properties>
-    </profile>
-  </profiles>
-
-  <!-- ================================================================== -->
-  <!-- Build                                                              -->
-  <!-- ================================================================== -->
-  <build>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <!-- ================================================================== -->
-    <!-- Plugins                                                            -->
+    <!-- Self -->
     <!-- ================================================================== -->
-    <plugins>
+    <groupId>org.polyglotter</groupId>
+    <artifactId>polyglotter</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Polyglotter</name>
+    <description>Polyglotter is a data transformation engine.</description>
+    <inceptionYear>2013</inceptionYear>
 
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-maven-plugin</artifactId>
-        <version>${tycho.version}</version>
-        <extensions>true</extensions>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>target-platform-configuration</artifactId>
-        <version>${tycho.version}</version>
-        <configuration>
-          <resolver>p2</resolver>
-          <ignoreTychoRepositories>true</ignoreTychoRepositories>
-          <pomDependencies>consider</pomDependencies>
-          <environments>
-            <environment>
-              <os>macosx</os>
-                <ws>cocoa</ws>
-                <arch>x86</arch>
-              </environment>
-              <environment>
-                <os>macosx</os>
-                  <ws>cocoa</ws>
-                  <arch>x86_64</arch>
-              </environment>
-              <environment>
-                <os>win32</os>
-                <ws>win32</ws>
-                <arch>x86</arch>
-              </environment>
-              <environment>
-                <os>win32</os>
-                <ws>win32</ws>
-                <arch>x86_64</arch>
-              </environment>
-              <environment>
-                <os>linux</os>
-                <ws>gtk</ws>
-                <arch>x86</arch>
-              </environment>
-              <environment>
-                <os>linux</os>
-                <ws>gtk</ws>
-                <arch>x86_64</arch>
-              </environment>
-           </environments>
-        </configuration>
-      </plugin>
+    <organization>
+        <name>JBoss, a division of Red Hat</name>
+        <url>http://www.jboss.org</url>
+    </organization>
 
-<!--
-      <plugin>
-		<groupId>org.eclipse.tycho</groupId>
-		<artifactId>tycho-packaging-plugin</artifactId>
-		<version>${tycho.version}</version>
-		<configuration>
-          <format>'v'yyyyMMdd-HHmm'-LOCAL'</format>
-          <sourceReferences>
-            <generate>true</generate>
-          </sourceReferences>
-          <archiveSite>true</archiveSite>
-        </configuration>
-      </plugin>
--->
-      <!-- Specify the compiler options and settings -->
-<!--      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven.compiler.plugin.version}</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-          <showDeprecation>false</showDeprecation>
-          <showWarnings>false</showWarnings>
-        </configuration>
-      </plugin>
--->
-      <!-- Produce source jars during the 'verify' phase -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>jar</goal>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+            <!--url>http://www.gnu.org/licenses/lgpl.html</url -->
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
 
-      <!-- Build a test-jar for each project, so that src/test/* resources and 
-        classes can be used in other projects. Also customize how the jar files are 
-        assembled. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>${maven.jar.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>jar</goal>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <archive>
-            <manifest>
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-            <manifestEntries>
-              <Implementation-URL>${project.url}</Implementation-URL>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/Polyglotter/polyglotter/issues</url>
+    </issueManagement>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${build.helper.maven.plugin.version}</version><!--$NO-MVN-MAN-VER$ -->
-        <executions>
-          <!-- States that the plugin's add-test-source goal is executed at generate-test-sources phase. -->
-          <execution>
-            <id>add-integration-test-sources</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <!-- Configures the source directory of integration tests. -->
-              <sources>
-                <source>src/integration/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+    <scm>
+        <connection>scm:git:git@github.com:Polyglotter/polyglotter.git</connection>
+        <developerConnection>scm:git:git@github.com:Polyglotter/polyglotter.git</developerConnection>
+        <url>scm:git:git@github.com:Polyglotter/polyglotter.git</url>
+    </scm>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven.failsafe.plugin.version}</version>
-        <executions>
-          <!-- States that both integration-test and verify goals of the Failsafe Maven plugin are executed. -->
-          <execution>
-            <id>integration-tests</id>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-            <configuration>
-              <!-- Skips integration tests if the value of skip.integration.tests property is true -->
-              <skipTests>${skip.integration.tests}</skipTests>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-<!--
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-          <artifactId>maven-osgi-compiler-plugin</artifactId>
-          <version>${tycho.version}</version>
-          <configuration>
-            <encoding>UTF-8</encoding>
-            <showDeprecation>true</showDeprecation>
-            <showWarnings>true</showWarnings>
-            <source>1.7</source>
-            <target>1.7</target>
-          </configuration>
-      </plugin>
--->
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.plugin.version}</version>
-        <configuration>
-          <includes>
-            <include>**/*TestCase.java</include>
-            <include>**/*Test.java</include>
-          </includes>
-          <systemProperties>
-            <property>
-              <name>java.io.tmpdir</name>
-              <value>${basedir}/target</value>
-            </property>
-          </systemProperties>
-          <argLine>-Xmx368m -XX:MaxPermSize=128m</argLine>
-          <!-- Skips unit tests if the value of skip.unit.tests property is true -->
-          <skipTests>${skip.unit.tests}</skipTests>
-          <!-- Excludes integration tests when unit tests are run. -->
-          <excludes>
-              <exclude>**/IT*.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-<!--
+    <developers>
+        <developer>
+            <name>John Verhaeg</name>
+            <id>jpav</id>
+            <email>jverhaeg@redhat.com</email>
+            <organization>JBoss, a division of Red Hat</organization>
+            <roles>
+                <role>Project Lead</role>
+                <role>Developer</role>
+            </roles>
+            <timezone>-6</timezone>
+        </developer>
+        <developer>
+            <name>Daniel Florian</name>
+            <id>danflo</id>
+            <email>dflorian@redhat.com</email>
+            <organization>JBoss, a division of Red Hat</organization>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+    </developers>
+
+    <!-- ================================================================== -->
+    <!-- Properties -->
+    <!-- ================================================================== -->
+    <properties>
+        <!-- Instruct the build to use only UTF-8 encoding for source code -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+
+        <!-- Only unit tests are run by default. -->
+        <skip.integration.tests>true</skip.integration.tests>
+        <skip.unit.tests>false</skip.unit.tests>
+
+        <!-- Distribution URLs -->
+        <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
+        <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
+
+        <!-- Maven plugin versions -->
+        <maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
+        <maven.bundle.plugin.version>2.1.0</maven.bundle.plugin.version>
+        <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
+        <maven.deploy.plugin.version>2.5</maven.deploy.plugin.version>
+        <maven.failsafe.plugin.version>2.16</maven.failsafe.plugin.version>
+        <build.helper.maven.plugin.version>1.8</build.helper.maven.plugin.version>
+        <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
+        <maven.jar.plugin.version>2.3.1</maven.jar.plugin.version>
+        <maven.javadoc.plugin.version>2.7</maven.javadoc.plugin.version>
+        <maven.jxr.plugin.version>2.1</maven.jxr.plugin.version>
+        <maven.surefire.report.plugin.version>2.4.3</maven.surefire.report.plugin.version>
+        <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
+        <maven.war.plugin.version>2.1.1</maven.war.plugin.version>
+        <maven.source.plugin.version>2.1.2</maven.source.plugin.version>
+
+        <!-- Dependency versions -->
+        <eclipse.gef.version>3.9.0</eclipse.gef.version>
+        <jcr.version>2.0</jcr.version>
+        <jsoup.version>1.7.2</jsoup.version>
+        <junit.version>4.11</junit.version>
+        <log4j.version>1.2.16</log4j.version>
+        <mockito.version>1.9.5</mockito.version>
+        <modeshape.version>3.5.0.Final</modeshape.version>
+        <slf4j.api.version>1.6.1</slf4j.api.version>
+        <slf4j.log4j.version>1.6.1</slf4j.log4j.version>
+        <slf4j.nop.version>1.6.1</slf4j.nop.version>
+        <tycho.version>0.20.0</tycho.version>
+        <tycho.extras.version>${tycho.version}</tycho.extras.version>
+
+    </properties>
+
+    <!-- ================================================================== -->
+    <!-- Profiles -->
+    <!-- ================================================================== -->
+    <profiles>
+        <profile>
+            <id>integration-test</id>
+            <properties>
+                <!-- Used to locate the profile specific configuration file. -->
+                <build.profile.id>integration-test</build.profile.id>
+                <!-- Only integration tests are run. -->
+                <skip.integration.tests>false</skip.integration.tests>
+                <skip.unit.tests>true</skip.unit.tests>
+            </properties>
+        </profile>
+    </profiles>
+
+    <!-- ================================================================== -->
+    <!-- Build -->
+    <!-- ================================================================== -->
+    <build>
+
+        <!-- ================================================================== -->
+        <!-- Plugins -->
+        <!-- ================================================================== -->
+        <plugins>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho.version}</version>
+                <extensions>true</extensions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho.version}</version>
+                <configuration>
+                    <resolver>p2</resolver>
+                    <ignoreTychoRepositories>true</ignoreTychoRepositories>
+                    <pomDependencies>consider</pomDependencies>
+                    <environments>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>x86</arch>
+                        </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>x86</arch>
+                        </environment>
+                        <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>x86</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                    </environments>
+                </configuration>
+            </plugin>
+
+            <!-- Produce source jars during the 'verify' phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Build a test-jar for each project, so that src/test/* resources and classes can be used in other projects. 
+                Also customize how the jar files are assembled. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>test-jar</id>
                         <goals>
+                            <goal>jar</goal>
                             <goal>test-jar</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <skipIfEmpty>true</skipIfEmpty>
                     <archive>
-                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <manifest>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Implementation-URL>${project.url}</Implementation-URL>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
--->
 
-        <!-- Create MANIFEST.MF file -->
-        <plugin>
-          <groupId>org.apache.felix</groupId>
-          <artifactId>maven-bundle-plugin</artifactId>
-          <version>${maven.bundle.plugin.version}</version>
-          <extensions>true</extensions>
-          <executions>
-            <execution>
-              <id>bundle-manifest</id>
-              <phase>process-classes</phase>
-              <goals>
-                <goal>manifest</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-
-    </plugins>
-
-    <!-- ============================================================================= -->
-    <!-- Plugin Management                                                             -->
-    <!-- This section defines the default plugin settings inherited by child projects. -->
-    <!-- ============================================================================= -->
-    <pluginManagement>
-      <plugins>
-<!--
-      <plugin>
-          <groupId>org.eclipse.tycho</groupId>
-          <artifactId>tycho-compiler-plugin</artifactId>
-          <version>${tycho.version}</version>
-        </plugin>
--->        
-		  <plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>${maven.compiler.plugin.version}</version>
-			<configuration>
-			  <source>1.7</source>
-			  <target>1.7</target>
-			  <showDeprecation>false</showDeprecation>
-			  <showWarnings>false</showWarnings>
-			</configuration>
-		  </plugin>
-
-      <!-- Build a test-jar for each project, so that src/test/* resources and 
-        classes can be used in other projects. Also customize how the jar files are 
-        assembled. -->
-<!--      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>${maven.jar.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>jar</goal>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <archive>
-            <manifest>
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-            <manifestEntries>
-              <Implementation-URL>${project.url}</Implementation-URL>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
--->
-            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.
             <plugin>
-               <groupId>org.eclipse.m2e</groupId>
-               <artifactId>lifecycle-mapping</artifactId>
-               <version>1.0.0</version>
-               <configuration>
-                  <lifecycleMappingMetadata>
-                     <pluginExecutions>
-                        <pluginExecution>
-                           <pluginExecutionFilter>
-                              <groupId>
-                                 org.apache.maven.plugins
-                              </groupId>
-                              <artifactId>
-                                 maven-dependency-plugin
-                              </artifactId>
-                              <versionRange>
-                                 [2.4,)
-                              </versionRange>
-                              <goals>
-                                 <goal>unpack</goal>
-                                 <goal>copy</goal>
-                              </goals>
-                           </pluginExecutionFilter>
-                           <action>
-                              <ignore></ignore>
-                           </action>
-                        </pluginExecution>
-                     </pluginExecutions>
-                  </lifecycleMappingMetadata>
-               </configuration>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${build.helper.maven.plugin.version}</version><!--$NO-MVN-MAN-VER$ -->
+                <executions>
+                    <!-- States that the plugin's add-test-source goal is executed at generate-test-sources phase. -->
+                    <execution>
+                        <id>add-integration-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Configures the source directory of integration tests. -->
+                            <sources>
+                                <source>src/integration/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
- -->
- <!--       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>${maven.jar.plugin.version}</version>
-        </plugin>
--->
-<!--
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <version>${maven.war.plugin.version}</version>
-        </plugin>
--->
-<!--        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <version>${maven.assembly.plugin.version}</version>
-        </plugin>
---> <!--
-        <plugin>
-          <groupId>org.eclipse.tycho</groupId>
-          <artifactId>tycho-p2-plugin</artifactId>
-          <version>${tycho.version}</version>
-          <executions>
-            <execution>
-              <id>attached-p2-metadata</id>
-              <phase>package</phase>
-              <goals>
-                <goal>p2-metadata</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
--->
-<!--
-        <plugin>
-          <groupId>org.eclipse.tycho.extras</groupId>
-          <artifactId>tycho-source-feature-plugin</artifactId>
-          <version>${tycho.extras.version}</version>
-          <executions>
-            <execution>
-              <id>source-feature</id>
-              <phase>package</phase>
-              <goals>
-                <goal>source-feature</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
--->
-      </plugins>
-    </pluginManagement>
-  </build>
 
-  <!-- ================================================================== -->
-  <!-- Dependencies                                                       -->
-  <!-- ================================================================== -->
-  <dependencyManagement>
-    <dependencies>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven.failsafe.plugin.version}</version>
+                <executions>
+                    <!-- States that both integration-test and verify goals of the Failsafe Maven plugin are executed. -->
+                    <execution>
+                        <id>integration-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Skips integration tests if the value of skip.integration.tests property is true -->
+                            <skipTests>${skip.integration.tests}</skipTests>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-      <!-- ================================================================== -->
-      <!-- Polyglotter subprojects                                            -->
-      <!-- ================================================================== -->
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>polyglotter-common</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <systemProperties>
+                        <property>
+                            <name>java.io.tmpdir</name>
+                            <value>${basedir}/target</value>
+                        </property>
+                    </systemProperties>
+                    <argLine>-Xmx368m -XX:MaxPermSize=128m</argLine>
+                    <!-- Skips unit tests if the value of skip.unit.tests property is true -->
+                    <skipTests>${skip.unit.tests}</skipTests>
+                    <!-- Excludes integration tests when unit tests are run. -->
+                    <excludes>
+                        <exclude>**/IT*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>polyglotter-common</artifactId>
-        <version>${project.version}</version>
-        <type>test-jar</type>
-        <scope>test</scope>
-      </dependency>
+            <!-- Create MANIFEST.MF file -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${maven.bundle.plugin.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>polyglotter-engine</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+        <!-- ============================================================================= -->
+        <!-- Plugin Management -->
+        <!-- This section defines the default plugin settings inherited by child projects. -->
+        <!-- ============================================================================= -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                    <configuration>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                        <showDeprecation>false</showDeprecation>
+                        <showWarnings>false</showWarnings>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+    <!-- ================================================================== -->
+    <!-- Dependencies -->
+    <!-- ================================================================== -->
+    <dependencyManagement>
+        <dependencies>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-engine</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <!-- ================================================================== -->
+            <!-- Polyglotter subprojects -->
+            <!-- ================================================================== -->
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>polyglotter-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-engine</artifactId>
-        <version>${project.version}</version>
-        <type>test-jar</type>
-        <scope>test</scope>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>polyglotter-common</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-java</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>polyglotter-engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-xsd</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>modeshape-modeler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>polyglotter-eclipse</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>modeshape-modeler-engine</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>plugins</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>modeshape-modeler-engine</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
 
-      <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>org.polyglotter.eclipse</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>modeshape-modeler-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <!-- ================================================================== -->
-      <!-- ModeShape                                                          -->
-      <!-- ================================================================== -->
-      <dependency>
-        <groupId>org.modeshape.bom</groupId>
-        <artifactId>modeshape-bom-embedded</artifactId>
-        <version>${modeshape.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>modeshape-modeler-xsd</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <!-- ================================================================== -->
-      <!-- Eclipse                                                          -->
-      <!-- ================================================================== -->
-      <dependency>
-        <groupId>org.eclipse.gef</groupId>
-        <artifactId>org.eclipse.gef</artifactId>
-        <version>${eclipse.gef.version}</version>
-        <scope>compile</scope>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>polyglotter-eclipse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <!-- ================================================================== -->
-      <!-- Other                                                              -->
-      <!-- ================================================================== -->
-      <dependency>
-        <groupId>org.jsoup</groupId>
-        <artifactId>jsoup</artifactId>
-        <version>${jsoup.version}</version>
-        <scope>compile</scope>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>plugins</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <!-- ================================================================== -->
-      <!-- Logging                                                            -->
-      <!-- ================================================================== -->
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4j.api.version}</version>
-        <scope>compile</scope>
-      </dependency>
+            <dependency>
+                <groupId>org.polyglotter</groupId>
+                <artifactId>org.polyglotter.eclipse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${slf4j.log4j.version}</version>
-        <scope>compile</scope>
-      </dependency>
+            <!-- ================================================================== -->
+            <!-- ModeShape -->
+            <!-- ================================================================== -->
+            <dependency>
+                <groupId>org.modeshape.bom</groupId>
+                <artifactId>modeshape-bom-embedded</artifactId>
+                <version>${modeshape.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
-      <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>${log4j.version}</version>
-        <scope>compile</scope>
-      </dependency>
+            <!-- ================================================================== -->
+            <!-- Eclipse -->
+            <!-- ================================================================== -->
+            <dependency>
+                <groupId>org.eclipse.gef</groupId>
+                <artifactId>org.eclipse.gef</artifactId>
+                <version>${eclipse.gef.version}</version>
+                <scope>compile</scope>
+            </dependency>
 
-      <!-- ================================================================== -->
-      <!-- Testing                                                            -->
-      <!-- ================================================================== -->
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
-        <scope>test</scope>
-      </dependency>
+            <!-- ================================================================== -->
+            <!-- Other -->
+            <!-- ================================================================== -->
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>${jsoup.version}</version>
+                <scope>compile</scope>
+            </dependency>
 
-      <dependency>
-      	<groupId>org.mockito</groupId>
-      	<artifactId>mockito-all</artifactId>
-      	<version>${mockito.version}</version>
-      	<scope>test</scope>
-      </dependency>
+            <!-- ================================================================== -->
+            <!-- Logging -->
+            <!-- ================================================================== -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.api.version}</version>
+                <scope>compile</scope>
+            </dependency>
 
-    </dependencies>
-  </dependencyManagement>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.log4j.version}</version>
+                <scope>compile</scope>
+            </dependency>
 
-  <!-- ================================================================== -->
-  <!-- Reporting                                                          -->
-  <!-- ================================================================== -->
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>${maven.surefire.report.plugin.version}</version>
-      </plugin>
-    </plugins>
-  </reporting>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
+                <scope>compile</scope>
+            </dependency>
 
-  <!-- ================================================================== -->
-  <!-- Repositories                                                       -->
-  <!-- ================================================================== -->
-  <repositories>
-    <repository>
-      <id>central</id>
-      <name>Maven Central Repository</name>
-      <url>http://repo1.maven.org/maven2</url>
-      <releases>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>jboss-public-repository-group</id>
-      <name>JBoss Public Maven Repository Group</name>
-      <url>http://repository.jboss.org/nexus/content/groups/public</url>
-      <layout>default</layout>
-      <releases>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-    </repository>
-    <repository>
-      <id>kepler</id>
-      <url>http://download.eclipse.org/releases/kepler</url>
-      <layout>p2</layout>
-    </repository>
-  </repositories>
+            <!-- ================================================================== -->
+            <!-- Testing -->
+            <!-- ================================================================== -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>jboss-public-repository-group</id>
-      <name>JBoss Public Maven Repository Group</name>
-      <url>http://repository.jboss.org/nexus/content/groups/public</url>
-      <snapshots>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-  <distributionManagement>
-    <repository>
-      <id>jboss-releases-repository</id>
-      <name>JBoss Releases Repository</name>
-      <url>${jboss.releases.repo.url}</url>
-    </repository>
-    <snapshotRepository>
-      <id>jboss-snapshots-repository</id>
-      <name>JBoss Snapshots Repository</name>
-      <url>${jboss.snapshots.repo.url}</url>
-    </snapshotRepository>
-  </distributionManagement>
+        </dependencies>
+    </dependencyManagement>
 
-  <!-- ================================================================== -->
-  <!-- Modules                                                            -->
-  <!-- ================================================================== -->
-  <modules>
-    <module>polyglotter-common</module>
-    <module>modeshape-modeler</module>
-    <module>polyglotter-engine</module>
-    <module>polyglotter-eclipse</module>
-  </modules>
+    <!-- ================================================================== -->
+    <!-- Reporting -->
+    <!-- ================================================================== -->
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>${maven.surefire.report.plugin.version}</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <!-- ================================================================== -->
+    <!-- Repositories -->
+    <!-- ================================================================== -->
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Maven Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public</url>
+            <layout>default</layout>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>kepler</id>
+            <url>http://download.eclipse.org/releases/kepler</url>
+            <layout>p2</layout>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Maven Repository Group</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public</url>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>jboss-releases-repository</id>
+            <name>JBoss Releases Repository</name>
+            <url>${jboss.releases.repo.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshots Repository</name>
+            <url>${jboss.snapshots.repo.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <!-- ================================================================== -->
+    <!-- Modules -->
+    <!-- ================================================================== -->
+    <modules>
+        <module>polyglotter-common</module>
+        <module>modeshape-modeler</module>
+        <module>polyglotter-engine</module>
+        <module>polyglotter-eclipse</module>
+    </modules>
 
 </project>
 

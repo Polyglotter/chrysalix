@@ -1,123 +1,169 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<!-- ================================================================== -->
-	<!-- Parent -->
-	<!-- ================================================================== -->
-	<parent>
-		<groupId>org.polyglotter</groupId>
-		<artifactId>plugins</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
+    <!-- ================================================================== -->
+    <!-- Parent -->
+    <!-- ================================================================== -->
+    <parent>
+        <groupId>org.polyglotter</groupId>
+        <artifactId>plugins</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-	<!-- ================================================================== -->
-	<!-- Self -->
-	<!-- ================================================================== -->
-	<artifactId>org.polyglotter.eclipse</artifactId>
-	<name>Polyglotter Eclipse Plug-in</name>
-	<description>An Eclipse plug-in for the Polyglotter project.</description>
-	<packaging>eclipse-plugin</packaging>
+    <!-- ================================================================== -->
+    <!-- Self -->
+    <!-- ================================================================== -->
+    <artifactId>org.polyglotter.eclipse</artifactId>
+    <name>Polyglotter Eclipse Plug-in</name>
+    <description>An Eclipse plug-in for the Polyglotter project.</description>
+    <packaging>eclipse-plugin</packaging>
 
-	<!-- ================================================================== -->
-	<!-- Dependencies -->
-	<!-- ================================================================== -->
-	<dependencies>
+    <!-- ================================================================== -->
+    <!-- Dependencies -->
+    <!-- ================================================================== -->
+    <dependencies>
 
-		<!-- ================================================================== -->
-		<!-- Polyglotter -->
-		<!-- ================================================================== -->
+        <!-- ================================================================== -->
+        <!-- Polyglotter -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>polyglotter-common</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.polyglotter</groupId>
-			<artifactId>polyglotter-common</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>polyglotter-engine</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.polyglotter</groupId>
-			<artifactId>polyglotter-engine</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>modeshape-modeler-engine</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.polyglotter</groupId>
-			<artifactId>modeshape-modeler-engine</artifactId>
-			<scope>runtime</scope>
-		</dependency>
+        <!-- ================================================================== -->
+        <!-- Other -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>javax.jcr</groupId>
+            <artifactId>jcr</artifactId>
+        </dependency>
 
-		<!-- ================================================================== -->
-		<!-- Other -->
-		<!-- ================================================================== -->
-		<dependency>
-			<groupId>javax.jcr</groupId>
-			<artifactId>jcr</artifactId>
-		</dependency>
+        <!-- ================================================================== -->
+        <!-- Testing -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
 
-		<!-- ================================================================== -->
-		<!-- Testing -->
-		<!-- ================================================================== -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>modeshape-modeler-engine</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-		<dependency>
-			<groupId>org.polyglotter</groupId>
-			<artifactId>modeshape-modeler-engine</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <!-- ================================================================== -->
+    <!-- Build -->
+    <!-- ================================================================== -->
+    <build>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>get-runtime</id>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.polyglotter</groupId>
-									<artifactId>polyglotter-common</artifactId>
-									<version>0.0.1-SNAPSHOT</version>
-									<type>jar</type>
-									<outputDirectory>${basedir}/lib/polyglotter-common</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.polyglotter</groupId>
-									<artifactId>polyglotter-engine</artifactId>
-									<version>0.0.1-SNAPSHOT</version>
-									<type>jar</type>
-									<outputDirectory>${basedir}/lib/polyglotter-engine</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.polyglotter</groupId>
-									<artifactId>modeshape-modeler-engine</artifactId>
-									<version>0.0.1-SNAPSHOT</version>
-									<type>jar</type>
-									<outputDirectory>${basedir}/lib/modeshape-modeler-engine</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>org.polyglotter</groupId>
-									<artifactId>modeshape-modeler-engine</artifactId>
-									<version>0.0.1-SNAPSHOT</version>
-									<type>test-jar</type>
-									<outputDirectory>${basedir}/lib/modeshape-modeler-engine-test</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-							<skip>false</skip>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+        <!-- ================================================================== -->
+        <!-- Plugins -->
+        <!-- ================================================================== -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>get-runtime</id>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.polyglotter</groupId>
+                                    <artifactId>polyglotter-common</artifactId>
+                                    <version>0.0.1-SNAPSHOT</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${basedir}/lib/polyglotter-common</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.polyglotter</groupId>
+                                    <artifactId>polyglotter-engine</artifactId>
+                                    <version>0.0.1-SNAPSHOT</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${basedir}/lib/polyglotter-engine</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.polyglotter</groupId>
+                                    <artifactId>modeshape-modeler-engine</artifactId>
+                                    <version>0.0.1-SNAPSHOT</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${basedir}/lib/modeshape-modeler-engine</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.polyglotter</groupId>
+                                    <artifactId>modeshape-modeler-engine</artifactId>
+                                    <version>0.0.1-SNAPSHOT</version>
+                                    <type>test-jar</type>
+                                    <outputDirectory>${basedir}/lib/modeshape-modeler-engine-test</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <skip>false</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <!-- ================================================================== -->
+        <!-- Plugin Management -->
+        <!-- ================================================================== -->
+        <pluginManagement>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven 
+                    build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-dependency-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.4,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>unpack</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

@@ -1,59 +1,60 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <!-- ================================================================== -->
-  <!-- Parent                                                             -->
-  <!-- ================================================================== -->
-  <parent>
-    <groupId>org.polyglotter</groupId>
-    <artifactId>modeshape-modeler</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-
-  <!-- ================================================================== -->
-  <!-- Self                                                               -->
-  <!-- ================================================================== -->
-  <artifactId>modeshape-modeler-java</artifactId>
-  <name>ModeShape Modeler for Java</name>
-  <description>An implementation of a Java dependency processor.</description>
-
-  <!-- ================================================================== -->
-  <!-- Dependencies                                                       -->
-  <!-- ================================================================== -->
-  <dependencies>
-    
     <!-- ================================================================== -->
-    <!-- Polyglotter                                                        -->
+    <!-- Parent -->
     <!-- ================================================================== -->
-    <dependency>
+    <parent>
         <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-engine</artifactId>
-    </dependency>
- 
-    <dependency>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>modeshape-modeler-engine</artifactId>
-        <type>test-jar</type>
-    </dependency>
+        <artifactId>modeshape-modeler</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
     <!-- ================================================================== -->
-    <!-- Testing                                                            -->
+    <!-- Self -->
     <!-- ================================================================== -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
+    <artifactId>modeshape-modeler-java</artifactId>
+    <name>ModeShape Modeler for Java</name>
+    <description>An implementation of a Java dependency processor.</description>
 
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-    </dependency>
+    <!-- ================================================================== -->
+    <!-- Dependencies -->
+    <!-- ================================================================== -->
+    <dependencies>
 
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-    </dependency>
-  
-  </dependencies>
-  
+        <!-- ================================================================== -->
+        <!-- Polyglotter -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>modeshape-modeler-engine</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>modeshape-modeler-engine</artifactId>
+            <type>test-jar</type>
+        </dependency>
+
+        <!-- ================================================================== -->
+        <!-- Testing -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+
+    </dependencies>
+
 </project>

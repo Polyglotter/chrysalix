@@ -23,8 +23,10 @@
  */
 package org.modeshape.modeler.java;
 
+import org.junit.Ignore;
 import org.modeshape.modeler.integration.BaseIntegrationTest;
 
+@Ignore
 @SuppressWarnings( "javadoc" )
 public class ITJavaDependencyProcessor extends BaseIntegrationTest {
     //
