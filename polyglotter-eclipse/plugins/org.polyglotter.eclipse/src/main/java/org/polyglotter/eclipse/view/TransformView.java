@@ -31,9 +31,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.ViewPart;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.eclipse.TreeSpinner;
-import org.polyglotter.eclipse.TreeSpinnerContentProvider;
+import org.polyglotter.eclipse.EclipseI18n;
 import org.polyglotter.eclipse.Util;
+import org.polyglotter.eclipse.focustree.FocusTree;
+import org.polyglotter.eclipse.focustree.FocusTree.Model;
 
 /**
  * A view whose contents are the transforms contained in the workspace.
@@ -54,53 +55,55 @@ public class TransformView extends ViewPart {
      */
     @Override
     public void createPartControl( final Composite parent ) {
-        final TreeSpinner treeSpinner = new TreeSpinner( parent );
+        final FocusTree focusTree = new FocusTree( parent );
+        final Model model = new Model() {
+
+            @Override
+            public Color cellBackgroundColor( final Object item ) {
+                if ( ( ( File ) item ).isDirectory() ) return FOLDER_COLOR;
+                return Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
+            }
+
+            @Override
+            public int childCount( final Object item ) {
+                return children( item ).length;
+            }
+
+            @Override
+            public Object[] children( final Object item ) {
+                final Object[] children = ( ( File ) item ).listFiles();
+                return children == null ? Util.EMPTY_ARRAY : children;
+            }
+
+            @Override
+            public boolean hasChildren( final Object item ) {
+                return childCount( item ) > 0;
+            }
+
+            @Override
+            public String name( final Object item ) {
+                final File file = ( File ) item;
+                final String name = file.getName();
+                return name.isEmpty() ? "/" : name;
+            }
+
+            @Override
+            public String type( final Object item ) {
+                final File file = ( File ) item;
+                return file.isDirectory() ? "Folder" : "File";
+            }
+        };
+        final File root = new File( System.getProperty( "user.home" ) );
         try {
-            treeSpinner.setRootAndContentProvider( new File( System.getProperty( "user.home" ) ), new TreeSpinnerContentProvider() {
-
-                @Override
-                public Color backgroundColor( final Object item ) {
-                    if ( ( ( File ) item ).isDirectory() ) return FOLDER_COLOR;
-                    return Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
-                }
-
-                @Override
-                public int childCount( final Object item ) {
-                    return children( item ).length;
-                }
-
-                @Override
-                public Object[] children( final Object item ) {
-                    final Object[] children = ( ( File ) item ).listFiles();
-                    return children == null ? Util.EMPTY_ARRAY : children;
-                }
-
-                @Override
-                public boolean hasChildren( final Object item ) {
-                    return childCount( item ) > 0;
-                }
-
-                @Override
-                public String name( final Object item ) {
-                    final File file = ( File ) item;
-                    final String name = file.getName();
-                    return name.isEmpty() ? "/" : name;
-                }
-
-                @Override
-                public int preferredWidth( final Object item ) {
-                    return 80;
-                }
-
-                @Override
-                public String type( final Object item ) {
-                    final File file = ( File ) item;
-                    return file.isDirectory() ? "Folder" : "File";
-                }
-            } );
+            setPartName( model.name( root ) );
         } catch ( final PolyglotterException e ) {
-            Util.handleModelError( parent.getShell(), e );
+            setPartName( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
         }
+        setTitleImage( model.icon( root ) );
+        focusTree.setInitialIndexIsOne( true );
+        focusTree.setInitialCellWidth( 80 );
+        focusTree.setModel( model );
+        focusTree.setRoot( root );
     }
 
     /**
