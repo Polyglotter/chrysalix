@@ -2,29 +2,11 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            id="org.polyglotter.eclipse.objectContribution1"
-            objectClass="org.eclipse.core.resources.IFile">
-         <action
-               class="org.polyglotter.eclipse.Action"
-               id="org.polyglotter.eclipse.action1"
-               label="%action.label">
-         </action>
-      </objectContribution>
-   </extension>
-   <extension
          point="org.eclipse.ui.views">
          <category 
            id="org.polyglotter.eclipse"
            name="%project.name">
         </category>
-      <view
-            class="org.polyglotter.eclipse.View"
-            id="org.polyglotter.eclipse.view1"
-            name="%view.name"
-            restorable="true">
-      </view>
       <view
             category="org.polyglotter.eclipse"
             class="org.polyglotter.eclipse.view.TransformView"

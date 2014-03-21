@@ -47,16 +47,16 @@ import org.polyglotter.common.i18n.ClasspathLocalizationRepository;
  * within i18n message placeholders, and dynamically reading properties from i18n property files.
  */
 public final class I18n {
-    
-    private static final Logger LOGGER = Logger.getLogger( I18n.class );
-    
+
     /**
      * The first level of this map indicates whether an i18n class has been localized to a particular locale. The second level
      * contains any problems encountered during localization.
      */
     static final ConcurrentMap< Locale, Map< Class< ? >, Set< String >>> LOCALE_TO_CLASS_TO_PROBLEMS_MAP =
         new ConcurrentHashMap< Locale, Map< Class< ? >, Set< String >>>();
-    
+
+    private static final Logger LOGGER = Logger.getLogger( I18n.class );
+
     /**
      * Note, calling this method will <em>not</em> trigger localization of the supplied internationalization class.
      * 
@@ -78,7 +78,7 @@ public final class I18n {
         }
         return locales;
     }
-    
+
     /**
      * Note, calling this method will <em>not</em> trigger localization of the supplied internationalization class.
      * 
@@ -90,7 +90,7 @@ public final class I18n {
     public static Set< String > localizationProblems( final Class< ? > i18nClass ) {
         return localizationProblems( i18nClass, Locale.getDefault() );
     }
-    
+
     /**
      * Note, calling this method will <em>not</em> trigger localization of the supplied internationalization class.
      * 
@@ -115,7 +115,7 @@ public final class I18n {
         }
         return problems;
     }
-    
+
     /**
      * Synchronized on the supplied internalization class.
      * 
@@ -156,8 +156,8 @@ public final class I18n {
             final String localizationBaseName = i18nClass.getName();
             URL bundleUrl;
             if ( Locale.US.equals( locale ) )
-                // If US English locale, then use values already defined in constants
-                bundleUrl = null;
+            // If US English locale, then use values already defined in constants
+            bundleUrl = null;
             else {
                 bundleUrl =
                     ClasspathLocalizationRepository.getLocalizationBundle( i18nClass.getClassLoader(), localizationBaseName, locale );
@@ -184,7 +184,7 @@ public final class I18n {
                 }
                 // Initialize i18n map
                 final Properties props = prepareBundleLoading( i18nClass, locale, bundleUrl, problems );
-                
+
                 try {
                     final InputStream propStream = bundleUrl.openStream();
                     try {
@@ -208,15 +208,15 @@ public final class I18n {
         }
         return locale;
     }
-    
+
     private static Properties prepareBundleLoading( final Class< ? > i18nClass,
                                                     final Locale locale,
                                                     final URL bundleUrl,
                                                     final Set< String > problems ) {
         return new Properties() {
-            
+
             private static final long serialVersionUID = 3920620306881072843L;
-            
+
             @Override
             public synchronized Object put( final Object key,
                                             final Object value ) {
@@ -227,17 +227,17 @@ public final class I18n {
                     // Would have already occurred in initialize method, but allowing for the impossible...
                     problems.add( notPossible.getMessage() );
                 }
-                
+
                 return null;
             }
         };
     }
-    
+
     private final String id;
     private final Class< ? > i18nClass;
     final ConcurrentHashMap< Locale, String > localeToTextMap = new ConcurrentHashMap<>();
     final ConcurrentHashMap< Locale, String > localeToProblemMap = new ConcurrentHashMap<>();
-    
+
     /**
      * @param defaultMessagePattern
      *        the message pattern to be used for
@@ -267,7 +267,7 @@ public final class I18n {
         this.i18nClass = i18nClass;
         localeToTextMap.put( Locale.US, defaultMessagePattern );
     }
-    
+
     /**
      * @return <code>true</code> if a problem was encountered while localizing this internationalization object to the default
      *         locale.
@@ -275,7 +275,7 @@ public final class I18n {
     public boolean hasProblem() {
         return ( problem() != null );
     }
-    
+
     /**
      * @param locale
      *        The locale for which to check whether a problem was encountered.
@@ -285,7 +285,7 @@ public final class I18n {
     public boolean hasProblem( final Locale locale ) {
         return ( problem( locale ) != null );
     }
-    
+
     /**
      * @return The problem encountered while localizing this internationalization object to the default locale, or <code>null</code>
      *         if none was encountered.
@@ -293,7 +293,7 @@ public final class I18n {
     public String problem() {
         return problem( null );
     }
-    
+
     /**
      * @param locale
      *        The locale for which to return the problem.
@@ -321,7 +321,7 @@ public final class I18n {
         localeToProblemMap.put( locale, problem );
         return problem;
     }
-    
+
     private String rawText( Locale locale ) throws PolyglotterException {
         assert locale != null;
         locale = localize( i18nClass, locale );
@@ -334,7 +334,7 @@ public final class I18n {
         // text and problem text.
         throw new PolyglotterException( CommonI18n.text, problem( locale ) );
     }
-    
+
     /**
      * Get the localized text for the supplied locale, replacing the parameters in the text with those supplied.
      * 
@@ -357,7 +357,7 @@ public final class I18n {
             return '<' + err.getMessage() + '>';
         }
     }
-    
+
     /**
      * Get the localized text for the {@link Locale#getDefault() current (default) locale}, replacing the parameters in the text
      * with those supplied.
@@ -369,7 +369,7 @@ public final class I18n {
     public String text( final Object... arguments ) {
         return text( null, arguments );
     }
-    
+
     /**
      * {@inheritDoc}
      * 

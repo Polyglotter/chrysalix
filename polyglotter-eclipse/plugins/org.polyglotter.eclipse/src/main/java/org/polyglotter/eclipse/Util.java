@@ -23,14 +23,13 @@
  */
 package org.polyglotter.eclipse;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.I18n;
-import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.common.Logger;
 
 /**
  * Utilities used in the Polyglotter Eclipse project.
@@ -48,64 +47,98 @@ public final class Util {
     public static final String EMPTY_STRING = "";
 
     /**
-     * @param error
-     *        the error (can be <code>null</code> if there is no error)
-     * @return a {@link IStatus status} with an {@link IStatus#ERROR error} severity (never <code>null</code>)
+     * @param path
+     *        path to image within <code>icons</code> folder
+     * @return the cached image with the supplied path
      */
-    public static IStatus createErrorStatus( final Throwable error ) {
-        return createErrorStatus( error, null );
+    public static Image image( String path ) {
+        path = "icons/" + path;
+        return Platform.isRunning() ? Activator.image( path ) : new Image( Display.getCurrent(), path );
     }
 
     /**
-     * @param error
-     *        the error (can be <code>null</code> if there is no error)
-     * @param i18nMessage
-     *        the localized message (can be <code>null</code> if there is not a message)
-     * @param args
-     *        the error message arguments (can be <code>null</code> or empty)
-     * @return a {@link IStatus status} with an {@link IStatus#ERROR error} severity (never <code>null</code>)
+     * @param e
+     *        a throwable
+     * @param message
+     *        a contextual message to be shown before the supplied throwable's message
+     * @param messageParameters
+     *        any parameters required by the supplied message
      */
-    public static IStatus createErrorStatus( final Throwable error,
-                                             final I18n i18nMessage,
-                                             final Object... args ) {
-        final String msg = ( ( i18nMessage == null ) ? null : i18nMessage.text() );
-        return new Status( IStatus.ERROR, Activator.ID, msg, error );
+    public static void logAndShowError( final Throwable e,
+                                        final I18n message,
+                                        final Object... messageParameters ) {
+        logError( e, message, messageParameters );
+        showError( e, message, messageParameters );
     }
 
     /**
-     * @param shell
-     *        the parent of the dialog that will be displayed (can be <code>null</code>)
-     * @param error
-     *        the error that is being logged and shown to the user (cannot be <code>null</code>)
+     * @param message
+     *        a contextual message to be shown
+     * @param messageParameters
+     *        any parameters required by the supplied message
      */
-    public static void handleModelError( final Shell shell,
-                                         final PolyglotterException error ) {
-        CheckArg.notNull( error, "error" );
-        final IStatus status = createErrorStatus( error );
+    public static void logError( final I18n message,
+                                 final Object... messageParameters ) {
+        logError( null, message, messageParameters );
+    }
 
-        if ( Platform.isRunning() ) {
-            Activator.logger().log( status );
+    /**
+     * @param e
+     *        a throwable
+     * @param message
+     *        a contextual message to be shown before the supplied throwable's message
+     * @param messageParameters
+     *        any parameters required by the supplied message
+     */
+    public static void logError( final Throwable e,
+                                 final I18n message,
+                                 final Object... messageParameters ) {
+        final StackTraceElement element = Thread.currentThread().getStackTrace()[ 3 ];
+        Logger.getLogger( element.getClassName() + '.' + element.getMethodName() ).error( e, message, messageParameters );
+    }
 
-            shell.getDisplay().asyncExec( new Runnable() {
+    /**
+     * @param message
+     *        a contextual message to be shown
+     * @param messageParameters
+     *        any parameters required by the supplied message
+     */
+    public static void showError( final I18n message,
+                                  final Object... messageParameters ) {
+        showError( message.text( messageParameters ) );
+    }
 
-                /**
-                 * {@inheritDoc}
-                 * 
-                 * @see java.lang.Runnable#run()
-                 */
-                @Override
-                public void run() {
-                    MessageDialog.openError( shell, PolyglotterEclipseI18n.errorDialogTitle.text(), status.getMessage() );
-                }
-            } );
-        }
+    private static void showError( final String message ) {
+        final Shell shell = Display.getCurrent().getActiveShell();
+        if ( Display.getCurrent().getThread() == Thread.currentThread() ) {
+            MessageDialog.openError( shell, EclipseI18n.errorDialogTitle.text(), message );
+        } else shell.getDisplay().asyncExec( new Runnable() {
+
+            @Override
+            public void run() {
+                MessageDialog.openError( shell, EclipseI18n.errorDialogTitle.text(), message );
+            }
+        } );
+    }
+
+    /**
+     * @param e
+     *        a throwable
+     * @param message
+     *        a contextual message to be shown before the supplied throwable's message
+     * @param messageParameters
+     *        any parameters required by the supplied message
+     */
+    public static void showError( final Throwable e,
+                                  final I18n message,
+                                  final Object... messageParameters ) {
+        String eMessage = e.getMessage();
+        if ( eMessage == null || eMessage.trim().length() == 0 ) eMessage = e.getClass().getSimpleName();
+        showError( message.text( messageParameters ) + "\n\n" + eMessage );
     }
 
     /**
      * Don't allow construction outside this class.
      */
-    private Util() {
-        // nothing to do
-    }
-
+    private Util() {}
 }

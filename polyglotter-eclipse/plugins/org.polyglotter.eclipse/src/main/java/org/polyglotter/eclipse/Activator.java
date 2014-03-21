@@ -23,7 +23,6 @@
  */
 package org.polyglotter.eclipse;
 
-import org.eclipse.core.runtime.ILog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -38,36 +37,16 @@ public class Activator extends AbstractUIPlugin {
      */
     public static String ID = "org.polyglotter.eclipse";
 
-    // The singleton instance of this plug-in
-    private static Activator plugin;
+    static Activator plugin;
 
-    /**
-     * @return the logger of the singleton instance (never <code>null</code> when Eclipse platform is running)
-     */
-    public static ILog logger() {
-        return plugin.getLog();
-    }
-
-    /**
-     * @return the singleton instance of this plug-in.
-     */
-    public static Activator plugin() {
-        return plugin;
+    static Image image( final String path ) {
+        final Image img = plugin.getImageRegistry().get( path );
+        if ( img != null ) return img;
+        plugin.getImageRegistry().put( path, imageDescriptorFromPlugin( ID, path ) );
+        return plugin.getImageRegistry().get( path );
     }
 
     // private Polyglotter polyglotter;
-
-    /**
-     * @param path
-     *        path to image
-     * @return the cached image with the supplied path
-     */
-    public Image image( final String path ) {
-        final Image img = getImageRegistry().get( path );
-        if ( img != null ) return img;
-        getImageRegistry().put( path, imageDescriptorFromPlugin( ID, "icons/" + path ) );
-        return getImageRegistry().get( path );
-    }
 
     /**
      * {@inheritDoc}

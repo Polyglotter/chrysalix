@@ -23,43 +23,40 @@
  */
 package org.polyglotter.eclipse.view;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelerTest;
 
 /**
  * A test class for {@link ModelContentProvider}.
  */
-@SuppressWarnings( "javadoc" )
+// @SuppressWarnings( "javadoc" )
 public final class ModelContentProviderTest extends ModelerTest {
 
-    private Model model;
-    private ModelContentProvider provider;
+    // private Model model;
+    // private ModelContentProvider provider;
 
-    @Before
-    public void beforeEach() throws Exception {
-//        super.before();
-//        final ModelTypeManager modelTypeManager = polyglotter().modelTypeManager();
-//        modelTypeManager.install( XML_MODEL_TYPE_CATEGORY );
-//        final ModelType modelType = modelTypeManager.modelType( XML_MODEL_TYPE_NAME );
-//        this.model = polyglotter().generateModel( stream( XML_ARTIFACT ), XML_MODEL_NAME, modelType );
-//
-//        this.provider = new ModelContentProvider();
-    }
-//
-//    @Test
-//    public void shouldProvideChildrenOfNode() {
-//        TestUtil.manager( modeler() ).run( new Task< Void >() {
-//
-//            @Override
-//            public Void run( final Session session ) throws Exception {
-//                final Node node = session.getNode( path );
-//                assertThat( node, notNullValue() );
-//                assertThat( node.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString(), is( url.toString() ) );
-//                return null;
-//            }
-//        } );
-//    }
+    // @Before
+    // public void beforeEach() throws Exception {
+    // super.before();
+    // final ModelTypeManager modelTypeManager = polyglotter().modelTypeManager();
+    // modelTypeManager.install( XML_MODEL_TYPE_CATEGORY );
+    // final ModelType modelType = modelTypeManager.modelType( XML_MODEL_TYPE_NAME );
+    // this.model = polyglotter().generateModel( stream( XML_ARTIFACT ), XML_MODEL_NAME, modelType );
+    //
+    // this.provider = new ModelContentProvider();
+    // }
+    //
+    // @Test
+    // public void shouldProvideChildrenOfNode() {
+    // TestUtil.manager( modeler() ).run( new Task< Void >() {
+    //
+    // @Override
+    // public Void run( final Session session ) throws Exception {
+    // final Node node = session.getNode( path );
+    // assertThat( node, notNullValue() );
+    // assertThat( node.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString(), is( url.toString() ) );
+    // return null;
+    // }
+    // } );
+    // }
 
 }
