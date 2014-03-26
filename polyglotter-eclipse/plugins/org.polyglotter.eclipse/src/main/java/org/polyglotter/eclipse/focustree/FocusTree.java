@@ -30,11 +30,14 @@ import java.util.List;
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.ImageFigure;
 import org.eclipse.draw2d.LayoutManager;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.RowLayoutFactory;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.dnd.Clipboard;
@@ -42,6 +45,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DragDetectEvent;
 import org.eclipse.swt.events.DragDetectListener;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -59,7 +64,6 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -84,95 +88,44 @@ import org.polyglotter.common.I18n;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.eclipse.EclipseI18n;
 import org.polyglotter.eclipse.Util;
-import org.polyglotter.eclipse.focustree.FocusTreeCanvas.AddPanel;
 import org.polyglotter.eclipse.focustree.FocusTreeCanvas.CellColumn;
 import org.polyglotter.eclipse.focustree.FocusTreeCanvas.DeleteButton;
+import org.polyglotter.eclipse.focustree.FocusTreeCanvas.IndexField;
+import org.polyglotter.eclipse.focustree.FocusTreeCanvas.NameField;
+import org.polyglotter.eclipse.focustree.FocusTreeCanvas.ValueField;
 
-//TODO icon view
-// TODO move to modeshape modeler eclipse
-//TODO cell editors
-//TODO drag focus line under cell column
 //TODO edit index via double-click
 //TODO move position of cells
-//TODO resize bug
 //TODO zoom, search
+//TODO separate view from controller
+//TODO color/font registry
+//TODO move to ModeShape modeler eclipse
 //TODO context menu contributions; indicator context menu contributions
-// TODO keyboard arrows
-// TODO tab traversal
-// TODO rotate
-// TODO user override double-click cell
-// TODO listen for model updates
-//TODO swt vertical scroll bar
-// TODO tutorial
+//TODO keyboard arrows
+//TODO tab traversal
+//TODO rotate
+//TODO user override double-click cell
+//TODO listen for model/view model updates
+//TODO tutorial
 //TODO filter mapped properties
 //TODO filter referencing operations in sync'd tree
-// TODO color registry?
-// TODO separate view from controller
 //TODO renderers for cells, add and delete buttons (background column, cell columns, headers?) to save memory
+//TODO ability to sort columns
 /**
  * 
  */
 public class FocusTree extends Composite {
-
-    /**
-     * 
-     */
-    public static final Color DEFAULT_FOCUS_CELL_BORDER_COLOR = new Color( Display.getCurrent(), 0, 128, 255 );
-
-    /**
-     * 
-     */
-    public static final Color DEFAULT_FOCUS_COLUMN_COLOR = new Color( Display.getCurrent(), 194, 223, 255 );
-
-    /**
-     * 
-     */
-    public static final Color DEFAULT_FOCUS_LINE_COLOR = DEFAULT_FOCUS_CELL_BORDER_COLOR;
-
-    /**
-     * 
-     */
-    public static final int DEFAULT_FOCUS_LINE_HEIGHT = 5;
-
-    /**
-     *
-     */
-    public static final Color DEFAULT_TREE_BACKGROUND_COLOR = Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
-
-    /**
-     * 
-     */
-    public static final int DEFAULT_FOCUS_LINE_OFFSET = 75;
 
     static final Clipboard CLIPBOARD = new Clipboard( Display.getCurrent() );
 
     static final int HEADER_MARGIN = 2;
 
     private static final String HIDE_BUTTON_PROPERTY = "org.polyglotter.hideButton";
-
-    /**
-     * @param arguments
-     *        ignored command-line arguments
-     */
-    public static void main( final String[] arguments ) {
-        final Image image = new Image( Display.getDefault(), 16, 16 );
-        final GC gc = new GC( image );
-        gc.setAntialias( SWT.ON );
-        gc.setBackground( image.getDevice().getSystemColor( SWT.COLOR_BLACK ) );
-        gc.fillRectangle( 0, 0, 16, 16 );
-        gc.setBackground( image.getDevice().getSystemColor( SWT.COLOR_GREEN ) );
-        gc.fillOval( 0, 0, 16, 16 );
-        gc.setForeground( image.getDevice().getSystemColor( SWT.COLOR_BLACK ) );
-        gc.drawString( "T", ( 17 - gc.getCharWidth( 'T' ) ) / 2, 0, true );
-        gc.dispose();
-        final ImageLoader loader = new ImageLoader();
-        final ImageData data = image.getImageData();
-        data.transparentPixel = 0;
-        loader.data = new ImageData[] { data };
-        loader.save( "icons/transformation.png", SWT.IMAGE_PNG );
-    }
+    private static final String COLUMN_PROPERTY = "org.polyglotter.column";
 
     Object root;
+    Model model;
+    ViewModel viewModel = new ViewModel();
     final Composite pathButtonBar;
     final Composite headerBar;
     final FocusTreeCanvas focusTreeCanvas;
@@ -180,6 +133,7 @@ public class FocusTree extends Composite {
     final ScrolledComposite scroller;
     final List< Column > columns = new ArrayList<>();
     final Label leftPathBarButton, rightPathBarButton;
+    final MenuItem iconViewMenuItem;
     final PaintListener pathButtonPaintListener = new PaintListener() {
 
         @Override
@@ -201,41 +155,81 @@ public class FocusTree extends Composite {
         }
     };
 
-    Model model;
-    Column focusColumn;
-
-    /**
-     * Creates a non-closable focus tree
-     * 
-     * @param parent
-     *        parent composite
-     */
-    public FocusTree( final Composite parent ) {
-        this( parent, false );
-    }
-
     /**
      * @param parent
      *        parent composite
      * @param closable
      *        <code>true</code> if this tree can be closed by the user
+     * @param root
+     *        the root of this tree
+     * @param model
+     *        the model for this tree
      */
     @SuppressWarnings( "unused" )
     public FocusTree( final Composite parent,
-                      final boolean closable ) {
+                      final boolean closable,
+                      final Object root,
+                      final Model model ) {
         super( parent, SWT.NONE );
+        this.root = root;
+        this.model = model;
         ( ( FillLayout ) parent.getLayout() ).type = SWT.VERTICAL;
         GridLayoutFactory.fillDefaults().spacing( 0, 0 ).applyTo( this );
 
         // Construct pop-up menu
         final Menu popup = new Menu( getShell(), SWT.POP_UP );
         setMenu( popup );
-        final MenuItem homeMenuItem = new MenuItem( popup, SWT.PUSH );
-        homeMenuItem.setText( EclipseI18n.focusTreeFocusMenuItem.text() );
         final MenuItem collapseAllMenuItem = new MenuItem( popup, SWT.PUSH );
         collapseAllMenuItem.setText( EclipseI18n.focusTreeCollapseAllMenuItem.text() );
+        collapseAllMenuItem.addSelectionListener( new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected( final SelectionEvent event ) {
+                focusTreeCanvas.collapseAllSelected();
+            }
+        } );
         final MenuItem duplicateMenuItem = new MenuItem( popup, SWT.PUSH );
         duplicateMenuItem.setText( EclipseI18n.focusTreeDuplicateMenuItem.text() );
+        duplicateMenuItem.addSelectionListener( new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected( final SelectionEvent event ) {
+                duplicate( root );
+            }
+        } );
+        iconViewMenuItem = new MenuItem( popup, SWT.PUSH );
+        iconViewMenuItem.setText( EclipseI18n.focusTreeShowIconViewMenuItem.text() );
+        addMenuDetectListener( new MenuDetectListener() {
+
+            @Override
+            public void menuDetected( final MenuDetectEvent event ) {
+                if ( focusTreeCanvas.iconViewShown() ) {
+                    iconViewMenuItem.setText( EclipseI18n.focusTreeHideIconViewMenuItem.text() );
+                    return;
+                }
+                iconViewMenuItem.setText( EclipseI18n.focusTreeShowIconViewMenuItem.text() );
+                final Control control = getDisplay().getCursorControl();
+                Column column = null;
+                if ( control instanceof FocusTreeCanvas ) for ( final Column col : columns ) {
+                    if ( col.bounds.contains( event.x, event.y ) ) {
+                        column = col;
+                        break;
+                    }
+                }
+                else column = ( Column ) control.getData( COLUMN_PROPERTY );
+                iconViewMenuItem.setEnabled( column != null );
+                iconViewMenuItem.setData( COLUMN_PROPERTY, column );
+            }
+        } );
+        iconViewMenuItem.addSelectionListener( new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected( final SelectionEvent event ) {
+                final Column column = ( Column ) iconViewMenuItem.getData( COLUMN_PROPERTY );
+                focusColumn( column );
+                toggleIconView( column );
+            }
+        } );
         new MenuItem( popup, SWT.SEPARATOR );
         final MenuItem copyPathMenuItem = new MenuItem( popup, SWT.PUSH );
         copyPathMenuItem.setText( EclipseI18n.focusTreeCopyPathMenuItem.text() );
@@ -287,48 +281,25 @@ public class FocusTree extends Composite {
 
             @Override
             public void mouseUp( final MouseEvent event ) {
-                final Control[] pathButtons = pathButtonBar.getChildren();
-                // Show last hidden path button on left
-                for ( int ndx = 0; ndx < pathButtons.length; ++ndx ) {
-                    Control pathButton = pathButtons[ ndx ];
-                    if ( pathButton.isVisible() ) {
-                        // Show previous path button
-                        pathButton = pathButtons[ --ndx ];
-                        pathButton.setVisible( true );
-                        ( ( RowData ) pathButton.getLayoutData() ).exclude = false;
-                        break;
-                    }
-                }
-                // Hide last shown path button on right until all buttons fit in button bar
-                final int width = pathButtonBar.getBounds().width;
-                for ( int ndx = pathButtons.length; --ndx >= 0 && pathButtonBar.computeSize( SWT.DEFAULT, SWT.DEFAULT ).x > width; ) {
-                    final Control pathButton = pathButtons[ ndx ];
-                    if ( pathButton.isVisible() ) {
-                        pathButton.setVisible( false );
-                        ( ( RowData ) pathButton.getLayoutData() ).exclude = true;
-                    }
-                }
-                pathButtonBar.layout();
-                leftPathBarButton.setVisible( !pathButtons[ 0 ].isVisible() );
-                rightPathBarButton.setVisible( true );
-                return;
+                if ( leftMouseButtonClicked( event ) ) scrollPathBarLeft();
             }
         } );
         rightPathBarButton.addMouseListener( new MouseAdapter() {
 
             @Override
             public void mouseUp( final MouseEvent event ) {
+                if ( leftMouseButtonClicked( event ) ) scrollPathBarRight();
+            }
+        } );
+        pathButtonBar.addListener( SWT.Resize, new Listener() {
+
+            @Override
+            public void handleEvent( final Event event ) {
+                // Show all path buttons
                 final Control[] pathButtons = pathButtonBar.getChildren();
-                // Show first hidden path button on right
-                for ( int ndx = pathButtons.length; --ndx >= 0; ) {
-                    Control pathButton = pathButtons[ ndx ];
-                    if ( pathButton.isVisible() ) {
-                        // Show next path button
-                        pathButton = pathButtons[ ++ndx ];
-                        pathButton.setVisible( true );
-                        ( ( RowData ) pathButton.getLayoutData() ).exclude = false;
-                        break;
-                    }
+                for ( final Control pathButton : pathButtons ) {
+                    pathButton.setVisible( true );
+                    ( ( RowData ) pathButton.getLayoutData() ).exclude = false;
                 }
                 // Hide first shown path button on left until all buttons fit in button bar
                 hideExcessiveLeftMostPathButtons();
@@ -351,20 +322,6 @@ public class FocusTree extends Composite {
             closeMenuItem.setText( EclipseI18n.focusTreeCloseTreeMenuItem.text() );
             closeMenuItem.addSelectionListener( closeSelectionListener );
         }
-        pathButtonBar.addListener( SWT.Resize, new Listener() {
-
-            @Override
-            public void handleEvent( final Event event ) {
-                // Show all path buttons
-                final Control[] pathButtons = pathButtonBar.getChildren();
-                for ( final Control pathButton : pathButtons ) {
-                    pathButton.setVisible( true );
-                    ( ( RowData ) pathButton.getLayoutData() ).exclude = false;
-                }
-                // Hide first shown path button on left until all buttons fit in button bar
-                hideExcessiveLeftMostPathButtons();
-            }
-        } );
 
         // Construct horizontally-scrolling diagram area
         scroller = new ScrolledComposite( this, SWT.H_SCROLL | SWT.V_SCROLL );
@@ -377,7 +334,7 @@ public class FocusTree extends Composite {
         headeredCanvas = new Composite( scroller, SWT.NONE );
         GridLayoutFactory.fillDefaults().spacing( 0, 0 ).applyTo( headeredCanvas );
         scroller.setContent( headeredCanvas );
-        scroller.setBackground( Display.getCurrent().getSystemColor( SWT.COLOR_WHITE ) );
+        scroller.setBackground( getDisplay().getSystemColor( SWT.COLOR_WHITE ) );
 
         // Construct header bar
         headerBar = new Composite( headeredCanvas, SWT.NONE );
@@ -404,29 +361,31 @@ public class FocusTree extends Composite {
                 else focusTreeCanvas.toolBar.setVisible( false );
             }
         } );
-
-        // Wire related pop-up actions
-        homeMenuItem.addSelectionListener( new SelectionAdapter() {
+        addListener( SWT.Resize, new Listener() {
 
             @Override
-            public void widgetSelected( final SelectionEvent event ) {
-                focusTreeCanvas.homeSelected();
+            public void handleEvent( final Event event ) {
+                if ( focusTreeCanvas.iconViewShown() ) focusTreeCanvas.updateIconViewBounds();
+                else focusTreeCanvas.updateBounds();
             }
         } );
-        collapseAllMenuItem.addSelectionListener( new SelectionAdapter() {
+        initialize();
+    }
 
-            @Override
-            public void widgetSelected( final SelectionEvent event ) {
-                focusTreeCanvas.collapseAllSelected();
-            }
-        } );
-        duplicateMenuItem.addSelectionListener( new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected( final SelectionEvent event ) {
-                duplicate( root );
-            }
-        } );
+    /**
+     * Creates a non-closable focus tree
+     * 
+     * @param parent
+     *        parent composite
+     * @param root
+     *        the root of this tree
+     * @param model
+     *        the model for this tree
+     */
+    public FocusTree( final Composite parent,
+                      final Object root,
+                      final Model model ) {
+        this( parent, false, root, model );
     }
 
     void addColumn( final Object item ) {
@@ -439,29 +398,20 @@ public class FocusTree extends Composite {
         columns.add( column );
         column.item = item;
 
-        // Create listener for path bar button and header
-        final MouseAdapter headerControlMouseListener = new MouseAdapter() {
-
-            @Override
-            public void mouseUp( final MouseEvent event ) {
-                focusColumn( column );
-            }
-        };
-
-        final Color pathButtonBackgroundColor = model.pathButtonBackgroundColor( column.item );
-        final Color pathButtonForegroundColor = model.pathButtonForegroundColor( column.item );
+        final Color pathButtonBackgroundColor = viewModel.pathButtonBackgroundColor( column.item );
+        final Color pathButtonForegroundColor = viewModel.pathButtonForegroundColor( column.item );
 
         // Add button for column to path button bar
-        createPathBarButton( column, pathButtonForegroundColor, pathButtonBackgroundColor, headerControlMouseListener );
+        createPathBarButton( column, pathButtonBackgroundColor, pathButtonForegroundColor );
 
         // Construct header
-        createHeader( column, previousColumn, pathButtonForegroundColor, pathButtonBackgroundColor, headerControlMouseListener );
+        createHeader( column, previousColumn, pathButtonBackgroundColor, pathButtonForegroundColor );
 
         // Add column to inner canvas
         focusTreeCanvas.addColumn( column );
 
-        // Update width of header to match child column width
-        GridDataFactory.swtDefaults().hint( column.cellColumn.getSize().width, SWT.DEFAULT ).applyTo( column.header );
+        // Update width of header to match column width
+        GridDataFactory.swtDefaults().hint( column.bounds.width, SWT.DEFAULT ).applyTo( column.header );
         headerBar.layout();
     }
 
@@ -471,13 +421,12 @@ public class FocusTree extends Composite {
 
     private void createHeader( final Column column,
                                final Column previousColumn,
-                               final Color pathButtonForegroundColor,
                                final Color pathButtonBackgroundColor,
-                               final MouseListener headerControlMouseListener ) {
+                               final Color pathButtonForegroundColor ) {
         ( ( GridLayout ) headerBar.getLayout() ).numColumns++;
         column.header = new Composite( headerBar, SWT.NONE );
         GridLayoutFactory.fillDefaults().numColumns( 3 ).margins( HEADER_MARGIN, 1 ).applyTo( column.header );
-        column.header.setBackground( Display.getCurrent().getSystemColor( SWT.COLOR_GRAY ) );
+        column.header.setBackground( getDisplay().getSystemColor( SWT.COLOR_GRAY ) );
         column.header.addPaintListener( headerPaintListener );
         final ColumnHeaderMouseListener columnHeaderMouseListener = new ColumnHeaderMouseListener( column, previousColumn );
         column.header.addMouseListener( columnHeaderMouseListener );
@@ -489,28 +438,26 @@ public class FocusTree extends Composite {
         GridDataFactory.swtDefaults().applyTo( childCount );
         childCount.setText( String.valueOf( model.childCount( column.item ) ) );
         childCount.setToolTipText( EclipseI18n.focusTreeChildCountToolTip.text() );
-        childCount.addMouseListener( headerControlMouseListener );
         childCount.setVisible( false );
-        final Label ItemName = new Label( column.header, SWT.CENTER );
-        GridDataFactory.swtDefaults().align( SWT.FILL, SWT.FILL ).grab( true, true ).applyTo( ItemName );
+        final Label itemName = new Label( column.header, SWT.CENTER );
+        GridDataFactory.swtDefaults().align( SWT.FILL, SWT.FILL ).grab( true, true ).applyTo( itemName );
         String name;
         try {
-            name = model.name( column.item );
+            name = model.name( column.item ).toString();
         } catch ( final PolyglotterException e ) {
             Util.logError( e, EclipseI18n.focusTreeUnableToGetName, column.item );
             name = EclipseI18n.focusTreeErrorText.text( e.getMessage() );
         }
-        ItemName.setText( name );
+        itemName.setText( name );
         try {
-            ItemName.setToolTipText( EclipseI18n.focusTreeParentNameToolTip.text( model.qualifiedName( column.item ) ) );
+            itemName.setToolTipText( EclipseI18n.focusTreeParentNameToolTip.text( model.qualifiedName( column.item ) ) );
         } catch ( final PolyglotterException e ) {
             Util.logError( e, EclipseI18n.focusTreeUnableToGetQualifiedName, column.item );
-            ItemName.setToolTipText( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+            itemName.setToolTipText( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
         }
-        final FontData fontData = ItemName.getFont().getFontData()[ 0 ];
+        final FontData fontData = itemName.getFont().getFontData()[ 0 ];
         fontData.setStyle( SWT.BOLD );
-        ItemName.setFont( new Font( Display.getCurrent(), fontData ) );
-        ItemName.addMouseListener( headerControlMouseListener );
+        itemName.setFont( new Font( getDisplay(), fontData ) );
         final Composite hideButtonPanel = new Composite( column.header, SWT.NONE );
         GridDataFactory.swtDefaults().applyTo( hideButtonPanel );
         GridLayoutFactory.fillDefaults().applyTo( hideButtonPanel );
@@ -528,6 +475,12 @@ public class FocusTree extends Composite {
         showButton.setToolTipText( EclipseI18n.focusTreeShowColumnToolTip.text( name ) );
         showButton.setVisible( false );
 
+        // Save column in header components
+        column.header.setData( COLUMN_PROPERTY, column );
+        itemName.setData( COLUMN_PROPERTY, column );
+        childCount.setData( COLUMN_PROPERTY, column );
+        hideButtonPanel.setData( COLUMN_PROPERTY, column );
+        hideButton.setData( COLUMN_PROPERTY, column );
         // Wire extra header info to show on mouse over
         final MouseTrackListener headerMouseTrackListener = new MouseTrackAdapter() {
 
@@ -546,7 +499,7 @@ public class FocusTree extends Composite {
             }
         };
         column.header.addMouseTrackListener( headerMouseTrackListener );
-        ItemName.addMouseTrackListener( headerMouseTrackListener );
+        itemName.addMouseTrackListener( headerMouseTrackListener );
         childCount.addMouseTrackListener( headerMouseTrackListener );
         hideButtonPanel.addMouseTrackListener( headerMouseTrackListener );
         hideButton.addMouseTrackListener( headerMouseTrackListener );
@@ -556,71 +509,34 @@ public class FocusTree extends Composite {
 
             @Override
             public void mouseDoubleClick( final MouseEvent event ) {
-                if ( focusTreeCanvas.iconViewShown() ) {
-                    focusTreeCanvas.hideIconView( column );
-                    hideIconView( column );
-                } else {
-                    focusTreeCanvas.showIconView( column );
-                    showIconView( column );
-                }
+                if ( leftMouseButtonClicked( event ) ) toggleIconView( column );
+            }
+
+            @Override
+            public void mouseUp( final MouseEvent event ) {
+                if ( leftMouseButtonClicked( event ) ) focusColumn( column );
             }
         };
         column.header.addMouseListener( headerMouseListener );
-        ItemName.addMouseListener( headerMouseListener );
+        itemName.addMouseListener( headerMouseListener );
         childCount.addMouseListener( headerMouseListener );
         hideButtonPanel.addMouseListener( headerMouseListener );
 
         // Wire show and hide buttons
-        final Color pathButtonHiddenBackgroundColor = model.pathButtonHiddenBackgroundColor( column.item );
-        final Color pathButtonHiddenForegroundColor = model.pathButtonHiddenForegroundColor( column.item );
         hideButton.addMouseListener( new MouseAdapter() {
 
             @Override
             public void mouseUp( final MouseEvent event ) {
-                // Hide column header
-                ( ( GridData ) childCount.getLayoutData() ).exclude = true;
-                childCount.setVisible( false );
-                ( ( GridData ) ItemName.getLayoutData() ).exclude = true;
-                ItemName.setVisible( false );
-                ( ( GridData ) hideButtonPanel.getLayoutData() ).exclude = true;
-                hideButtonPanel.setVisible( false );
-                ( ( GridData ) showButton.getLayoutData() ).exclude = false;
-                showButton.setVisible( true );
-                // Save current width for later re-show
-                final GridData gridData = ( ( GridData ) column.header.getLayoutData() );
-                column.widthBeforeHiding = gridData.widthHint;
-                // Change layout to use new preferred width
-                ( ( GridLayout ) column.header.getLayout() ).numColumns = 1;
-                final int width = column.header.computeSize( SWT.DEFAULT, SWT.DEFAULT ).x;
-                gridData.widthHint = width;
-                headerBar.layout();
-                // Hide column's canvas figures
-                focusTreeCanvas.hideColumn( column, width );
-                column.pathButton.setBackground( pathButtonHiddenBackgroundColor );
-                column.pathButton.setForeground( pathButtonHiddenForegroundColor );
+                if ( leftMouseButtonClicked( event ) ) hideColumn( column, childCount, itemName, hideButtonPanel, showButton );
             }
         } );
         showButton.addMouseListener( new MouseAdapter() {
 
             @Override
             public void mouseUp( final MouseEvent event ) {
-                // Show column header
-                ( ( GridData ) childCount.getLayoutData() ).exclude = false;
-                childCount.setVisible( true );
-                ( ( GridData ) ItemName.getLayoutData() ).exclude = false;
-                ItemName.setVisible( true );
-                ( ( GridData ) hideButtonPanel.getLayoutData() ).exclude = false;
-                hideButtonPanel.setVisible( true );
-                ( ( GridData ) showButton.getLayoutData() ).exclude = true;
-                showButton.setVisible( false );
-                // Change layout to use new preferred width
-                ( ( GridLayout ) column.header.getLayout() ).numColumns = 3;
-                ( ( GridData ) column.header.getLayoutData() ).widthHint = column.widthBeforeHiding;
-                headerBar.layout();
-                // Show column's canvas figures
-                focusTreeCanvas.showColumn( column, column.widthBeforeHiding );
-                column.pathButton.setBackground( pathButtonBackgroundColor );
-                column.pathButton.setForeground( pathButtonForegroundColor );
+                if ( leftMouseButtonClicked( event ) ) showColumn( column,
+                                                                   childCount, itemName, hideButtonPanel, showButton,
+                                                                   pathButtonBackgroundColor, pathButtonForegroundColor );
             }
         } );
 
@@ -632,14 +548,13 @@ public class FocusTree extends Composite {
     }
 
     private void createPathBarButton( final Column column,
-                                      final Color pathButtonForegroundColor,
                                       final Color pathButtonBackgroundColor,
-                                      final MouseListener listener ) {
+                                      final Color pathButtonForegroundColor ) {
         column.pathButton = new Label( pathButtonBar, SWT.NONE );
         column.pathButton.setBackground( pathButtonBackgroundColor );
         column.pathButton.setForeground( pathButtonForegroundColor );
         try {
-            column.pathButton.setText( model.name( column.item ) );
+            column.pathButton.setText( model.name( column.item ).toString() );
         } catch ( final PolyglotterException e ) {
             Util.logError( e, EclipseI18n.focusTreeUnableToGetName, column.item );
             column.pathButton.setText( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
@@ -648,7 +563,13 @@ public class FocusTree extends Composite {
         column.pathButton.setAlignment( SWT.CENTER );
         column.pathButton.setLayoutData( new RowData( size.x + 10, size.y ) );
         column.pathButton.addPaintListener( pathButtonPaintListener );
-        column.pathButton.addMouseListener( listener );
+        column.pathButton.addMouseListener( new MouseAdapter() {
+
+            @Override
+            public void mouseUp( final MouseEvent event ) {
+                if ( leftMouseButtonClicked( event ) ) scrollToColumn( column );
+            }
+        } );
         try {
             column.pathButton.setToolTipText( EclipseI18n.focusTreePathButtonToolTip.text( model.qualifiedName( column.item ) ) );
         } catch ( final PolyglotterException e ) {
@@ -659,62 +580,44 @@ public class FocusTree extends Composite {
     }
 
     void duplicate( final Object root ) {
-        final FocusTree tree = new FocusTree( getParent(), true );
+        final FocusTree tree = new FocusTree( getParent(), true, root, model );
         tree.setModel( model );
         tree.setRoot( root );
         tree.moveBelow( this );
         getParent().layout();
     }
 
-    /**
-     * @return the border color of focus cells. Default is {link {@link #DEFAULT_FOCUS_CELL_BORDER_COLOR} .
-     */
-    public Color focusCellBorderColor() {
-        return focusTreeCanvas.focusBorder.getColor();
-    }
-
     void focusColumn( final Column column ) {
-        if ( columnShown( column ) && column != focusColumn ) {
-            if ( focusColumn != null ) {
-                focusColumn.backgroundColumn.setOpaque( false );
-                focusColumn.backgroundColumn.setToolTip( null );
-                focusColumn.cellColumn.setToolTip( null );
-            }
-            column.backgroundColumn.setOpaque( true );
-            focusColumn = column;
-            focusColumn.backgroundColumn.setToolTip( focusTreeCanvas.focusColumnToolTip );
-            focusColumn.cellColumn.setToolTip( focusTreeCanvas.focusColumnToolTip );
-        }
-        scrollToFocusColumn();
+        scrollToColumn( column );
         focusTreeCanvas.scrollToFocusLine();
     }
 
-    /**
-     * @return the color of the focus column. Default is {@link #DEFAULT_FOCUS_COLUMN_COLOR}.
-     */
-    public Color focusColumnColor() {
-        return focusTreeCanvas.focusColumnColor;
-    }
-
-    /**
-     * @return the color of the focus line. Default is {@link #DEFAULT_FOCUS_LINE_COLOR}.
-     */
-    public Color focusLineColor() {
-        return focusTreeCanvas.focusLine.getBackgroundColor();
-    }
-
-    /**
-     * @return the height of the focus line. Default is {@value #DEFAULT_FOCUS_LINE_HEIGHT}.
-     */
-    public int focusLineHeight() {
-        return focusTreeCanvas.focusLine.getSize().height;
-    }
-
-    /**
-     * @return the initial offset of the focus line. Default is {@value #DEFAULT_FOCUS_LINE_OFFSET}.
-     */
-    public int focusLineOffset() {
-        return focusTreeCanvas.focusLineOffset;
+    void hideColumn( final Column column,
+                     final Control childCount,
+                     final Control itemName,
+                     final Control hideButtonPanel,
+                     final Control showButton ) {
+        // Hide column header
+        ( ( GridData ) childCount.getLayoutData() ).exclude = true;
+        childCount.setVisible( false );
+        ( ( GridData ) itemName.getLayoutData() ).exclude = true;
+        itemName.setVisible( false );
+        ( ( GridData ) hideButtonPanel.getLayoutData() ).exclude = true;
+        hideButtonPanel.setVisible( false );
+        ( ( GridData ) showButton.getLayoutData() ).exclude = false;
+        showButton.setVisible( true );
+        // Save current width for later re-show
+        final GridData gridData = ( ( GridData ) column.header.getLayoutData() );
+        column.widthBeforeHiding = gridData.widthHint;
+        // Change layout to use new preferred width
+        ( ( GridLayout ) column.header.getLayout() ).numColumns = 1;
+        final int width = column.header.computeSize( SWT.DEFAULT, SWT.DEFAULT ).x;
+        gridData.widthHint = width;
+        headerBar.layout();
+        // Hide column's canvas figures
+        focusTreeCanvas.hideColumn( column, width );
+        column.pathButton.setBackground( viewModel.pathButtonHiddenBackgroundColor( column.item ) );
+        column.pathButton.setForeground( viewModel.pathButtonHiddenForegroundColor( column.item ) );
     }
 
     void hideExcessiveLeftMostPathButtons() {
@@ -729,8 +632,8 @@ public class FocusTree extends Composite {
                 ( ( RowData ) pathButton.getLayoutData() ).exclude = true;
             }
         }
-        leftPathBarButton.setVisible( ( ( RowData ) ( ( Label ) pathButtons[ 0 ] ).getLayoutData() ).exclude );
-        rightPathBarButton.setVisible( ( ( RowData ) ( ( Label ) pathButtons[ pathButtons.length - 1 ] ).getLayoutData() ).exclude );
+        leftPathBarButton.setVisible( pathButtons.length == 0 ? false : ( ( RowData ) ( ( Label ) pathButtons[ 0 ] ).getLayoutData() ).exclude );
+        rightPathBarButton.setVisible( pathButtons.length == 0 ? false : ( ( RowData ) ( ( Label ) pathButtons[ pathButtons.length - 1 ] ).getLayoutData() ).exclude );
         pathButtonBar.layout();
         pathButtonBar.getParent().layout();
     }
@@ -746,21 +649,6 @@ public class FocusTree extends Composite {
         headerBar.layout();
     }
 
-    /**
-     * @return the initial width of a cell. Default is {@value SWT#DEFAULT}, indicating to use the largest preferred width of all
-     *         cells in a column.
-     */
-    public int initialCellWidth() {
-        return focusTreeCanvas.initialCellWidth;
-    }
-
-    /**
-     * @return <code>true</code> if the initial index shown in columns with multiple cells is one. Default is <code>false</code>.
-     */
-    public boolean initialIndexIsOne() {
-        return focusTreeCanvas.initialIndexIsOne;
-    }
-
     private void initialize() {
         // Dispose of all controls dependent upon old model
         for ( final Control control : pathButtonBar.getChildren() )
@@ -768,20 +656,29 @@ public class FocusTree extends Composite {
         for ( final Control control : headerBar.getChildren() )
             control.dispose();
 
-        focusColumn = null;
-
         focusTreeCanvas.modelChanged();
 
         // Add new first column for root
         if ( root != null && model != null ) addColumn( root );
     }
 
+    boolean leftMouseButtonClicked( final MouseEvent event ) {
+        return event.button == 1 && ( event.stateMask & SWT.MODIFIER_MASK ) == 0;
+    }
+
+    /**
+     * @return the focus tree model
+     */
+    public Model model() {
+        return model;
+    }
+
     private Image newArrowImage( final int size,
                                  final boolean leftArrow ) {
-        final Image image = new Image( Display.getDefault(), size / 2 + 1, size );
+        final Image image = new Image( getDisplay(), size / 2 + 1, size );
         final GC gc = new GC( image );
         gc.setAntialias( SWT.ON );
-        gc.setForeground( Display.getCurrent().getSystemColor( SWT.COLOR_BLACK ) );
+        gc.setForeground( getDisplay().getSystemColor( SWT.COLOR_BLACK ) );
         if ( leftArrow ) for ( int x = 0, y = size / 2; y >= 0; x++, y-- )
             gc.drawLine( x, y, x, y + x * 2 );
         else for ( int y = 0, x = 0; y <= size / 2; x++, y++ )
@@ -790,7 +687,7 @@ public class FocusTree extends Composite {
         final ImageData data = image.getImageData();
         image.dispose();
         data.transparentPixel = data.palette.getPixel( new RGB( 255, 255, 255 ) );
-        return new Image( Display.getCurrent(), data );
+        return new Image( getDisplay(), data );
     }
 
     private ToolItem newToolBarButton( final ToolBar toolBar,
@@ -810,7 +707,7 @@ public class FocusTree extends Composite {
                 final Label label = new Label( dialog, SWT.NONE );
                 label.setText( "Not yet implemented" );
                 dialog.pack();
-                final Rectangle itemBounds = getShell().getDisplay().map( toolBar, null, item.getBounds() );
+                final Rectangle itemBounds = getDisplay().map( toolBar, null, item.getBounds() );
                 dialog.setLocation( itemBounds.x, itemBounds.y );
                 dialog.open();
             }
@@ -833,70 +730,85 @@ public class FocusTree extends Composite {
         pathButtonBar.layout();
     }
 
-    void scrollToFocusColumn() {
-        if ( focusColumn != null ) scroller.setOrigin( focusColumn.cellColumn.getBounds().x, scroller.getOrigin().y );
+    /**
+     * @return the root item for this tree
+     */
+    public Object root() {
+        return root;
     }
 
-    /**
-     * @param color
-     *        the border color of focus cells, or the {link {@link #DEFAULT_FOCUS_CELL_BORDER_COLOR default color} if
-     *        <code>null</code>
-     */
-    public void setFocusCellBorderColor( final Color color ) {
-        focusTreeCanvas.focusBorder.setColor( color == null ? DEFAULT_FOCUS_CELL_BORDER_COLOR : color );
+    void scrollPathBarLeft() {
+        final Control[] pathButtons = pathButtonBar.getChildren();
+        // Show last hidden path button on left
+        for ( int ndx = 0; ndx < pathButtons.length; ++ndx ) {
+            Control pathButton = pathButtons[ ndx ];
+            if ( pathButton.isVisible() ) {
+                // Show previous path button
+                pathButton = pathButtons[ --ndx ];
+                pathButton.setVisible( true );
+                ( ( RowData ) pathButton.getLayoutData() ).exclude = false;
+                break;
+            }
+        }
+        // Hide last shown path button on right until all buttons fit in button bar
+        final int width = pathButtonBar.getBounds().width;
+        for ( int ndx = pathButtons.length; --ndx >= 0 && pathButtonBar.computeSize( SWT.DEFAULT, SWT.DEFAULT ).x > width; ) {
+            final Control pathButton = pathButtons[ ndx ];
+            if ( pathButton.isVisible() ) {
+                pathButton.setVisible( false );
+                ( ( RowData ) pathButton.getLayoutData() ).exclude = true;
+            }
+        }
+        pathButtonBar.layout();
+        leftPathBarButton.setVisible( !pathButtons[ 0 ].isVisible() );
+        rightPathBarButton.setVisible( true );
     }
 
-    /**
-     * @param color
-     *        the color of the focus column, or the {@link #DEFAULT_FOCUS_COLUMN_COLOR default color} if <code>null</code>.
-     */
-    public void setFocusColumnColor( final Color color ) {
-        focusTreeCanvas.focusColumnColor = color == null ? DEFAULT_FOCUS_COLUMN_COLOR : color;
+    void scrollPathBarRight() {
+        final Control[] pathButtons = pathButtonBar.getChildren();
+        // Show first hidden path button on right
+        for ( int ndx = pathButtons.length; --ndx >= 0; ) {
+            Control pathButton = pathButtons[ ndx ];
+            if ( pathButton.isVisible() ) {
+                // Show next path button
+                pathButton = pathButtons[ ++ndx ];
+                pathButton.setVisible( true );
+                ( ( RowData ) pathButton.getLayoutData() ).exclude = false;
+                break;
+            }
+        }
+        // Hide first shown path button on left until all buttons fit in button bar
+        hideExcessiveLeftMostPathButtons();
     }
 
-    /**
-     * @param color
-     *        the color of the focus line, or the {@link #DEFAULT_FOCUS_LINE_COLOR default color} if <code>null</code>.
-     */
-    public void setFocusLineColor( final Color color ) {
-        focusTreeCanvas.focusLine.setBackgroundColor( color == null ? DEFAULT_FOCUS_LINE_COLOR : color );
+    void scrollToColumn( final Column column ) {
+        if ( focusTreeCanvas.iconViewShown() ) {
+            hideIconView( column );
+            focusTreeCanvas.hideIconView( column );
+        }
+        focusColumn( column );
     }
 
-    /**
-     * @param height
-     *        the height of the focus line, or the {@value #DEFAULT_FOCUS_LINE_HEIGHT default height} if less than or equal to zero.
-     */
-    public void setFocusLineHeight( final int height ) {
-        focusTreeCanvas.setFocusLineHeight( height <= 0 ? DEFAULT_FOCUS_LINE_HEIGHT : height );
+    private void setColors() {
+        for ( final Column column : columns ) {
+            focusTreeCanvas.setCellColors( column );
+        }
     }
 
-    /**
-     * @param offset
-     *        the initial offset of the focus line, or the {@value #DEFAULT_FOCUS_LINE_OFFSET default offset} if less than zero.
-     */
-    public void setFocusLineOffset( final int offset ) {
-        focusTreeCanvas.focusLineOffset = offset < 0 ? DEFAULT_FOCUS_LINE_OFFSET : offset;
-    }
-
-    /**
-     * @param width
-     *        the initial width of a cell, or the {@value SWT#DEFAULT default width} if less than or equal to zero.
-     */
-    public void setInitialCellWidth( final int width ) {
-        focusTreeCanvas.initialCellWidth = width <= 0 ? SWT.DEFAULT : width;
-    }
-
-    /**
-     * @param initialIndexIsOne
-     *        <code>true</code> if the initial index shown in columns with multiple cells is one.
-     */
-    public void setInitialIndexIsOne( final boolean initialIndexIsOne ) {
-        focusTreeCanvas.initialIndexIsOne = initialIndexIsOne;
+    private void setInitialCellWidth( final int initialCellWidth ) {
+        if ( initialCellWidth == focusTreeCanvas.initialCellWidth ) return;
+        int xDelta = 0;
+        for ( final Column column : columns ) {
+            xDelta = focusTreeCanvas.setInitialCellWidth( column, initialCellWidth, xDelta );
+            GridDataFactory.swtDefaults().hint( column.bounds.width, SWT.DEFAULT ).applyTo( column.header );
+        }
+        headerBar.layout();
+        focusTreeCanvas.initialCellWidth = initialCellWidth;
     }
 
     /**
      * @param model
-     *        a focus tree model
+     *        the model for this tree
      */
     public void setModel( final Model model ) {
         this.model = model;
@@ -913,12 +825,46 @@ public class FocusTree extends Composite {
     }
 
     /**
-     * @param color
-     *        the background color of the {@link FocusTree focus tree}, or the {link {@link #DEFAULT_TREE_BACKGROUND_COLOR default
-     *        color} if <code>null</code>.
+     * @param viewModel
+     *        the view model for this tree
      */
-    public void setTreeBackgroundColor( final Color color ) {
-        focusTreeCanvas.setBackground( color == null ? DEFAULT_TREE_BACKGROUND_COLOR : color );
+    public void setViewModel( final ViewModel viewModel ) {
+        this.viewModel = viewModel;
+        focusTreeCanvas.setBackground( viewModel.treeBackgroundColor() );
+        focusTreeCanvas.focusBorder.setColor( viewModel.focusCellBorderColor() );
+        focusTreeCanvas.focusLine.setBackgroundColor( viewModel.focusLineColor() );
+        focusTreeCanvas.setFocusLineHeight( viewModel.focusLineHeight() );
+        focusTreeCanvas.focusLineOffset = viewModel.focusLineOffset();
+        focusTreeCanvas.iconViewCellWidth = viewModel.iconViewCellWidth();
+        setInitialCellWidth( viewModel.initialCellWidth() );
+        focusTreeCanvas.setInitialIndexIsOne( viewModel.initialIndexIsOne() );
+        setColors();
+    }
+
+    void showColumn( final Column column,
+                     final Control childCount,
+                     final Control itemName,
+                     final Control hideButtonPanel,
+                     final Control showButton,
+                     final Color pathButtonForegroundColor,
+                     final Color pathButtonBackgroundColor ) {
+        // Show column header
+        ( ( GridData ) childCount.getLayoutData() ).exclude = false;
+        childCount.setVisible( true );
+        ( ( GridData ) itemName.getLayoutData() ).exclude = false;
+        itemName.setVisible( true );
+        ( ( GridData ) hideButtonPanel.getLayoutData() ).exclude = false;
+        hideButtonPanel.setVisible( true );
+        ( ( GridData ) showButton.getLayoutData() ).exclude = true;
+        showButton.setVisible( false );
+        // Change layout to use new preferred width
+        ( ( GridLayout ) column.header.getLayout() ).numColumns = 3;
+        ( ( GridData ) column.header.getLayoutData() ).widthHint = column.widthBeforeHiding;
+        headerBar.layout();
+        // Show column's canvas figures
+        focusTreeCanvas.showColumn( column, column.widthBeforeHiding );
+        column.pathButton.setBackground( pathButtonBackgroundColor );
+        column.pathButton.setForeground( pathButtonForegroundColor );
     }
 
     void showIconView( final Column column ) {
@@ -932,39 +878,23 @@ public class FocusTree extends Composite {
         gridData.horizontalAlignment = SWT.FILL;
         ( ( Control ) column.header.getData( HIDE_BUTTON_PROPERTY ) ).setVisible( false );
         headerBar.layout();
-        // TODO path buttons hide icon view, click hides icon view, context menu
     }
 
-    /**
-     * @return the background color of the {@link FocusTree focus tree}. Default is {link {@link #DEFAULT_TREE_BACKGROUND_COLOR} .
-     */
-    public Color treeBackgroundColor() {
-        return focusTreeCanvas.getBackground();
-    }
-
-    /**
-     * @param item
-     *        an item in the tree
-     * @return the type of the supplied item's cell. Default is the item's simple class name.
-     */
-    public String type( final Object item ) {
-        return item.getClass().getSimpleName();
-    }
-
-    void unfocusColumn( final Column column ) {
-        if ( column == focusColumn ) {
-            column.backgroundColumn.setOpaque( false );
-            focusColumn = null;
+    void toggleIconView( final Column column ) {
+        if ( focusTreeCanvas.iconViewShown() ) {
+            focusTreeCanvas.hideIconView( column );
+            hideIconView( column );
+        } else if ( column.header.getCursor() != getDisplay().getSystemCursor( SWT.CURSOR_SIZEWE ) ) {
+            focusTreeCanvas.showIconView( column );
+            showIconView( column );
         }
     }
 
     /**
-     * @param item
-     *        an item in the tree
-     * @return the value of the supplied item's cell. Default is <code>null</code>.
+     * @return the view model for this tree
      */
-    public String value( final Object item ) {
-        return null;
+    public ViewModel viewModel() {
+        return viewModel;
     }
 
     /**
@@ -974,8 +904,11 @@ public class FocusTree extends Composite {
 
         IFigure delegate;
         Object item;
-        AddPanel addPanel;
-        org.eclipse.draw2d.Label indexLabel;
+        int index;
+        IndexField indexField;
+        ImageFigure icon;
+        NameField nameField;
+        ValueField valueField;
         DeleteButton deleteButton;
 
         /**
@@ -1061,12 +994,13 @@ public class FocusTree extends Composite {
         Object item;
         Composite header;
         Label pathButton;
-        IFigure backgroundColumn;
+        Rectangle bounds = new Rectangle( 0, 0, 0, 0 );
         CellColumn cellColumn;
         Cell focusCell;
         boolean focusCellExpanded;
-        int preferredWidth;
+        int cellPreferredWidth;
         int widthBeforeHiding;
+        int cellWidthBeforeIconView;
     }
 
     private class ColumnHeaderMouseListener extends MouseAdapter
@@ -1096,9 +1030,9 @@ public class FocusTree extends Composite {
 
         @Override
         public void mouseDoubleClick( final MouseEvent event ) {
-            if ( targetColumn != null ) {
-                focusTreeCanvas.updateColumnWidth( targetColumn, targetColumn.preferredWidth, true );
-                ( ( GridData ) targetColumn.header.getLayoutData() ).widthHint = targetColumn.cellColumn.getSize().width;
+            if ( leftMouseButtonClicked( event ) && targetColumn != null ) {
+                focusTreeCanvas.updateColumnWidth( targetColumn, targetColumn.cellPreferredWidth, true );
+                ( ( GridData ) targetColumn.header.getLayoutData() ).widthHint = targetColumn.bounds.width;
                 headerBar.layout();
             }
         }
@@ -1114,7 +1048,7 @@ public class FocusTree extends Composite {
         @Override
         public void mouseExit( final MouseEvent event ) {
             if ( !dragging ) {
-                column.header.setCursor( Display.getCurrent().getSystemCursor( SWT.CURSOR_ARROW ) );
+                column.header.setCursor( getDisplay().getSystemCursor( SWT.CURSOR_ARROW ) );
                 column.header.setToolTipText( null );
                 targetColumn = null;
             }
@@ -1139,15 +1073,16 @@ public class FocusTree extends Composite {
 
         @Override
         public void mouseUp( final MouseEvent event ) {
+            if ( !leftMouseButtonClicked( event ) ) return;
             if ( dragging ) {
                 dragging = false;
-                if ( Display.getCurrent().getCursorControl() != column.header ) targetColumn = null;
+                if ( getDisplay().getCursorControl() != column.header ) targetColumn = null;
             } else focusColumn( column );
         }
 
         private void setTargetColumn( final Column targetColumn ) {
             this.targetColumn = targetColumn;
-            column.header.setCursor( Display.getCurrent().getSystemCursor( SWT.CURSOR_SIZEWE ) );
+            column.header.setCursor( getDisplay().getSystemCursor( SWT.CURSOR_SIZEWE ) );
             column.header.setToolTipText( EclipseI18n.focusTreeResizeColumnToolTip.text() );
         }
     }
@@ -1184,30 +1119,9 @@ public class FocusTree extends Composite {
     }
 
     /**
-     * 
+     * The default model for a {@link FocusTree}
      */
     public static class Model {
-
-        /**
-         *
-         */
-        public static final Color DEFAULT_CELL_BACKGROUND_COLOR = Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
-
-        /**
-         * 
-         */
-        public static final Color DEFAULT_CHILD_INDEX_COLOR = FocusTree.DEFAULT_FOCUS_CELL_BORDER_COLOR;
-
-        /**
-         *
-         */
-        public static final Color DEFAULT_PATH_BUTTON_MINIMIZED_BACKGROUND_COLOR =
-            Display.getCurrent().getSystemColor( SWT.COLOR_GRAY );
-
-        /**
-         * 
-         */
-        public static final Object[] NO_CHILDREN = new Object[ 0 ];
 
         /**
          * 
@@ -1215,25 +1129,18 @@ public class FocusTree extends Composite {
         public static final Indicator[] NO_INDICATORS = new Indicator[ 0 ];
 
         /**
-         * @param item
-         *        an item in the tree
-         * @return the background color of the supplied item's cell. Default is {link #DEFAULT_CELL_BACKGROUND_COLOR}.
+         * @param parent
+         *        a parent item in the tree
+         * @param index
+         *        the index within the supplied parent where a new item is to be added
+         * @return The newly added item. Must not be <code>null</code> unless {@link #childrenAddable(Object) children can not be
+         *         added to the supplied parent}. Default is <code>null</code>
+         * @throws PolyglotterException
+         *         if an error occurs
          */
-        public Color cellBackgroundColor( final Object item ) {
-            return DEFAULT_CELL_BACKGROUND_COLOR;
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return the foreground color of the supplied item's cell. Default is white or black, whichever contrasts more with the
-         *         {@link #cellBackgroundColor(Object) cell's background color}.
-         */
-        public Color cellForegroundColor( final Object item ) {
-            final Color color = cellBackgroundColor( item );
-            final double yiq = ( ( color.getRed() * 299 ) + ( color.getGreen() * 587 ) + ( color.getBlue() * 114 ) ) / 1000.0;
-            return yiq >= 128.0 ? Display.getCurrent().getSystemColor( SWT.COLOR_BLACK )
-                               : Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
+        public Object add( final Object parent,
+                           final int index ) throws PolyglotterException {
+            return true;
         }
 
         /**
@@ -1248,21 +1155,12 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
-         * @return the color of the child index shown in the supplied item's cell. Default is {@link #DEFAULT_CHILD_INDEX_COLOR}.
-         */
-        public Color childIndexColor( final Object item ) {
-            return DEFAULT_CHILD_INDEX_COLOR;
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return the children of the supplied item. Default is an empty array.
+         * @return the children of the supplied item. Must not be <code>null</code>. Default is an empty array.
          * @throws PolyglotterException
          *         if an error occurs
          */
         public Object[] children( final Object item ) throws PolyglotterException {
-            return NO_CHILDREN;
+            return Util.EMPTY_ARRAY;
         }
 
         /**
@@ -1272,29 +1170,6 @@ public class FocusTree extends Composite {
          */
         public boolean childrenAddable( final Object item ) {
             return item.getClass().isArray() || item instanceof Collection< ? >;
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return Creates a cell for the supplied item. Default is a cell that delegates to create a {@link RoundedRectangle}.
-         */
-        public Cell createCell( final Object item ) {
-            return new Cell( new RoundedRectangle() );
-        }
-
-        /**
-         * @param parent
-         *        a parent item in the tree
-         * @param index
-         *        the index within the supplied parent where a new item is to be added
-         * @return The newly created item. Never <code>null</code>
-         * @throws PolyglotterException
-         *         if an error occurs
-         */
-        public Object createChildAt( final Object parent,
-                                     final int index ) throws PolyglotterException {
-            return true;
         }
 
         /**
@@ -1329,6 +1204,24 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
+         * @return <code>true</code> if the supplied item has a name. Default is <code>true</code>
+         */
+        public boolean hasName( final Object item ) {
+            return true;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return <code>true</code> if the supplied item has a type. Default is <code>false</code>
+         */
+        public boolean hasType( final Object item ) {
+            return false;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
          * @return <code>true</code> if the supplied item has a value. Default is <code>false</code>
          */
         public boolean hasValue( final Object item ) {
@@ -1338,16 +1231,7 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
-         * @return the icon of the cell for the supplied item. Default is <code>null</code>.
-         */
-        public Image icon( final Object item ) {
-            return null;
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return the status indicators applicable to the supplied item. Default is an empty array. Must not be <code>null</code>.
+         * @return the status indicators applicable to the supplied item. Must not be <code>null</code>. Default is an empty array.
          */
         public Indicator[] indicators( final Object item ) {
             return NO_INDICATORS;
@@ -1356,11 +1240,12 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
-         * @return the name of the supplied item's cell. Default is the item's {@link Object#toString()}.
+         * @return the name of the supplied item's cell. Must not be <code>null</code>. Default is the item's
+         *         {@link Object#toString()}.
          * @throws PolyglotterException
          *         if an error occurs
          */
-        public String name( final Object item ) throws PolyglotterException {
+        public Object name( final Object item ) throws PolyglotterException {
             return item.toString();
         }
 
@@ -1382,58 +1267,19 @@ public class FocusTree extends Composite {
          *         Default is <code>null</code>.
          */
         public String nameProblem( final Object item,
-                                   final String name ) {
+                                   final Object name ) {
             return null;
         }
 
         /**
          * @param item
          *        an item in the tree
-         * @return the background color of the supplied item's path button. Default is {@link #cellBackgroundColor(Object) cell's
-         *         background color}.
-         */
-        public Color pathButtonBackgroundColor( final Object item ) {
-            return cellBackgroundColor( item );
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return the foreground color of the supplied item's cell. Default is {@link #cellForegroundColor(Object) cell's
-         *         foreground color}.
-         */
-        public Color pathButtonForegroundColor( final Object item ) {
-            return cellForegroundColor( item );
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return the background color of the supplied item's path button if its column is minimized. Default is
-         *         {@link #DEFAULT_PATH_BUTTON_MINIMIZED_BACKGROUND_COLOR}.
-         */
-        public Color pathButtonHiddenBackgroundColor( final Object item ) {
-            return DEFAULT_PATH_BUTTON_MINIMIZED_BACKGROUND_COLOR;
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return the foreground color of the supplied item's path button if its column is minimized. Default is
-         *         {@link #cellForegroundColor(Object) cell's foreground color}.
-         */
-        public Color pathButtonHiddenForegroundColor( final Object item ) {
-            return cellForegroundColor( item );
-        }
-
-        /**
-         * @param item
-         *        an item in the tree
-         * @return the fully-qualified name of the supplied item's cell. Default is the item's {@link #name(Object) name}
+         * @return the fully-qualified name of the supplied item's cell. Must not be <code>null</code>. Default is the item's
+         *         {@link #name(Object) name}
          * @throws PolyglotterException
          *         if an error occurs
          */
-        public String qualifiedName( final Object item ) throws PolyglotterException {
+        public Object qualifiedName( final Object item ) throws PolyglotterException {
             return name( item );
         }
 
@@ -1444,12 +1290,12 @@ public class FocusTree extends Composite {
          *        an item in the tree
          * @param name
          *        a name for the supplied item
-         * @return an item with the supplied name. Default is the supplied item.
+         * @return an item with the supplied name. Must not be <code>null</code>. Default is the supplied item.
          * @throws PolyglotterException
          *         if an error occurs
          */
         public Object setName( final Object item,
-                               final String name ) throws PolyglotterException {
+                               final Object name ) throws PolyglotterException {
             return item;
         }
 
@@ -1460,12 +1306,12 @@ public class FocusTree extends Composite {
          *        an item in the tree
          * @param type
          *        a type for the supplied item
-         * @return an item with the supplied type. Default is the supplied item.
+         * @return an item with the supplied type. Must not be <code>null</code>. Default is the supplied item.
          * @throws PolyglotterException
          *         if an error occurs
          */
         public Object setType( final Object item,
-                               final String type ) throws PolyglotterException {
+                               final Object type ) throws PolyglotterException {
             return item;
         }
 
@@ -1481,7 +1327,7 @@ public class FocusTree extends Composite {
          *         if an error occurs
          */
         public Object setValue( final Object item,
-                                final String value ) throws PolyglotterException {
+                                final Object value ) throws PolyglotterException {
             return item;
         }
 
@@ -1492,7 +1338,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        public String type( final Object item ) throws PolyglotterException {
+        public Object type( final Object item ) throws PolyglotterException {
             return item.getClass().getSimpleName();
         }
 
@@ -1514,7 +1360,7 @@ public class FocusTree extends Composite {
          *         Default is <code>null</code>.
          */
         public String typeProblem( final Object item,
-                                   final String type ) {
+                                   final Object type ) {
             return null;
         }
 
@@ -1525,7 +1371,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        public String value( final Object item ) throws PolyglotterException {
+        public Object value( final Object item ) throws PolyglotterException {
             return null;
         }
 
@@ -1547,8 +1393,253 @@ public class FocusTree extends Composite {
          *         Default is <code>null</code>.
          */
         public String valueProblem( final Object item,
-                                    final String value ) {
+                                    final Object value ) {
             return null;
+        }
+    }
+
+    /**
+     * The default view model for a {@link FocusTree}
+     */
+    public static class ViewModel {
+
+        /**
+         *
+         */
+        public static final Color DEFAULT_CELL_BACKGROUND_COLOR = Display.getDefault().getSystemColor( SWT.COLOR_WHITE );
+
+        /**
+         * 
+         */
+        public static final Color DEFAULT_CHILD_INDEX_COLOR = new Color( null, 0, 128, 255 );
+
+        /**
+         * 
+         */
+        public static final TextCellEditor DEFAULT_EDITOR = new TextCellEditor();
+
+        /**
+         * 
+         */
+        public static final Color DEFAULT_FOCUS_CELL_BORDER_COLOR = DEFAULT_CHILD_INDEX_COLOR;
+
+        /**
+         * 
+         */
+        public static final Color DEFAULT_FOCUS_LINE_COLOR = DEFAULT_CHILD_INDEX_COLOR;
+
+        /**
+         * 
+         */
+        public static final int DEFAULT_FOCUS_LINE_HEIGHT = 5;
+
+        /**
+         * 
+         */
+        public static final int DEFAULT_FOCUS_LINE_OFFSET = 100;
+
+        /**
+         *
+         */
+        public static final Color DEFAULT_PATH_BUTTON_MINIMIZED_BACKGROUND_COLOR =
+            Display.getDefault().getSystemColor( SWT.COLOR_GRAY );
+
+        /**
+         *
+         */
+        public static final Color DEFAULT_TREE_BACKGROUND_COLOR = Display.getDefault().getSystemColor( SWT.COLOR_WHITE );
+
+        static {
+            DEFAULT_EDITOR.setStyle( SWT.BORDER );
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the background color of the supplied item's cell. Default is {link #DEFAULT_CELL_BACKGROUND_COLOR}.
+         */
+        public Color cellBackgroundColor( final Object item ) {
+            return DEFAULT_CELL_BACKGROUND_COLOR;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the foreground color of the supplied item's cell. Must not be <code>null</code>. Default is white or black,
+         *         whichever contrasts more with the {@link #cellBackgroundColor(Object) cell's background color}.
+         */
+        public Color cellForegroundColor( final Object item ) {
+            final Color color = cellBackgroundColor( item );
+            final double yiq = ( ( color.getRed() * 299 ) + ( color.getGreen() * 587 ) + ( color.getBlue() * 114 ) ) / 1000.0;
+            return yiq >= 128.0 ? Display.getCurrent().getSystemColor( SWT.COLOR_BLACK )
+                               : Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the color of the child index shown in the supplied item's cell. Must not be <code>null</code>. Default is
+         *         {@link #DEFAULT_CHILD_INDEX_COLOR}.
+         */
+        public Color childIndexColor( final Object item ) {
+            return DEFAULT_CHILD_INDEX_COLOR;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return Creates a cell for the supplied item. Must not be <code>null</code>. Default is a cell that delegates to create a
+         *         {@link RoundedRectangle}.
+         */
+        public Cell createCell( final Object item ) {
+            return new Cell( new RoundedRectangle() );
+        }
+
+        /**
+         * @return the border color of focus cells. Default is {@link #DEFAULT_FOCUS_CELL_BORDER_COLOR}.
+         */
+        public Color focusCellBorderColor() {
+            return DEFAULT_FOCUS_CELL_BORDER_COLOR;
+        }
+
+        /**
+         * @return the color of the focus line. Default is {@link #DEFAULT_FOCUS_LINE_COLOR}.
+         */
+        public Color focusLineColor() {
+            return DEFAULT_FOCUS_LINE_COLOR;
+        }
+
+        /**
+         * @return the height of the focus line. Default is {@value #DEFAULT_FOCUS_LINE_HEIGHT}.
+         */
+        public int focusLineHeight() {
+            return DEFAULT_FOCUS_LINE_HEIGHT;
+        }
+
+        /**
+         * @return the initial offset of the focus line. Default is {@value #DEFAULT_FOCUS_LINE_OFFSET}.
+         */
+        public int focusLineOffset() {
+            return DEFAULT_FOCUS_LINE_OFFSET;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the icon of the cell for the supplied item. Default is <code>null</code>.
+         */
+        public Image icon( final Object item ) {
+            return null;
+        }
+
+        /**
+         * @return the width of a cells in the icon view. Default is {@value SWT#DEFAULT}, indicating to use the largest preferred
+         *         width of all cells.
+         */
+        public int iconViewCellWidth() {
+            return SWT.DEFAULT;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the icon of the cell for the supplied item in an icon view. Default is <code>null</code>.
+         */
+        public Image iconViewIcon( final Object item ) {
+            return null;
+        }
+
+        /**
+         * @return the initial width of a cell. Default is {@value SWT#DEFAULT}, indicating to use the largest preferred width of
+         *         all cells in a column.
+         */
+        public int initialCellWidth() {
+            return SWT.DEFAULT;
+        }
+
+        /**
+         * @return <code>true</code> if the initial index shown in columns with multiple cells is one. Default is <code>false</code>
+         *         .
+         */
+        public boolean initialIndexIsOne() {
+            return false;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the cell editor used to edit the supplied item's name. Must not be <code>null</code>. Default is {link
+         *         {@link TextCellEditor} .
+         */
+        public CellEditor nameEditor( final Object item ) {
+            return DEFAULT_EDITOR;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the background color of the supplied item's path button. Must not be <code>null</code>. Default is
+         *         {@link #cellBackgroundColor(Object) cell's background color}.
+         */
+        public Color pathButtonBackgroundColor( final Object item ) {
+            return cellBackgroundColor( item );
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the foreground color of the supplied item's cell. Must not be <code>null</code>. Default is
+         *         {@link #cellForegroundColor(Object) cell's foreground color}.
+         */
+        public Color pathButtonForegroundColor( final Object item ) {
+            return cellForegroundColor( item );
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the background color of the supplied item's path button if its column is minimized. Must not be <code>null</code>
+         *         . Default is {@link #DEFAULT_PATH_BUTTON_MINIMIZED_BACKGROUND_COLOR}.
+         */
+        public Color pathButtonHiddenBackgroundColor( final Object item ) {
+            return DEFAULT_PATH_BUTTON_MINIMIZED_BACKGROUND_COLOR;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the foreground color of the supplied item's path button if its column is minimized. Must not be <code>null</code>
+         *         . Default is {@link #cellForegroundColor(Object) cell's foreground color}.
+         */
+        public Color pathButtonHiddenForegroundColor( final Object item ) {
+            return cellForegroundColor( item );
+        }
+
+        /**
+         * @return the background color of the {@link FocusTree focus tree}. Default is {@link #DEFAULT_TREE_BACKGROUND_COLOR}.
+         */
+        public Color treeBackgroundColor() {
+            return DEFAULT_TREE_BACKGROUND_COLOR;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the cell editor used to edit the supplied item's type. Must not be <code>null</code>. Default is {link
+         *         {@link TextCellEditor} .
+         */
+        public CellEditor typeEditor( final Object item ) {
+            return DEFAULT_EDITOR;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the cell editor used to edit the supplied item's value. Must not be <code>null</code>. Default is
+         *         {@link TextCellEditor} .
+         */
+        public CellEditor valueEditor( final Object item ) {
+            return DEFAULT_EDITOR;
         }
     }
 }

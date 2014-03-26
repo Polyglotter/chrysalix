@@ -35,6 +35,7 @@ import org.polyglotter.eclipse.EclipseI18n;
 import org.polyglotter.eclipse.Util;
 import org.polyglotter.eclipse.focustree.FocusTree;
 import org.polyglotter.eclipse.focustree.FocusTree.Model;
+import org.polyglotter.eclipse.focustree.FocusTree.ViewModel;
 
 /**
  * A view whose contents are the transforms contained in the workspace.
@@ -55,14 +56,7 @@ public class TransformView extends ViewPart {
      */
     @Override
     public void createPartControl( final Composite parent ) {
-        final FocusTree focusTree = new FocusTree( parent );
-        final Model model = new Model() {
-
-            @Override
-            public Color cellBackgroundColor( final Object item ) {
-                if ( ( ( File ) item ).isDirectory() ) return FOLDER_COLOR;
-                return Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
-            }
+        final FocusTree focusTree = new FocusTree( parent, new File( System.getProperty( "user.home" ) ), new Model() {
 
             @Override
             public int childCount( final Object item ) {
@@ -92,18 +86,26 @@ public class TransformView extends ViewPart {
                 final File file = ( File ) item;
                 return file.isDirectory() ? "Folder" : "File";
             }
-        };
-        final File root = new File( System.getProperty( "user.home" ) );
+        } );
+        focusTree.setViewModel( new ViewModel() {
+
+            @Override
+            public Color cellBackgroundColor( final Object item ) {
+                if ( ( ( File ) item ).isDirectory() ) return FOLDER_COLOR;
+                return Display.getCurrent().getSystemColor( SWT.COLOR_WHITE );
+            }
+
+            @Override
+            public boolean initialIndexIsOne() {
+                return true;
+            }
+        } );
         try {
-            setPartName( model.name( root ) );
+            setPartName( focusTree.model().name( focusTree.root() ).toString() );
         } catch ( final PolyglotterException e ) {
             setPartName( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
         }
-        setTitleImage( model.icon( root ) );
-        focusTree.setInitialIndexIsOne( true );
-        focusTree.setInitialCellWidth( 80 );
-        focusTree.setModel( model );
-        focusTree.setRoot( root );
+        setTitleImage( focusTree.viewModel().icon( focusTree.root() ) );
     }
 
     /**

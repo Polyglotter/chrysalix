@@ -153,7 +153,7 @@ public final class ModelContentProvider extends FocusTree.Model {
             return ( ( FieldWrapper ) item ).field().getName();
         }
 
-        return super.name( item );
+        return super.name( item ).toString();
     }
 
     /**
@@ -175,7 +175,8 @@ public final class ModelContentProvider extends FocusTree.Model {
             return ( ( FieldWrapper ) item ).type();
         }
 
-        return super.type( item );
+        final Object type = super.type( item );
+        return type == null ? null : type.toString();
     }
 
     /**
@@ -201,7 +202,8 @@ public final class ModelContentProvider extends FocusTree.Model {
             }
         }
 
-        return super.value( item );
+        final Object value = super.value( item );
+        return value == null ? null : value.toString();
     }
 
     class FieldWrapper {

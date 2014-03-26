@@ -33,9 +33,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * as parameters.
  */
 public abstract class Logger {
-    
+
     private static final AtomicReference< Locale > LOGGING_LOCALE = new AtomicReference< Locale >( null );
-    
+
     /**
      * Return a logger named corresponding to the class passed as parameter.
      * 
@@ -46,7 +46,7 @@ public abstract class Logger {
     public static Logger getLogger( final Class< ? > clazz ) {
         return LogFactory.getLogFactory().getLogger( clazz );
     }
-    
+
     /**
      * Return a logger named according to the name parameter.
      * 
@@ -57,7 +57,7 @@ public abstract class Logger {
     public static Logger getLogger( final String name ) {
         return LogFactory.getLogFactory().getLogger( name );
     }
-    
+
     /**
      * Get the locale used for the logs. If null, the {@link Locale#getDefault() default locale} is used.
      * 
@@ -67,7 +67,7 @@ public abstract class Logger {
     public static Locale getLoggingLocale() {
         return LOGGING_LOCALE.get();
     }
-    
+
     /**
      * Set the locale used for the logs. This should be used when the logs are to be written is a specific locale, independent of
      * the {@link Locale#getDefault() default locale}. To use the default locale, call this method with a null value.
@@ -80,7 +80,7 @@ public abstract class Logger {
     public static Locale setLoggingLocale( final Locale locale ) {
         return LOGGING_LOCALE.getAndSet( locale != null ? locale : Locale.getDefault() );
     }
-    
+
     /**
      * Log a message at the DEBUG level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -93,7 +93,7 @@ public abstract class Logger {
      */
     public abstract void debug( String message,
                                 Object... params );
-    
+
     /**
      * Log an exception (throwable) at the DEBUG level with an accompanying message. If the exception is null, then this method
      * calls {@link #debug(String, Object...)}.
@@ -108,7 +108,7 @@ public abstract class Logger {
     public abstract void debug( Throwable t,
                                 String message,
                                 Object... params );
-    
+
     /**
      * Log a message at the ERROR level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -121,7 +121,7 @@ public abstract class Logger {
      */
     public abstract void error( I18n message,
                                 Object... params );
-    
+
     /**
      * Log an exception (throwable) at the ERROR level with an accompanying message. If the exception is null, then this method
      * calls {@link #error(I18n, Object...)}.
@@ -136,14 +136,14 @@ public abstract class Logger {
     public abstract void error( Throwable t,
                                 I18n message,
                                 Object... params );
-    
+
     /**
      * Return the name of this logger instance.
      * 
      * @return the logger's name
      */
     public abstract String getName();
-    
+
     /**
      * Log a message at the INFO level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -156,7 +156,7 @@ public abstract class Logger {
      */
     public abstract void info( I18n message,
                                Object... params );
-    
+
     /**
      * Log an exception (throwable) at the INFO level with an accompanying message. If the exception is null, then this method calls
      * {@link #info(I18n, Object...)}.
@@ -171,42 +171,42 @@ public abstract class Logger {
     public abstract void info( Throwable t,
                                I18n message,
                                Object... params );
-    
+
     /**
      * Return whether messages at the DEBUG level are being logged.
      * 
      * @return true if DEBUG log messages are currently being logged, or false otherwise.
      */
     public abstract boolean isDebugEnabled();
-    
+
     /**
      * Return whether messages at the ERROR level are being logged.
      * 
      * @return true if ERROR log messages are currently being logged, or false otherwise.
      */
     public abstract boolean isErrorEnabled();
-    
+
     /**
      * Return whether messages at the INFORMATION level are being logged.
      * 
      * @return true if INFORMATION log messages are currently being logged, or false otherwise.
      */
     public abstract boolean isInfoEnabled();
-    
+
     /**
      * Return whether messages at the TRACE level are being logged.
      * 
      * @return true if TRACE log messages are currently being logged, or false otherwise.
      */
     public abstract boolean isTraceEnabled();
-    
+
     /**
      * Return whether messages at the WARNING level are being logged.
      * 
      * @return true if WARNING log messages are currently being logged, or false otherwise.
      */
     public abstract boolean isWarnEnabled();
-    
+
     /**
      * Log a message at the supplied level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -243,7 +243,7 @@ public abstract class Logger {
                 break;
         }
     }
-    
+
     /**
      * Log an exception (throwable) at the supplied level with an accompanying message. If the exception is null, then this method
      * calls {@link #debug(String, Object...)}.
@@ -282,7 +282,13 @@ public abstract class Logger {
                 break;
         }
     }
-    
+
+    /**
+     * @param level
+     *        a log level
+     */
+    public abstract void setLevel( Level level );
+
     /**
      * Log a message at the TRACE level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -295,7 +301,7 @@ public abstract class Logger {
      */
     public abstract void trace( String message,
                                 Object... params );
-    
+
     /**
      * Log an exception (throwable) at the TRACE level with an accompanying message. If the exception is null, then this method
      * calls {@link #trace(String, Object...)}.
@@ -310,7 +316,7 @@ public abstract class Logger {
     public abstract void trace( Throwable t,
                                 String message,
                                 Object... params );
-    
+
     /**
      * Log a message at the WARNING level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -323,7 +329,7 @@ public abstract class Logger {
      */
     public abstract void warn( I18n message,
                                Object... params );
-    
+
     /**
      * Log an exception (throwable) at the WARNING level with an accompanying message. If the exception is null, then this method
      * calls {@link #warn(I18n, Object...)}.
@@ -338,37 +344,37 @@ public abstract class Logger {
     public abstract void warn( Throwable t,
                                I18n message,
                                Object... params );
-    
+
     /**
      * 
      */
     public enum Level {
-        
+
         /**
          * 
          */
         OFF,
-        
+
         /**
          * 
          */
         ERROR,
-        
+
         /**
          * 
          */
         WARNING,
-        
+
         /**
          * 
          */
         INFO,
-        
+
         /**
          * 
          */
         DEBUG,
-        
+
         /**
          * 
          */
