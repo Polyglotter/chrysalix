@@ -23,8 +23,6 @@
  */
 package org.polyglotter.eclipse;
 
-import java.text.MessageFormat;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -36,10 +34,11 @@ import org.polyglotter.common.Logger;
  */
 public final class EclipseLogger extends Logger {
 
-    /**
-     * <code>true</code> if info-level logging is enabled
-     */
-    public static boolean infoEnabled;
+    private static boolean debugEnabled;
+    private static boolean errorEnabled = true;
+    private static boolean infoEnabled;
+    private static boolean traceEnabled;
+    private static boolean warnEnabled = true;
 
     private final String name;
 
@@ -71,8 +70,8 @@ public final class EclipseLogger extends Logger {
     public void debug( final Throwable error,
                        String message,
                        final Object... params ) {
-        message = message.replace( '\'', '"' ); // TODO Temporary until ModeShape fixed
-        if ( isDebugEnabled() ) log( IStatus.INFO, MessageFormat.format( message, params ), error );
+        message = message.replace( '\'', '"' ); // Temporary until ModeShape removes single quotes from their i18n messages
+        if ( isDebugEnabled() ) log( IStatus.INFO, String.format( message, params ), error );
     }
 
     /**
@@ -132,20 +131,13 @@ public final class EclipseLogger extends Logger {
     }
 
     /**
-     * @return <code>true</code> if information-level logging is enabled
-     */
-    public boolean infoLoggingEnabled() {
-        return infoEnabled;
-    }
-
-    /**
      * {@inheritDoc}
      * 
      * @see Logger#isDebugEnabled()
      */
     @Override
     public boolean isDebugEnabled() {
-        return isInfoEnabled();
+        return debugEnabled;
     }
 
     /**
@@ -155,7 +147,7 @@ public final class EclipseLogger extends Logger {
      */
     @Override
     public boolean isErrorEnabled() {
-        return true;
+        return errorEnabled;
     }
 
     /**
@@ -175,7 +167,7 @@ public final class EclipseLogger extends Logger {
      */
     @Override
     public boolean isTraceEnabled() {
-        return isInfoEnabled();
+        return traceEnabled;
     }
 
     /**
@@ -185,13 +177,12 @@ public final class EclipseLogger extends Logger {
      */
     @Override
     public boolean isWarnEnabled() {
-        return true;
+        return warnEnabled;
     }
 
     private void log( final int severity,
                       final String message,
                       final Throwable throwable ) {
-        if ( severity == IStatus.INFO && !infoLoggingEnabled() ) return;
         if ( Platform.isRunning() ) Activator.plugin.getLog().log( new Status( severity,
                                                                                Activator.plugin.getBundle().getSymbolicName(),
                                                                                message,
@@ -203,6 +194,20 @@ public final class EclipseLogger extends Logger {
             System.out.println( message );
             if ( throwable != null ) System.out.println( throwable );
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.common.Logger#setLevel(org.polyglotter.common.Logger.Level)
+     */
+    @Override
+    public void setLevel( final Level level ) {
+        errorEnabled = level.ordinal() >= Level.ERROR.ordinal();
+        warnEnabled = level.ordinal() >= Level.WARNING.ordinal();
+        infoEnabled = level.ordinal() >= Level.INFO.ordinal();
+        debugEnabled = level.ordinal() >= Level.DEBUG.ordinal();
+        traceEnabled = level.ordinal() >= Level.TRACE.ordinal();
     }
 
     /**
@@ -222,10 +227,10 @@ public final class EclipseLogger extends Logger {
      * @see Logger#trace(Throwable, String, Object[])
      */
     @Override
-    public void trace( final Throwable t,
+    public void trace( final Throwable error,
                        final String message,
                        final Object... params ) {
-        if ( isTraceEnabled() ) debug( message, t );
+        if ( isTraceEnabled() ) log( IStatus.INFO, String.format( message, params ), error );
     }
 
     /**

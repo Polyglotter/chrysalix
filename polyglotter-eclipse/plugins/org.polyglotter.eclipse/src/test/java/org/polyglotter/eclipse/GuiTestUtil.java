@@ -23,6 +23,7 @@
  */
 package org.polyglotter.eclipse;
 
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -31,6 +32,15 @@ import org.eclipse.swt.widgets.Shell;
  * 
  */
 public final class GuiTestUtil {
+
+    /**
+     * @return a test shell
+     */
+    public static Shell shell() {
+        final Shell shell = new Shell( Display.getDefault() );
+        shell.setLayout( new FillLayout() );
+        return shell;
+    }
 
     /**
      * @param control

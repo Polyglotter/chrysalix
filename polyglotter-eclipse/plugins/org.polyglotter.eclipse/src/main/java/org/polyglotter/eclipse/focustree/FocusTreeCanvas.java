@@ -40,32 +40,27 @@ import org.eclipse.draw2d.ImageFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LayoutListener;
 import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.MouseMotionListener;
+import org.eclipse.draw2d.OrderedLayout;
 import org.eclipse.draw2d.Panel;
 import org.eclipse.draw2d.PositionConstants;
-import org.eclipse.draw2d.SWTEventDispatcher;
-import org.eclipse.draw2d.ToolTipHelper;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ICellEditorListener;
+import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Text;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.eclipse.EclipseI18n;
 import org.polyglotter.eclipse.Util;
@@ -79,50 +74,28 @@ class FocusTreeCanvas extends FigureCanvas {
     final FreeformLayer canvas = new FreeformLayer();
     final Figure toolBar = new Figure();
     final Panel focusLine = new Panel();
-    final Label focusColumnToolTip = new Label( EclipseI18n.focusTreeFocusColumnToolTip.text() );
-    int focusLineOffset = FocusTree.DEFAULT_FOCUS_LINE_OFFSET;
+    int focusLineOffset;
     boolean initialIndexIsOne;
-    int initialCellWidth = SWT.DEFAULT;
-    Color focusColumnColor = FocusTree.DEFAULT_FOCUS_COLUMN_COLOR;
-    final LineBorder focusBorder =
-        new LineBorder( FocusTree.DEFAULT_FOCUS_CELL_BORDER_COLOR, FocusTree.DEFAULT_FOCUS_LINE_HEIGHT ) {
-
-            @Override
-            public void paint( final IFigure figure,
-                               final Graphics graphics,
-                               final Insets insets ) {
-                tempRect.setBounds( getPaintRectangle( figure, insets ) );
-                if ( getWidth() % 2 == 1 ) {
-                    tempRect.width--;
-                    tempRect.height--;
-                }
-                tempRect.shrink( getWidth() / 2, getWidth() / 2 );
-                graphics.setLineWidth( getWidth() );
-                graphics.setLineStyle( getStyle() );
-                graphics.setForegroundColor( getColor() );
-                graphics.drawRoundRectangle( tempRect, 8, 8 );
-            }
-        };
-    final LineBorder noFocusBorder = new LineBorder( FocusTree.DEFAULT_FOCUS_LINE_HEIGHT ) {
-
-        @Override
-        public void paint( final IFigure figure,
-                           final Graphics graphics,
-                           final Insets insets ) {}
-    };
+    int initialCellWidth;
+    int iconViewCellWidth;
+    final LineBorder focusBorder, noFocusBorder;
+    final AddButton addButton;
+    final Dimension columnMargins;
     final MouseListener canvasMouseListener = new MouseListener.Stub() {
 
         final AtomicLong lastClicked = new AtomicLong( System.currentTimeMillis() );
 
         @Override
         public void mouseDoubleClicked( final MouseEvent event ) {
+            if ( !leftMouseButtonClicked( event ) ) return;
             mouseDoubleClickedOverCanvas( event );
             lastClicked.set( System.currentTimeMillis() );
         }
 
         @Override
         public void mouseReleased( final MouseEvent event ) {
-            getShell().getDisplay().timerExec( 400, new Runnable() {
+            if ( !leftMouseButtonClicked( event ) ) return;
+            getDisplay().timerExec( 400, new Runnable() {
 
                 @Override
                 public void run() {
@@ -149,87 +122,25 @@ class FocusTreeCanvas extends FigureCanvas {
     };
     final FocusLineMouseListener focusLineMouseListener = new FocusLineMouseListener();
     final Map< Object, Object > lastFocusItemByParent = new HashMap<>();
-    ToolTipHelper toolTipHelper;
-
     ImageFigure mouseOverButton;
-
-    Text textEditor;
-    TextEditorHandler textEditorHandler;
+    CellEditor editor;
+    EditorHandler editorHandler;
     Label fieldEdited;
+    Column iconViewColumn;
 
     FocusTreeCanvas( final FocusTree focusTree,
                      final Composite parent,
                      final int style ) {
         super( parent, style );
-        getLightweightSystem().setEventDispatcher( new SWTEventDispatcher() {
-
-            @Override
-            protected ToolTipHelper getToolTipHelper() {
-                final ToolTipHelper toolTipHelper = super.getToolTipHelper();
-                if ( FocusTreeCanvas.this.toolTipHelper != toolTipHelper )
-                    FocusTreeCanvas.this.toolTipHelper = toolTipHelper;
-                return toolTipHelper;
-            }
-        } );
-        toolTipHelper = new ToolTipHelper( this );
         this.focusTree = focusTree;
         setContents( canvas );
         getViewport().setContentsTracksHeight( true );
+        getViewport().setContentsTracksWidth( true );
         getHorizontalBar().setEnabled( false );
         setHorizontalScrollBarVisibility( NEVER );
+        canvas.setOpaque( true );
         canvas.addMouseListener( canvasMouseListener );
-        toolBar.setLayoutManager( new GridLayout() );
-        final Figure homeButton = new Figure() {
-
-            @Override
-            protected void paintFigure( final Graphics g ) {
-                final Rectangle bounds = getBounds();
-                g.setAntialias( SWT.ON );
-                g.setBackgroundColor( focusColumnColor );
-                g.fillRectangle( bounds.x + 4, bounds.y, 8, 16 );
-                g.setBackgroundColor( focusLine.getBackgroundColor() );
-                g.fillRectangle( bounds.x, bounds.y + 7, 16, 2 );
-            }
-        };
-        toolBar.add( homeButton );
-        homeButton.setPreferredSize( new Dimension( 16, 16 ) );
-        homeButton.setToolTip( new Label( EclipseI18n.focusTreeHomeToolTip.text() ) );
-        homeButton.addMouseListener( new MouseListener.Stub() {
-
-            @Override
-            public void mouseReleased( final MouseEvent event ) {
-                homeSelected();
-            }
-        } );
-        final ImageFigure collapseAllButton = new ImageFigure( Util.image( "collapseall.gif" ) );
-        toolBar.add( collapseAllButton );
-        collapseAllButton.setToolTip( new Label( EclipseI18n.focusTreeCollapseAllToolTip.text() ) );
-        collapseAllButton.addMouseListener( new MouseListener.Stub() {
-
-            @Override
-            public void mouseReleased( final MouseEvent event ) {
-                collapseAllSelected();
-            }
-        } );
-        final ImageFigure duplicateButton = new ImageFigure( Util.image( "duplicate.gif" ) );
-        toolBar.add( duplicateButton );
-        duplicateButton.setToolTip( new Label( EclipseI18n.focusTreeDuplicateToolTip.text() ) );
-        duplicateButton.addMouseListener( new MouseListener.Stub() {
-
-            @Override
-            public void mouseReleased( final MouseEvent event ) {
-                focusTree.duplicate( focusTree.root );
-            }
-        } );
-        toolBar.setSize( toolBar.getPreferredSize() );
-        toolBar.setVisible( false );
-        final Rectangle focusLineBounds = new Rectangle( focusLine.getBounds() );
-        focusLineBounds.height = FocusTree.DEFAULT_FOCUS_LINE_HEIGHT;
-        focusLine.setBounds( focusLineBounds );
-        focusLine.setToolTip( new Label( EclipseI18n.focusTreeFocusLineToolTip.text() ) );
-        focusLine.setBackgroundColor( FocusTree.DEFAULT_FOCUS_LINE_COLOR );
-        focusLine.addMouseListener( focusLineMouseListener );
-        focusLine.addMouseMotionListener( focusLineMouseListener );
+        canvas.addMouseMotionListener( canvasMouseMotionListener );
         canvas.addLayoutListener( new LayoutListener.Stub() {
 
             @Override
@@ -240,145 +151,205 @@ class FocusTreeCanvas extends FigureCanvas {
                 focusLine.setBounds( bounds );
             }
         } );
-        canvas.addMouseMotionListener( canvasMouseMotionListener );
-        canvas.setOpaque( true );
+        toolBar.setLayoutManager( new GridLayout() );
+        final ImageFigure collapseAllButton = new ImageFigure( Util.image( "collapseall.gif" ) );
+        toolBar.add( collapseAllButton );
+        collapseAllButton.setToolTip( new Label( EclipseI18n.focusTreeCollapseAllToolTip.text() ) );
+        collapseAllButton.addMouseListener( new MouseListener.Stub() {
+
+            @Override
+            public void mouseReleased( final MouseEvent event ) {
+                if ( leftMouseButtonClicked( event ) ) collapseAllSelected();
+            }
+        } );
+        final ImageFigure duplicateButton = new ImageFigure( Util.image( "duplicate.gif" ) );
+        toolBar.add( duplicateButton );
+        duplicateButton.setToolTip( new Label( EclipseI18n.focusTreeDuplicateToolTip.text() ) );
+        duplicateButton.addMouseListener( new MouseListener.Stub() {
+
+            @Override
+            public void mouseReleased( final MouseEvent event ) {
+                if ( leftMouseButtonClicked( event ) ) focusTree.duplicate( focusTree.root );
+            }
+        } );
+        toolBar.setSize( toolBar.getPreferredSize() );
+        toolBar.setVisible( false );
+        focusLine.setToolTip( new Label( EclipseI18n.focusTreeFocusLineToolTip.text() ) );
+        focusLine.setBackgroundColor( focusTree.viewModel.focusLineColor() );
+        focusLine.addMouseListener( focusLineMouseListener );
+        focusLine.addMouseMotionListener( focusLineMouseListener );
+        focusLine.setSize( 0, focusTree.viewModel.focusLineHeight() );
+        focusLineOffset = focusTree.viewModel.focusLineOffset();
+        addButton = new AddButton( Util.image( "add.gif" ) );
+        addButton.setToolTip( new Label( EclipseI18n.focusTreeAddToolTip.text() ) );
+        addButton.setSize( addButton.getPreferredSize() );
+        columnMargins = new Dimension( addButton.getPreferredSize() ).expand( 2, 2 );
+        focusBorder = new LineBorder( focusTree.viewModel.focusCellBorderColor(), focusTree.viewModel.focusLineHeight() ) {
+
+            @Override
+            public void paint( final IFigure figure,
+                               final Graphics graphics,
+                               final Insets insets ) {
+                tempRect.setBounds( getPaintRectangle( figure, insets ) );
+                if ( getWidth() % 2 == 1 ) {
+                    tempRect.width--;
+                    tempRect.height--;
+                }
+                tempRect.shrink( getWidth() / 2, getWidth() / 2 );
+                graphics.setLineWidth( getWidth() );
+                graphics.setLineStyle( getStyle() );
+                graphics.setForegroundColor( getColor() );
+                graphics.drawRoundRectangle( tempRect, 8, 8 );
+            }
+        };
+        noFocusBorder = new LineBorder( focusTree.viewModel.focusLineHeight() ) {
+
+            @Override
+            public void paint( final IFigure figure,
+                               final Graphics graphics,
+                               final Insets insets ) {}
+        };
+        initialCellWidth = focusTree.viewModel.initialCellWidth();
+        iconViewCellWidth = focusTree.viewModel.iconViewCellWidth();
     }
 
-    private AddPanel addAddPanel( final Column column,
-                                  final int modelIndex,
-                                  final int viewIndex ) {
-        final AddPanel addPanel = new AddPanel();
-        column.cellColumn.add( addPanel, viewIndex );
-        addPanel.modelIndex = modelIndex;
-        addPanel.viewIndex = viewIndex;
-        column.cellColumn.setConstraint( addPanel, new GridData( SWT.FILL, SWT.DEFAULT, false, false ) );
-        final GridLayout layout = new GridLayout();
-        layout.marginHeight = layout.marginWidth = 0;
-        addPanel.setLayoutManager( layout );
-        final AddButton addButton = new AddButton( Util.image( "add.gif" ) );
-        addPanel.add( addButton );
-        addPanel.setConstraint( addButton, new GridData( SWT.CENTER, SWT.CENTER, true, true ) );
-        addButton.setToolTip( new Label( EclipseI18n.focusTreeAddToolTip.text() ) );
-        addButton.setVisible( false );
-        return addPanel;
+    Cell addCell( final Object item,
+                  final Column column ) throws PolyglotterException {
+        // Add new cell for item
+        final Cell cell = addCell( item, column, modelIndex( item, column ) );
+        // Update indexes
+        final List< ? > children = column.cellColumn.getChildren();
+        for ( int ndx = cell.index + 1; ndx < children.size(); ndx++ ) {
+            final Cell afterCell = ( Cell ) children.get( ndx );
+            afterCell.indexField.setText( String.valueOf( Integer.parseInt( afterCell.indexField.getText() ) + 1 ) );
+            afterCell.index++;
+        }
+        // Force layout to get cell location set
+        column.cellColumn.getLayoutManager().layout( column.cellColumn );
+        getDisplay().asyncExec( new Runnable() {
+
+            @Override
+            public void run() {
+                changeFocusCell( column, cell );
+            }
+        } );
+        return cell;
     }
 
     private Cell addCell( final Object item,
                           final Column column,
-                          final AddPanel addBeforePanel ) {
+                          final int index ) {
         // Create cell
-        final Cell cell = focusTree.model.createCell( item );
-        column.cellColumn.add( cell, addBeforePanel.viewIndex + 1 );
+        final Cell cell = focusTree.viewModel.createCell( item );
+        column.cellColumn.add( cell, index );
         cell.item = item;
-        cell.addPanel = addBeforePanel;
-        column.cellColumn.setConstraint( cell, new GridData( SWT.FILL, SWT.DEFAULT, false, false ) );
-        GridLayout gridLayout = new GridLayout( 3, false );
+        cell.index = index;
+        column.cellColumn.setConstraint( cell, new GridData( SWT.FILL, SWT.DEFAULT, true, false ) );
+        final GridLayout gridLayout = new GridLayout( 3, false );
         gridLayout.marginHeight = gridLayout.marginWidth = 0;
         cell.setLayoutManager( gridLayout );
         cell.setBorder( noFocusBorder );
-        cell.setBackgroundColor( focusTree.model.cellBackgroundColor( item ) );
+        cell.setBackgroundColor( focusTree.viewModel.cellBackgroundColor( item ) );
         cell.setToolTip( new Label( EclipseI18n.focusTreeCellToolTip.text() ) );
         // Construct cell
-        final int modelIndex = addBeforePanel.modelIndex;
-        final Label indexLabel = new Label( String.valueOf( initialIndexIsOne ? modelIndex + 1 : modelIndex ) );
-        cell.add( indexLabel );
-        indexLabel.setLabelAlignment( PositionConstants.LEFT );
-        cell.indexLabel = indexLabel;
-        indexLabel.setForegroundColor( focusTree.model.childIndexColor( column.item ) );
-        indexLabel.setToolTip( new Label( EclipseI18n.focusTreeCellIndexToolTip.text() ) );
-        final Image image = focusTree.model.icon( item );
-        final Label iconLabel = new Label();
-        cell.add( iconLabel );
-        cell.setConstraint( iconLabel, new GridData( SWT.FILL, SWT.CENTER, true, false ) );
-        if ( image != null ) iconLabel.setIcon( image );
-        final Figure statusPanel = new Figure();
-        cell.add( statusPanel );
-        gridLayout = new GridLayout();
-        gridLayout.marginHeight = gridLayout.marginWidth = 0;
-        statusPanel.setLayoutManager( gridLayout );
+        cell.indexField = new IndexField( String.valueOf( initialIndexIsOne ? index + 1 : index ) );
+        cell.add( cell.indexField );
+        cell.indexField.setLabelAlignment( PositionConstants.LEFT );
+        cell.indexField.setForegroundColor( focusTree.viewModel.childIndexColor( column.item ) );
+        cell.indexField.setToolTip( new Label( EclipseI18n.focusTreeCellIndexToolTip.text() ) );
+        final Image image = iconViewShown() ? focusTree.viewModel.iconViewIcon( item ) : focusTree.viewModel.icon( item );
+        cell.icon = new ImageFigure();
+        cell.add( cell.icon );
+        cell.setConstraint( cell.icon, new GridData( SWT.FILL, SWT.CENTER, true, false ) );
+        if ( image != null ) cell.icon.setImage( image );
+        final Figure indicators = new Figure();
+        cell.add( indicators );
+        indicators.setLayoutManager( new FlowLayout() );
         for ( final Indicator indicator : focusTree.model.indicators( item ) ) {
             final IndicatorButton button = new IndicatorButton( indicator.image, indicator );
             gridLayout.numColumns++;
-            statusPanel.add( button );
+            indicators.add( button );
             button.setToolTip( new Label( indicator.toolTip ) );
         }
         final DeleteButton deleteButton = new DeleteButton( Util.image( "delete.png" ) );
-        statusPanel.add( deleteButton );
+        indicators.add( deleteButton );
         cell.deleteButton = deleteButton;
         deleteButton.setToolTip( new Label( EclipseI18n.focusTreeDeleteToolTip.text() ) );
         deleteButton.setVisible( false );
         // Make index and spacer labels the same size so icon is centered
-        final int width = Math.max( indexLabel.getPreferredSize().width, statusPanel.getPreferredSize().width );
-        cell.setConstraint( indexLabel, new GridData( width, SWT.DEFAULT ) );
-        cell.setConstraint( statusPanel, new GridData( width, SWT.DEFAULT ) );
+        final int width = Math.max( cell.indexField.getPreferredSize().width, indicators.getPreferredSize().width );
+        GridData gridData = new GridData( width, SWT.DEFAULT );
+        gridData.horizontalAlignment = SWT.LEFT;
+        gridData.verticalAlignment = SWT.TOP;
+        cell.setConstraint( cell.indexField, gridData );
+        gridData = new GridData( width, SWT.DEFAULT );
+        gridData.horizontalAlignment = SWT.LEFT;
+        gridData.verticalAlignment = SWT.TOP;
+        gridData.grabExcessVerticalSpace = true;
+        cell.setConstraint( indicators, gridData );
         // Save preferred width as minimum width before adding name, type, and value labels
         cell.setMinimumSize( cell.getPreferredSize() );
         // Add name field
-        NameField nameField;
-        try {
-            nameField = new NameField( focusTree.model.name( item ) );
-        } catch ( final PolyglotterException e ) {
-            Util.logError( e, EclipseI18n.focusTreeUnableToGetName, item );
-            nameField = new NameField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
-        }
-        cell.add( nameField );
-        nameField.setTextAlignment( PositionConstants.CENTER );
-        nameField.setForegroundColor( focusTree.model.cellForegroundColor( item ) );
-        try {
-            nameField.setToolTip( new Label( EclipseI18n.focusTreeCellNameToolTip.text( focusTree.model.qualifiedName( item ) ) ) );
-        } catch ( final PolyglotterException e ) {
-            Util.logError( e, EclipseI18n.focusTreeUnableToGetQualifiedName, item );
-            nameField.setToolTip( new Label( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) ) );
-        }
-        GridData gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
-        gridData.horizontalSpan = 3;
-        cell.setConstraint( nameField, gridData );
-        // Add type field
-        TypeField typeField;
-        try {
-            typeField = new TypeField( focusTree.model.type( item ) );
-        } catch ( final PolyglotterException e ) {
-            Util.logError( e, EclipseI18n.focusTreeUnableToGetType, item );
-            typeField = new TypeField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
-        }
-        cell.add( typeField );
-        typeField.setTextAlignment( PositionConstants.CENTER );
-        typeField.setForegroundColor( focusTree.model.cellForegroundColor( item ) );
-        typeField.setToolTip( new Label( EclipseI18n.focusTreeCellTypeToolTip.text() ) );
-        gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
-        gridData.horizontalSpan = 3;
-        cell.setConstraint( typeField, gridData );
-        if ( focusTree.model.hasValue( item ) ) {
-            // Add value field
-            ValueField valueField;
+        if ( focusTree.model.hasName( item ) ) {
             try {
-                valueField = new ValueField( focusTree.model.value( item ) );
+                cell.nameField = new NameField( focusTree.model.name( item ).toString() );
             } catch ( final PolyglotterException e ) {
-                Util.logError( e, EclipseI18n.focusTreeUnableToGetValue, item );
-                valueField = new ValueField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+                Util.logError( e, EclipseI18n.focusTreeUnableToGetName, item );
+                cell.nameField = new NameField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
             }
-            cell.add( valueField );
-            valueField.setTextAlignment( PositionConstants.CENTER );
-            valueField.setForegroundColor( focusTree.model.cellForegroundColor( item ) );
-            valueField.setToolTip( new Label( EclipseI18n.focusTreeCellValueToolTip.text() ) );
+            cell.add( cell.nameField );
+            cell.nameField.setTextAlignment( PositionConstants.CENTER );
+            cell.nameField.setForegroundColor( focusTree.viewModel.cellForegroundColor( item ) );
+            try {
+                cell.nameField.setToolTip( new Label( EclipseI18n.focusTreeCellNameToolTip.text( focusTree.model.qualifiedName( item ) ) ) );
+            } catch ( final PolyglotterException e ) {
+                Util.logError( e, EclipseI18n.focusTreeUnableToGetQualifiedName, item );
+                cell.nameField.setToolTip( new Label( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) ) );
+            }
             gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
             gridData.horizontalSpan = 3;
-            cell.setConstraint( valueField, gridData );
+            cell.setConstraint( cell.nameField, gridData );
         }
-
-        // Create add-after panel
-        addAddPanel( column, modelIndex + 1, addBeforePanel.viewIndex + 2 );
-
+        if ( focusTree.model.hasType( item ) ) {
+            // Add type field
+            TypeField typeField;
+            try {
+                final Object type = focusTree.model.type( item );
+                typeField = new TypeField( type == null ? null : type.toString() );
+            } catch ( final PolyglotterException e ) {
+                Util.logError( e, EclipseI18n.focusTreeUnableToGetType, item );
+                typeField = new TypeField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+            }
+            cell.add( typeField );
+            typeField.setTextAlignment( PositionConstants.CENTER );
+            typeField.setForegroundColor( focusTree.viewModel.cellForegroundColor( item ) );
+            typeField.setToolTip( new Label( EclipseI18n.focusTreeCellTypeToolTip.text() ) );
+            gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
+            gridData.horizontalSpan = 3;
+            cell.setConstraint( typeField, gridData );
+        }
+        if ( focusTree.model.hasValue( item ) ) {
+            // Add value field
+            try {
+                final Object value = focusTree.model.value( item );
+                cell.valueField = new ValueField( value == null ? null : value.toString() );
+            } catch ( final PolyglotterException e ) {
+                Util.logError( e, EclipseI18n.focusTreeUnableToGetValue, item );
+                cell.valueField = new ValueField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+            }
+            cell.add( cell.valueField );
+            cell.valueField.setTextAlignment( PositionConstants.CENTER );
+            cell.valueField.setForegroundColor( focusTree.viewModel.cellForegroundColor( item ) );
+            cell.valueField.setToolTip( new Label( EclipseI18n.focusTreeCellValueToolTip.text() ) );
+            gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
+            gridData.horizontalSpan = 3;
+            cell.setConstraint( cell.valueField, gridData );
+        }
         column.cellColumn.revalidate();
-
         return cell;
     }
 
     void addColumn( final Column column ) {
-        column.backgroundColumn = new Figure();
-        // Add columns to beginning of canvas's children to ensure their backgrounds are painted first
-        canvas.add( column.backgroundColumn, 0 );
-        column.backgroundColumn.setBackgroundColor( focusColumnColor );
         column.cellColumn = new CellColumn();
         column.cellColumn.column = column;
         canvas.add( column.cellColumn );
@@ -386,23 +357,18 @@ class FocusTreeCanvas extends FigureCanvas {
 
         // Get last focus cell for this column if available
         final Object lastFocusItem = lastFocusItemByParent.get( column.item );
-        // Create first add button
-        AddPanel addPanel = addAddPanel( column, 0, 0 );
         // Create cells and subsequent add-after buttons
         try {
+            int index = 0;
             for ( final Object child : focusTree.model.children( column.item ) ) {
-                final Cell cell = addCell( child, column, addPanel );
-                // Adjust initial cell width if below minimum width
-                final int minWidth = cell.getMinimumSize().width;
-                if ( initialCellWidth < minWidth ) initialCellWidth = minWidth;
+                final Cell cell = addCell( child, column, index++ );
                 if ( column.focusCell == null && ( lastFocusItem == null || child.equals( lastFocusItem ) ) ) column.focusCell =
                     cell;
-                final List< ? > children = column.cellColumn.getChildren();
-                addPanel = ( AddPanel ) children.get( children.size() - 1 );
             }
         } catch ( final PolyglotterException e ) {
             Util.logAndShowError( e, EclipseI18n.focusTreeUnableToGetChildren, column.item );
         }
+        updateCellPreferredWidth( column );
         // Set preferred width of cells to model value
         for ( final Object child : column.cellColumn.getChildren() ) {
             if ( child instanceof Cell ) {
@@ -412,26 +378,21 @@ class FocusTreeCanvas extends FigureCanvas {
                 column.cellColumn.setConstraint( cell, gridData );
             }
         }
-        // Save column preferred width for use by double-clicking header border
-        column.preferredWidth = column.cellColumn.getPreferredSize().width;
         // Force layout to get cell locations set
         column.cellColumn.getLayoutManager().layout( column.cellColumn );
         // Set bounds
         if ( column.focusCell != null ) column.focusCell.setSize( column.focusCell.getPreferredSize() );
-        final Dimension cellColumnSize = column.cellColumn.getPreferredSize();
-        final int cellColumnX;
-        if ( focusTree.columns.size() == 1 ) cellColumnX = 0;
+        if ( focusTree.columns.size() == 1 ) column.bounds.x = 0;
         else {
-            final Rectangle previousCellColumnBounds = focusTree.columns.get( focusTree.columns.size() - 2 ).cellColumn.getBounds();
-            cellColumnX = previousCellColumnBounds.x + previousCellColumnBounds.width;
+            final Column previousColumn = focusTree.columns.get( focusTree.columns.size() - 2 );
+            column.bounds.x = previousColumn.bounds.x + previousColumn.bounds.width;
         }
-        // column.cellColumn.revalidate();
-        column.cellColumn.setBounds( new Rectangle( cellColumnX, 0, cellColumnSize.width, cellColumnSize.height ) );
-        final int canvasWidth = cellColumnX + cellColumnSize.width;
+        final Dimension cellColumnSize = column.cellColumn.getPreferredSize();
+        column.cellColumn.setBounds( new Rectangle( column.bounds.x + columnMargins.width, 0, cellColumnSize.width, cellColumnSize.height ) );
+        column.bounds.width = cellColumnSize.width + columnMargins.width * 2;
+        final int canvasWidth = column.bounds.x + column.bounds.width;
         focusLine.setSize( canvasWidth, focusLine.getSize().height );
-        final int canvasHeight = canvas.getSize().height;
-        canvas.setSize( canvasWidth, canvasHeight );
-        column.backgroundColumn.setBounds( new Rectangle( cellColumnX, 0, cellColumnSize.width, canvasHeight ) );
+        canvas.setSize( canvasWidth, canvas.getSize().height );
 
         // Wire cell column to show focus line tool tip on mouse-over
         // Note, the cell column figures are transparent, but overlap the focus line and canvas, so mouse events need to be
@@ -442,7 +403,30 @@ class FocusTreeCanvas extends FigureCanvas {
         focusCell( column, column.focusCell );
     }
 
-    Cell cellFor( IFigure figure ) {
+    void addItem() {
+        final Column column = addButton.column;
+        try {
+            final Object item = focusTree.model.add( column.item, addButton.index );
+            if ( item == null )
+                throw new PolyglotterException( EclipseI18n.focusTreeNullReturnedFromCreate, column.item, addButton.index );
+            final Cell cell = addCell( item, column );
+            updateCellPreferredWidth( column );
+            if ( focusTree.model.nameEditable( cell.item ) ) {
+                getDisplay().asyncExec( new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if ( focusTree.model.hasName( cell.item ) ) editNameField( cell );
+                        else editValueField( cell );
+                    }
+                } );
+            }
+        } catch ( final PolyglotterException e ) {
+            Util.logAndShowError( e, EclipseI18n.focusTreeUnableToCreateItem, column.item );
+        }
+    }
+
+    Cell cell( IFigure figure ) {
         while ( figure != canvas && !( figure instanceof Cell ) )
             figure = figure.getParent();
         return figure == canvas ? null : ( Cell ) figure;
@@ -463,7 +447,6 @@ class FocusTreeCanvas extends FigureCanvas {
             expandFocusCell( column );
         }
         // Change focus column
-        // Scroll so that focus line is at focus line offset from top of view and last column is visible
         focusTree.focusColumn( column );
     }
 
@@ -473,87 +456,174 @@ class FocusTreeCanvas extends FigureCanvas {
         lastFocusItemByParent.clear();
     }
 
-    private Column columnFor( IFigure figure ) {
+    private Column column( IFigure figure ) {
         while ( !( figure instanceof CellColumn ) )
             figure = figure.getParent();
         return ( ( CellColumn ) figure ).column;
     }
 
-    private void edit( final IFigure figure,
-                       final TextEditorHandler handler ) {
-        textEditor = new Text( this, SWT.NONE );
-        textEditorHandler = handler;
-        fieldEdited = ( Label ) figure;
-        textEditor.setText( fieldEdited.getText() );
-        final Rectangle fieldBounds = fieldEdited.getBounds();
-        final Point viewLocation = getViewport().getViewLocation();
-        textEditor.setBounds( fieldBounds.x - viewLocation.x,
-                              fieldBounds.y - viewLocation.y,
-                              fieldBounds.width,
-                              fieldBounds.height );
-        textEditor.addKeyListener( new KeyAdapter() {
+    private void deleteCell( final Cell cell ) {
+        final CellColumn cellColumn = ( CellColumn ) cell.getParent();
+        cellColumn.remove( cell );
+        // Update indexes
+        final List< ? > children = cellColumn.getChildren();
+        for ( int ndx = cell.index; ndx < children.size(); ndx++ ) {
+            final Cell afterCell = ( Cell ) children.get( ndx );
+            afterCell.index--;
+            afterCell.indexField.setText( String.valueOf( Integer.parseInt( afterCell.indexField.getText() ) - 1 ) );
+        }
+        // Focus on next cell, or previous cell if last cell was deleted
+        cellColumn.getLayoutManager().layout( cellColumn );
+        if ( children.size() > 1 ) {
+            final Cell newCell = ( Cell ) children.get( Math.min( cell.index + 1, children.size() - 1 ) );
+            addPaintListener( new PaintListener() {
 
-            private final Color originalForegroundColor = textEditor.getForeground();
-
-            @Override
-            public void keyReleased( final KeyEvent event ) {
-                if ( textEditor == null ) return;
-                final String problem = handler.problem();
-                if ( problem == null ) {
-                    textEditor.setToolTipText( null );
-                    textEditor.setForeground( originalForegroundColor );
-                } else {
-                    textEditor.setToolTipText( problem );
-                    textEditor.setForeground( Display.getCurrent().getSystemColor( SWT.COLOR_RED ) );
+                @Override
+                public void paintControl( final PaintEvent e ) {
+                    changeFocusCell( cellColumn.column, newCell );
+                    removePaintListener( this );
                 }
-            }
-        } );
-        textEditor.addTraverseListener( new TraverseListener() {
-
-            @Override
-            public void keyTraversed( final TraverseEvent event ) {
-                if ( ( event.detail & ( SWT.TRAVERSE_ESCAPE ) ) != 0 ) {
-                    textEditor.dispose();
-                    textEditor = null;
-                } else if ( ( event.detail & ( SWT.TRAVERSE_TAB_NEXT | SWT.TRAVERSE_TAB_PREVIOUS ) ) != 0 ) endEdit();
-                else if ( ( event.detail & SWT.TRAVERSE_RETURN ) != 0 && textEditor.getToolTipText() == null ) endEdit();
-            }
-        } );
-        textEditor.addFocusListener( new FocusAdapter() {
-
-            @Override
-            public void focusLost( final FocusEvent event ) {
-                endEdit();
-            }
-        } );
-        textEditor.setFocus();
+            } );
+            changeFocusCell( cellColumn.column, newCell );
+        }
+        updateCellPreferredWidth( cellColumn.column );
     }
 
-    // TODO what if name change causes index change?
-    void endEdit() {
-        if ( textEditor.getToolTipText() == null )
-            try {
-                final Object item = textEditorHandler.commit();
-                final Cell cell = cellFor( fieldEdited );
-                if ( cell.item != item ) {
-                    cell.item = item;
-                    final Column column = columnFor( cell );
-                    column.focusCell = null;
-                    changeFocusCell( column, cell );
-                }
-                fieldEdited.setText( textEditor.getText() );
-                if ( fieldEdited instanceof NameField )
-                    try {
-                        ( ( Label ) fieldEdited.getToolTip() ).setText( EclipseI18n.focusTreeCellNameToolTip.text( focusTree.model.qualifiedName( item ) ) );
-                    } catch ( final PolyglotterException e ) {
-                        Util.logError( e, EclipseI18n.focusTreeUnableToGetQualifiedName, item );
-                        ( ( Label ) fieldEdited.getToolTip() ).setText( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+    private void edit( final Label fieldEdited,
+                       final CellEditor editor,
+                       final EditorHandler editorHandler ) {
+        this.editor = editor;
+        this.editorHandler = editorHandler;
+        this.fieldEdited = fieldEdited;
+        if ( editor.getControl() == null ) editor.create( this );
+        final Cell cell = cell( fieldEdited );
+        focusCell( column( cell ), cell );
+        getDisplay().asyncExec( new Runnable() {
+
+            @Override
+            public void run() {
+                editor.setValue( fieldEdited.getText() );
+                final Rectangle fieldBounds = fieldEdited.getBounds();
+                final Point viewLocation = getViewport().getViewLocation();
+                editor.getControl().setBounds( fieldBounds.x - viewLocation.x,
+                                               fieldBounds.y - viewLocation.y,
+                                               fieldBounds.width,
+                                               editor.getControl().computeSize( SWT.DEFAULT, SWT.DEFAULT ).y );
+                editor.setValidator( new ICellEditorValidator() {
+
+                    private final Color originalForegroundColor = editor.getControl().getForeground();
+
+                    @Override
+                    public String isValid( final Object value ) {
+                        final String problem = editorHandler.problem();
+                        if ( problem == null ) {
+                            editor.getControl().setToolTipText( null );
+                            editor.getControl().setForeground( originalForegroundColor );
+                        } else {
+                            editor.getControl().setToolTipText( problem );
+                            editor.getControl().setForeground( getDisplay().getSystemColor( SWT.COLOR_RED ) );
+                        }
+                        return problem;
                     }
-            } catch ( final PolyglotterException e ) {
-                Util.logAndShowError( e, EclipseI18n.focusTreeUnableToCommitChanges, cellFor( fieldEdited ).item );
+                } );
+                editor.addListener( new ICellEditorListener() {
+
+                    @Override
+                    public void applyEditorValue() {
+                        endEdit();
+                    }
+
+                    @Override
+                    public void cancelEditor() {
+                        endEdit();
+                    }
+
+                    @Override
+                    public void editorValueChanged( final boolean oldValidState,
+                                                    final boolean newValidState ) {}
+                } );
+                editor.getControl().setVisible( true );
+                editor.setFocus();
+                editor.performSelectAll();
             }
-        textEditor.dispose();
-        textEditor = null;
+        } );
+    }
+
+    void editNameField( final Cell cell ) {
+        edit( cell.nameField, focusTree.viewModel.nameEditor( cell.item ), new EditorHandler() {
+
+            @Override
+            public Object commit() throws PolyglotterException {
+                final Object item = focusTree.model.setName( cell.item, editor.getValue().toString() );
+                if ( item == null )
+                    throw new PolyglotterException( EclipseI18n.focusTreeNullReturnedFromSetName, cell.item );
+                return item;
+            }
+
+            @Override
+            public String problem() {
+                return focusTree.model.nameProblem( cell.item,
+                                                    editor.getValue() == null ? null : editor.getValue().toString() );
+            }
+        } );
+    }
+
+    void editValueField( final Cell cell ) {
+        edit( cell.valueField, focusTree.viewModel.valueEditor( cell.item ), new EditorHandler() {
+
+            @Override
+            public Object commit() throws PolyglotterException {
+                final Object value = editor.getValue();
+                final Object item = focusTree.model.setValue( cell.item, value == null ? null : value.toString() );
+                if ( item == null )
+                    throw new PolyglotterException( EclipseI18n.focusTreeNullReturnedFromSetValue, cell.item );
+                return item;
+            }
+
+            @Override
+            public String problem() {
+                return focusTree.model.valueProblem( cell.item,
+                                                     editor.getValue() == null ? null : editor.getValue().toString() );
+            }
+        } );
+    }
+
+    void endEdit() {
+        if ( editor == null ) return;
+        if ( editor.isValueValid() )
+            try {
+                final Object item = editorHandler.commit();
+                final Cell cell = cell( fieldEdited );
+                final Column column = column( cell );
+                if ( cell.item != item ) {
+                    deleteCell( cell );
+                    addCell( item, column );
+                } else {
+                    fieldEdited.setText( editor.getValue() == null ? null : editor.getValue().toString() );
+                    if ( fieldEdited instanceof NameField ) {
+                        final Label toolTip = ( Label ) fieldEdited.getToolTip();
+                        try {
+                            toolTip.setText( EclipseI18n.focusTreeCellNameToolTip.text( focusTree.model.qualifiedName( item ) ) );
+                        } catch ( final PolyglotterException e ) {
+                            Util.logError( e, EclipseI18n.focusTreeUnableToGetQualifiedName, item );
+                            toolTip.setText( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+                        }
+                    }
+                    column.cellColumn.getLayoutManager().layout( column.cellColumn );
+                    addPaintListener( new PaintListener() {
+
+                        @Override
+                        public void paintControl( final PaintEvent e ) {
+                            changeFocusCell( column, cell );
+                            removePaintListener( this );
+                        }
+                    } );
+                }
+            } catch ( final PolyglotterException e ) {
+                Util.logAndShowError( e, EclipseI18n.focusTreeUnableToCommitChanges, cell( fieldEdited ).item );
+            }
+        editor.deactivate();
+        editor = null;
     }
 
     private void expandFocusCell( final Column column ) {
@@ -569,6 +639,7 @@ class FocusTreeCanvas extends FigureCanvas {
 
     void focusCell( final Column column,
                     final Cell focusCell ) {
+        Util.logContextTrace();
         // Collapse previous focus cell and give it a no-focus border
         if ( column.focusCell != null ) column.focusCell.setBorder( noFocusBorder );
 
@@ -578,36 +649,41 @@ class FocusTreeCanvas extends FigureCanvas {
             lastFocusItemByParent.put( column.item, focusCell.item );
             focusCell.setBorder( focusBorder );
         }
-        final Rectangle focusCellBounds =
-            ( focusCell == null ? ( AddPanel ) column.cellColumn.getChildren().get( 0 ) : focusCell ).getBounds();
-        final Rectangle cellColumnBounds = new Rectangle( column.cellColumn.getBounds() );
+        final Point cellColumnLocation = column.cellColumn.getLocation();
+        Util.logTrace( "cellColumnLocation: %s", cellColumnLocation );
+        final Rectangle focusCellBounds = ( focusCell == null ? new Rectangle() : focusCell.getBounds() );
+        Util.logTrace( "focusCellBounds: %s", focusCellBounds );
         final Rectangle focusLineBounds = focusLine.getBounds();
-        cellColumnBounds.y -= focusCellBounds.y + focusCellBounds.height / 2 - focusLineBounds.y - focusLineBounds.height / 2;
-        column.cellColumn.setBounds( cellColumnBounds );
+        Util.logTrace( "focusLineBounds: %s", focusLineBounds );
+        cellColumnLocation.y -= focusCellBounds.y + focusCellBounds.height / 2 - focusLineBounds.y - focusLineBounds.height / 2;
+        column.cellColumn.setLocation( cellColumnLocation );
+        Util.logTrace( "cellColumnLocation: %s", cellColumnLocation );
         updateBounds();
     }
 
     void hideColumn( final Column column,
                      final int columnWidth ) {
         updateColumnWidth( column, columnWidth, true );
-        focusTree.unfocusColumn( column );
     }
 
     void hideIconView( final Column column ) {
+        iconViewColumn = null;
+        column.cellColumn.setBorder( null );
         focusLine.setVisible( true );
         for ( final Column col : focusTree.columns ) {
-            col.backgroundColumn.setVisible( true );
             col.cellColumn.setVisible( true );
         }
         setCellColumnLayoutManager( column );
-        for ( final Object figure : column.cellColumn.getChildren() ) {
-            ( ( IFigure ) figure ).setPreferredSize( null );
-            // jpav: remove
-            System.out.println( column.cellColumn.getLayoutManager().getConstraint( ( IFigure ) figure ) );
+        for ( final Object child : column.cellColumn.getChildren() ) {
+            final Cell cell = ( Cell ) child;
+            cell.setPreferredSize( null );
+            cell.icon.setImage( focusTree.viewModel.icon( cell.item ) );
+            final GridData gridData = new GridData( SWT.FILL, SWT.DEFAULT, false, false );
+            gridData.widthHint = column.cellWidthBeforeIconView;
+            column.cellColumn.setConstraint( cell, gridData );
         }
-        final Rectangle backgroundColumnBounds = column.backgroundColumn.getBounds();
-        column.cellColumn.setBounds( new Rectangle( backgroundColumnBounds.x, 0,
-                                                    backgroundColumnBounds.width, column.cellColumn.getPreferredSize().height ) );
+        column.cellColumn.setLocation( new Point( column.bounds.x + columnMargins.width, 0 ) );
+        column.cellColumn.setSize( column.cellColumn.getPreferredSize() );
         focusCell( column, column.focusCell );
     }
 
@@ -618,13 +694,12 @@ class FocusTreeCanvas extends FigureCanvas {
         }
     }
 
-    void homeSelected() {
-        focusTree.scrollToFocusColumn();
-        scrollToFocusLine();
+    boolean iconViewShown() {
+        return iconViewColumn != null;
     }
 
-    boolean iconViewShown() {
-        return !focusLine.isVisible();
+    boolean leftMouseButtonClicked( final MouseEvent event ) {
+        return event.button == 1 && ( event.getState() & SWT.MODIFIER_MASK ) == 0;
     }
 
     void modelChanged() {
@@ -633,154 +708,74 @@ class FocusTreeCanvas extends FigureCanvas {
         canvas.add( focusLine );
     }
 
-    void mouseClickedOverCanvas( final MouseEvent event ) {
-        if ( textEditor != null ) endEdit();
-        final IFigure figure = canvas.findFigureAt( event.x, event.y );
-        if ( figure instanceof AddButton ) {
-            final Column column = columnFor( figure );
-            try {
-                AddPanel addPanel = ( AddPanel ) figure.getParent();
-                final Object item = focusTree.model.createChildAt( column.item, addPanel.modelIndex );
-                if ( item == null )
-                    throw new PolyglotterException( EclipseI18n.focusTreeNullReturnedFromCreateChildAt,
-                                                    column.item,
-                                                    addPanel.modelIndex );
-                // Determine at what index model really created item
-                int modelIndex = 0;
-                for ( final Object child : focusTree.model.children( column.item ) ) {
-                    if ( child.equals( item ) ) break;
-                    modelIndex++;
-                }
-                // Find correct add panel to create cell after
-                for ( final Object child : column.cellColumn.getChildren() )
-                    if ( child instanceof AddPanel && ( ( AddPanel ) child ).modelIndex == modelIndex ) {
-                        addPanel = ( AddPanel ) child;
-                        break;
-                    }
-                // Add new cell for item
-                final Cell cell = addCell( item, column, addPanel );
-                // Update indexes
-                final List< ? > children = column.cellColumn.getChildren();
-                for ( int ndx = cell.addPanel.viewIndex + 3; ndx < children.size(); ndx++ ) {
-                    final Cell afterCell = ( Cell ) children.get( ndx++ );
-                    afterCell.indexLabel.setText( String.valueOf( Integer.parseInt( afterCell.indexLabel.getText() ) + 1 ) );
-                    final AddPanel afterAddPanel = ( AddPanel ) children.get( ndx );
-                    afterAddPanel.viewIndex += 2;
-                    afterAddPanel.modelIndex++;
-                }
-                column.cellColumn.setSize( column.cellColumn.getPreferredSize() );
-                column.cellColumn.getLayoutManager().layout( column.cellColumn );
-                addPaintListener( new PaintListener() {
+    int modelIndex( final Object item,
+                    final Column column ) throws PolyglotterException {
+        // Find actual index of item in model
+        int index = 0;
+        for ( final Object child : focusTree.model.children( column.item ) ) {
+            if ( child.equals( item ) ) return index;
+            index++;
+        }
+        throw new PolyglotterException( EclipseI18n.focusTreeItemNotFound, item, column.item );
+    }
 
-                    @Override
-                    public void paintControl( final PaintEvent e ) {
-                        changeFocusCell( column, cell );
-                        removePaintListener( this );
-                    }
-                } );
-                changeFocusCell( column, cell );
-            } catch ( final PolyglotterException e ) {
-                Util.logAndShowError( e, EclipseI18n.focusTreeUnableToCreateItem, column.item );
-            }
-        } else if ( figure instanceof DeleteButton ) {
-            final Cell cell = cellFor( figure );
+    void mouseClickedOverCanvas( final MouseEvent event ) {
+        if ( editor != null ) endEdit();
+        final IFigure figure = canvas.findFigureAt( event.x, event.y );
+        if ( figure instanceof AddButton ) addItem();
+        else if ( figure instanceof DeleteButton ) {
+            final Cell cell = cell( figure );
             String name;
             try {
                 name = EclipseI18n.deleteConfirmationMessage.text( focusTree.model.name( cell.item ) );
             } catch ( final Exception e ) {
                 name = EclipseI18n.focusTreeErrorText.text( e.getMessage() );
             }
-            if ( MessageDialog.openConfirm( getShell(), EclipseI18n.confirmDialogTitle.text(), name ) ) {
-                if ( focusTree.model.delete( cell.item ) ) {
-                    final CellColumn cellColumn = ( CellColumn ) cell.getParent();
-                    cellColumn.remove( cell.addPanel );
-                    cellColumn.remove( cell );
-                    // Update indexes
-                    final List< ? > children = cellColumn.getChildren();
-                    for ( int ndx = cell.addPanel.viewIndex; ndx < children.size(); ndx++ ) {
-                        final AddPanel addPanel = ( AddPanel ) children.get( ndx++ );
-                        addPanel.viewIndex -= 2;
-                        addPanel.modelIndex--;
-                        if ( ndx < children.size() ) {
-                            final Cell afterCell = ( Cell ) children.get( ndx );
-                            afterCell.indexLabel.setText( String.valueOf( Integer.parseInt( afterCell.indexLabel.getText() ) - 1 ) );
-                        }
-                    }
-                    // Focus on next cell, or previous cell if last cell was deleted
-                    cellColumn.getLayoutManager().layout( cellColumn );
-                    if ( children.size() > 1 ) {
-                        final Cell newCell =
-                            ( Cell ) children.get( Math.min( cell.addPanel.viewIndex + 1, children.size() - 2 ) );
-                        addPaintListener( new PaintListener() {
-
-                            @Override
-                            public void paintControl( final PaintEvent e ) {
-                                changeFocusCell( cellColumn.column, newCell );
-                                removePaintListener( this );
-                            }
-                        } );
-                        changeFocusCell( cellColumn.column, newCell );
-                    }
-                }
-            }
+            if ( MessageDialog.openConfirm( getShell(), EclipseI18n.confirmDialogTitle.text(), name )
+                 && focusTree.model.delete( cell.item ) ) deleteCell( cell );
         } else if ( figure instanceof IndicatorButton ) {
-            ( ( IndicatorButton ) figure ).indicator.selected( cellFor( figure ).item );
+            ( ( IndicatorButton ) figure ).indicator.selected( cell( figure ).item );
         } else {
-            final Cell cell = cellFor( figure );
-            if ( cell != null ) changeFocusCell( columnFor( cell ), cell );
+            final Cell cell = cell( figure );
+            if ( cell != null ) changeFocusCell( column( cell ), cell );
         }
     }
 
     void mouseDoubleClickedOverCanvas( final MouseEvent event ) {
-        if ( textEditor != null ) endEdit();
+        if ( editor != null ) endEdit();
         final IFigure figure = canvas.findFigureAt( event.x, event.y );
-        final Cell cell = cellFor( figure );
-        if ( figure instanceof NameField ) {
+        final Cell cell = cell( figure );
+        if ( figure instanceof IndexField ) {
+
+        } else if ( figure instanceof NameField ) {
             if ( focusTree.model.nameEditable( cell.item ) ) {
-                edit( figure, new TextEditorHandler() {
-
-                    @Override
-                    public Object commit() throws PolyglotterException {
-                        return focusTree.model.setName( cell.item, textEditor.getText() );
-                    }
-
-                    @Override
-                    public String problem() {
-                        return focusTree.model.nameProblem( cell.item, textEditor.getText() );
-                    }
-                } );
+                editNameField( cell );
                 return;
             }
         } else if ( figure instanceof TypeField ) {
             if ( focusTree.model.typeEditable( cell.item ) ) {
-                edit( figure, new TextEditorHandler() {
+                edit( ( TypeField ) figure, focusTree.viewModel.typeEditor( cell.item ), new EditorHandler() {
 
                     @Override
                     public Object commit() throws PolyglotterException {
-                        return focusTree.model.setType( cell.item, textEditor.getText() );
+                        final Object type = editor.getValue();
+                        final Object item = focusTree.model.setType( cell.item, type == null ? null : type.toString() );
+                        if ( item == null )
+                            throw new PolyglotterException( EclipseI18n.focusTreeNullReturnedFromSetType, cell.item );
+                        return item;
                     }
 
                     @Override
                     public String problem() {
-                        return focusTree.model.typeProblem( cell.item, textEditor.getText() );
+                        return focusTree.model.typeProblem( cell.item,
+                                                            editor.getValue() == null ? null : editor.getValue().toString() );
                     }
                 } );
                 return;
             }
         } else if ( figure instanceof ValueField ) {
             if ( focusTree.model.valueEditable( cell.item ) ) {
-                edit( figure, new TextEditorHandler() {
-
-                    @Override
-                    public Object commit() throws PolyglotterException {
-                        return focusTree.model.setValue( cell.item, textEditor.getText() );
-                    }
-
-                    @Override
-                    public String problem() {
-                        return focusTree.model.valueProblem( cell.item, textEditor.getText() );
-                    }
-                } );
+                editValueField( cell );
                 return;
             }
         }
@@ -793,19 +788,79 @@ class FocusTreeCanvas extends FigureCanvas {
     }
 
     void mouseMovedOverCanvas( final MouseEvent event ) {
-        IFigure figure = canvas.findFigureAt( event.x, event.y );
-        if ( figure instanceof AddButton ) figure = figure.getParent();
-        if ( figure instanceof AddPanel ) {
-            final AddButton addButton = ( AddButton ) figure.getChildren().get( 0 );
-            if ( mouseOverButton == addButton ) return;
-            if ( focusTree.model.childrenAddable( columnFor( figure ).item ) ) {
+        final IFigure figure = canvas.findFigureAt( event.x, event.y );
+        if ( figure instanceof CellColumn ) {
+            addButton.column = column( figure );
+            if ( focusTree.model.childrenAddable( addButton.column.item ) ) {
+                Cell lastCell = null;
+                Cell cell = null;
+                final Dimension addButtonSize = addButton.getSize();
+                final Point addButtonLocation = new Point();
+                Rectangle cellBounds = new Rectangle();
+                if ( iconViewShown() ) {
+                    for ( final Object child : figure.getChildren() ) {
+                        lastCell = ( Cell ) child;
+                        cellBounds = lastCell.getBounds();
+                        if ( cellBounds.x > event.x && cellBounds.x - columnMargins.width <= event.x && cellBounds.y <= event.y
+                             && cellBounds.y + cellBounds.height > event.y ) {
+                            cell = lastCell;
+                            break;
+                        }
+                    }
+                    if ( cell == null ) {
+                        if ( lastCell == null ) {
+                            addButtonLocation.setLocation( 1, 1 );
+                            addButton.index = 0;
+                        } else if ( cellBounds.x + cellBounds.width <= event.x
+                                    && cellBounds.x + cellBounds.width + columnMargins.width > event.x
+                                    && cellBounds.y <= event.y && cellBounds.y + cellBounds.height > event.y ) {
+                            addButtonLocation.y = cellBounds.y + ( cellBounds.height - addButtonSize.height ) / 2;
+                            addButtonLocation.x = cellBounds.x + cellBounds.width + 1;
+                            addButton.index = lastCell.index + 1;
+                        } else {
+                            hideMouseOverButton();
+                            return;
+                        }
+                    } else {
+                        addButtonLocation.y = cellBounds.y + ( cellBounds.height - addButtonSize.height ) / 2;
+                        addButtonLocation.x = cellBounds.x - addButtonSize.width - 1;
+                        addButton.index = cell.index;
+                    }
+                } else {
+                    for ( final Object child : figure.getChildren() ) {
+                        lastCell = ( Cell ) child;
+                        cellBounds = lastCell.getBounds();
+                        if ( cellBounds.y > event.y && cellBounds.y - columnMargins.height <= event.y ) {
+                            cell = lastCell;
+                            break;
+                        }
+                    }
+                    final Rectangle cellColumnBounds = figure.getBounds();
+                    addButtonLocation.x = cellColumnBounds.x + ( cellColumnBounds.width - addButtonSize.width ) / 2;
+                    if ( cell == null ) {
+                        if ( lastCell == null ) {
+                            addButtonLocation.y = 1;
+                            addButton.index = 0;
+                        } else {
+                            addButtonLocation.y = cellBounds.y + cellBounds.height + 1;
+                            addButton.index = lastCell.index + 1;
+                        }
+                    } else {
+                        addButtonLocation.y = cellBounds.y - addButtonSize.height - 1;
+                        addButton.index = cell.index;
+                    }
+                }
+                if ( mouseOverButton == addButton ) return;
                 if ( mouseOverButton != null ) mouseOverButton.setVisible( false );
+                addButton.setLocation( addButtonLocation );
+                canvas.add( addButton );
                 addButton.setVisible( true );
                 mouseOverButton = addButton;
                 return;
             }
-        } else {
-            final Cell cell = cellFor( figure );
+        } else if ( figure instanceof AddButton ) return;
+        else {
+            final Cell cell = cell( figure );
             if ( cell != null ) {
                 if ( mouseOverButton == cell.deleteButton ) return;
                 if ( focusTree.model.deletable( cell.item ) ) {
@@ -836,19 +891,6 @@ class FocusTreeCanvas extends FigureCanvas {
 
             @Override
             public void mouseMoved( final MouseEvent event ) {
-                // TODO fix bug where initial tool tip display after change is showing up outside of app briefly
-                // and frequent invalid thread access errors from tool tip helper timer on app exit
-                if ( focusLine.containsPoint( event.getLocation() ) ) {
-                    if ( column.cellColumn.getToolTip() != focusLine.getToolTip() ) {
-                        toolTipHelper.updateToolTip( focusLine, focusLine.getToolTip(), event.x, event.y );
-                        column.cellColumn.setToolTip( focusLine.getToolTip() );
-                    }
-                } else if ( column == focusTree.focusColumn ) {
-                    if ( column.cellColumn.getToolTip() != focusColumnToolTip ) {
-                        toolTipHelper.updateToolTip( focusLine, focusColumnToolTip, event.x, event.y );
-                        column.cellColumn.setToolTip( focusColumnToolTip );
-                    }
-                } else column.cellColumn.setToolTip( null );
                 canvasMouseMotionListener.mouseMoved( event );
             }
         } );
@@ -873,26 +915,38 @@ class FocusTreeCanvas extends FigureCanvas {
     }
 
     void removeColumn( final Column column ) {
-        canvas.remove( column.backgroundColumn );
         canvas.remove( column.cellColumn );
     }
 
     private void removeColumnsAfter( final Column column ) {
         focusTree.removeColumnsAfter( column );
-        final Rectangle childColumnBounds = column.cellColumn.getBounds();
-        canvas.setSize( childColumnBounds.x + childColumnBounds.width, canvas.getSize().height );
+        canvas.setSize( column.bounds.x + column.bounds.width, canvas.getSize().height );
     }
 
     void scrollToFocusLine() {
-        scrollToY( focusLine.getLocation().y - focusLineOffset );
-        // scrollSmoothTo( getViewport().getClientArea().x, focusLine.getLocation().y - focusLineOffset );
+        getDisplay().asyncExec( new Runnable() {
+
+            @Override
+            public void run() {
+                scrollToY( focusLine.getLocation().y - focusLineOffset );
+                // scrollSmoothTo( getViewport().getClientArea().x, focusLine.getLocation().y - focusLineOffset );
+            }
+        } );
+    }
+
+    void setCellColors( final Column column ) {
+        for ( final Object child : column.cellColumn.getChildren() ) {
+            final Cell cell = ( Cell ) child;
+            cell.setBackgroundColor( focusTree.viewModel.cellBackgroundColor( cell.item ) );
+            setTextColor( cell, focusTree.viewModel.cellForegroundColor( cell.item ) );
+            cell.indexField.setForegroundColor( focusTree.viewModel.childIndexColor( cell.item ) );
+        }
     }
 
     private void setCellColumnLayoutManager( final Column column ) {
         final GridLayout layout = new GridLayout();
-        layout.marginHeight = 0;
-        layout.marginWidth = 20;
-        layout.verticalSpacing = 2;
+        layout.marginHeight = layout.verticalSpacing = columnMargins.height;
+        layout.marginWidth = 0;
         column.cellColumn.setLayoutManager( layout );
     }
 
@@ -904,6 +958,47 @@ class FocusTreeCanvas extends FigureCanvas {
         focusLine.setBounds( focusLineBounds );
     }
 
+    int setInitialCellWidth( final Column column,
+                             final int initialCellWidth,
+                             int xDelta ) {
+        final Point cellColumnLocation = column.cellColumn.getLocation();
+        cellColumnLocation.x += xDelta;
+        column.cellColumn.setLocation( cellColumnLocation );
+        column.bounds.x += xDelta;
+        for ( final Object cell : column.cellColumn.getChildren() ) {
+            final GridData gridData = ( GridData ) column.cellColumn.getLayoutManager().getConstraint( ( Cell ) cell );
+            if ( gridData.widthHint != this.initialCellWidth ) return xDelta;
+            gridData.widthHint = initialCellWidth;
+        }
+        final Dimension cellColumnSize = column.cellColumn.getPreferredSize();
+        final int widthDelta = cellColumnSize.width -
+                               ( this.initialCellWidth == SWT.DEFAULT ? column.cellColumn.getSize().width : this.initialCellWidth );
+        xDelta += widthDelta;
+        column.cellColumn.setSize( cellColumnSize );
+        column.bounds.width += widthDelta;
+        return xDelta;
+    }
+
+    void setInitialIndexIsOne( final boolean initialIndexIsOne ) {
+        if ( initialIndexIsOne == this.initialIndexIsOne ) return;
+        for ( final Column column : focusTree.columns ) {
+            int index = initialIndexIsOne ? 1 : 0;
+            for ( final Object cell : column.cellColumn.getChildren() ) {
+                ( ( Cell ) cell ).indexField.setText( String.valueOf( index++ ) );
+            }
+        }
+        this.initialIndexIsOne = initialIndexIsOne;
+    }
+
+    private void setTextColor( final IFigure figure,
+                               final Color color ) {
+        if ( figure instanceof Label ) {
+            if ( !( figure instanceof IndexField ) ) figure.setForegroundColor( color );
+        } else for ( final Object child : figure.getChildren() ) {
+            setTextColor( ( IFigure ) child, color );
+        }
+    }
+
     void showColumn( final Column column,
                      final int width ) {
         updateColumnWidth( column, width, true );
@@ -911,158 +1006,137 @@ class FocusTreeCanvas extends FigureCanvas {
     }
 
     void showIconView( final Column column ) {
-        int maxHeight = 0;
+        iconViewColumn = column;
         focusLine.setVisible( false );
         for ( final Column col : focusTree.columns ) {
-            col.backgroundColumn.setVisible( false );
             if ( col != column ) col.cellColumn.setVisible( false );
         }
-        for ( final Object figure : column.cellColumn.getChildren() )
-            if ( figure instanceof Cell ) {
-                final Cell cell = ( Cell ) figure;
-                final Dimension size = cell.getPreferredSize( initialCellWidth, SWT.DEFAULT );
-                cell.setPreferredSize( size );
-                maxHeight = Math.max( maxHeight, size.height );
-            }
-        for ( final Object figure : column.cellColumn.getChildren() )
-            if ( figure instanceof AddPanel ) {
-                final AddPanel addPanel = ( AddPanel ) figure;
-                addPanel.setPreferredSize( Dimension.SINGLETON.setSize( addPanel.getPreferredSize().height, maxHeight ) );
-            }
-        column.cellColumn.setLayoutManager( new FlowLayout() );
-        final Dimension size = column.cellColumn.getPreferredSize( getViewport().getClientArea().width, SWT.DEFAULT );
-        column.cellColumn.setBounds( Rectangle.SINGLETON.setBounds( 0, 0, size.width, size.height ) );
-        canvas.setSize( size );
+        column.cellWidthBeforeIconView = 0;
+        for ( final Object figure : column.cellColumn.getChildren() ) {
+            final Cell cell = ( Cell ) figure;
+            if ( column.cellWidthBeforeIconView == 0 ) column.cellWidthBeforeIconView =
+                ( ( GridData ) column.cellColumn.getLayoutManager().getConstraint( cell ) ).widthHint;
+            cell.icon.setImage( focusTree.viewModel.iconViewIcon( cell.item ) );
+            final Dimension size = cell.getPreferredSize( iconViewCellWidth, SWT.DEFAULT );
+            cell.setPreferredSize( size );
+        }
+        final FlowLayout layout = new FlowLayout();
+        layout.setMinorAlignment( OrderedLayout.ALIGN_BOTTOMRIGHT );
+        layout.setMajorSpacing( columnMargins.width );
+        layout.setMinorSpacing( columnMargins.height );
+        column.cellColumn.setLayoutManager( layout );
+        column.cellColumn.setBorder( new MarginBorder( columnMargins.height, columnMargins.width,
+                                                       columnMargins.height, columnMargins.width ) );
+        updateIconViewBounds();
     }
 
-    private void updateBounds() {
+    void updateBounds() {
+        Util.logContextTrace();
         int minY = Short.MAX_VALUE;
         int maxY = 0;
+        int canvasWidth = 0;
         for ( final Column column : focusTree.columns ) {
-            // // jpav: remove
-            // System.out.println( "column: " + column.item );
             final Rectangle cellColumnBounds = column.cellColumn.getBounds();
-            // // jpav: remove
-            // System.out.println( "cell column bounds: " + cellColumnBounds );
+            Util.logTrace( "cellColumnBounds: %s", cellColumnBounds );
+            canvasWidth += column.bounds.width;
             minY = Math.min( minY, cellColumnBounds.y );
-            // // jpav: remove
-            // System.out.println( "minY: " + minY );
             maxY = Math.max( maxY, cellColumnBounds.y + cellColumnBounds.height );
-            // // jpav: remove
-            // System.out.println( "maxY: " + maxY );
         }
-        int newCanvasHeight = maxY - minY;
-        // // jpav: remove
-        // System.out.println( "new canvas height: " + newCanvasHeight );
-        final Rectangle focusLineBounds = new Rectangle( focusLine.getBounds() );
-        // // jpav: remove
-        // System.out.println( "focus line bounds: " + focusLineBounds );
-        final int topMargin = focusLineOffset - ( focusLineBounds.y - minY );
-        // // jpav: remove
-        // System.out.println( "top margin: " + topMargin );
+        Util.logTrace( "canvasWidth: %d", canvasWidth );
+        Util.logTrace( "minY: %d", minY );
+        Util.logTrace( "maxY: %d", maxY );
+        int canvasHeight = maxY - minY;
+        Util.logTrace( "canvasHeight: %d", canvasHeight );
+        final Point focusLineLocation = focusLine.getLocation();
+        Util.logTrace( "focusLineLocation: %s", focusLineLocation );
+        final int topMargin = focusLineOffset - ( focusLineLocation.y - minY );
+        Util.logTrace( "topMargin: %d", topMargin );
         if ( topMargin > 0 ) {
-            newCanvasHeight += topMargin;
-            // // jpav: remove
-            // System.out.println( "new canvas height: " + newCanvasHeight );
+            canvasHeight += topMargin;
+            Util.logTrace( "canvasHeight: %d", canvasHeight );
             minY -= topMargin;
-            // // jpav: remove
-            // System.out.println( "minY: " + minY );
+            Util.logTrace( "minY: %d", minY );
         }
-        final Rectangle viewBounds = getViewport().getClientArea();
-        // // jpav: remove
-        // System.out.println( "view bounds: " + viewBounds );
-        final int bottomMargin = focusLineBounds.y + viewBounds.height - focusLineOffset - maxY;
-        // // jpav: remove
-        // System.out.println( "bottom margin: " + bottomMargin );
+        final int bottomMargin = focusLineLocation.y + getViewport().getClientArea().height - focusLineOffset - maxY;
+        Util.logTrace( "bottomMargin: %d", bottomMargin );
         if ( bottomMargin > 0 ) {
-            newCanvasHeight += bottomMargin;
-            // // jpav: remove
-            // System.out.println( "new canvas height: " + newCanvasHeight );
+            canvasHeight += bottomMargin;
+            Util.logTrace( "canvasHeight: %d", canvasHeight );
         }
-        final Rectangle canvasBounds = new Rectangle( canvas.getBounds() );
-        // // jpav: remove
-        // System.out.println( "canvas bounds: " + canvasBounds );
-        if ( newCanvasHeight != canvasBounds.height ) {
-            canvasBounds.height = newCanvasHeight;
-            canvas.setBounds( canvasBounds );
-            // // jpav: remove
-            // System.out.println( "canvas bounds: " + canvasBounds );
+        final Dimension canvasBounds = canvas.getSize();
+        Util.logTrace( "canvasBounds: %s", canvasBounds );
+        if ( canvasHeight != canvasBounds.height ) {
+            canvasBounds.height = canvasHeight;
+            canvas.setSize( canvasBounds );
+            Util.logTrace( "canvasBounds: %s", canvasBounds );
             for ( final Column column : focusTree.columns ) {
-                // // jpav: remove
-                // System.out.println( "column: " + column.item );
-                final Rectangle cellColumnBounds = column.cellColumn.getBounds();
-                // // jpav: remove
-                // System.out.println( "cell column bounds: " + cellColumnBounds );
-                column.backgroundColumn.setBounds( new Rectangle( cellColumnBounds.x, 0, cellColumnBounds.width, canvasBounds.height ) );
-                // // jpav: remove
-                // System.out.println( "background column bounds: " + column.backgroundColumn.getBounds() );
+                column.bounds.height = canvasBounds.height;
+                Util.logTrace( "column.bounds: %s", column.bounds );
             }
         }
         if ( minY != 0 ) {
-            focusLineBounds.y -= minY;
-            focusLine.setBounds( focusLineBounds );
-            // // jpav: remove
-            // System.out.println( "focus line bounds: " + focusLineBounds );
+            focusLineLocation.y -= minY;
+            focusLine.setLocation( focusLineLocation );
+            Util.logTrace( "focusLineLocation: %s", focusLineLocation );
             for ( final Column column : focusTree.columns ) {
-                // // jpav: remove
-                // System.out.println( "column: " + column.item );
-                final Rectangle cellColumnBounds = new Rectangle( column.cellColumn.getBounds() );
-                cellColumnBounds.y -= minY;
-                column.cellColumn.setBounds( cellColumnBounds );
-                // // jpav: remove
-                // System.out.println( "cell column bounds: " + column.cellColumn.getBounds() );
+                final Point cellColumnLocation = column.cellColumn.getLocation();
+                cellColumnLocation.y -= minY;
+                column.cellColumn.setLocation( cellColumnLocation );
+                Util.logTrace( "cellColumnLocation: %s", cellColumnLocation );
             }
         }
+        if ( canvasBounds.width > canvasWidth ) {
+            canvasBounds.width = canvasWidth;
+            canvas.setSize( canvasBounds );
+            Util.logTrace( "canvasBounds: %s", canvasBounds );
+        }
         focusTree.scroller.setMinWidth( canvasBounds.width );
-        focusTree.scroller.setOrigin( canvasBounds.width -
-                                      focusTree.scroller.getClientArea().width,
-                                      0 );
+        focusTree.scroller.setOrigin( canvasBounds.width - focusTree.scroller.getClientArea().width, 0 );
+    }
+
+    private void updateCellPreferredWidth( final Column column ) {
+        column.cellPreferredWidth = column.cellColumn.getPreferredSize().width;
     }
 
     void updateColumnWidth( final Column column,
                             final int width,
                             final boolean visible ) {
-        column.backgroundColumn.setSize( width, column.backgroundColumn.getSize().height );
-        column.backgroundColumn.setVisible( visible );
-        final Dimension childColumnSize = column.cellColumn.getSize();
-        final int delta = width - childColumnSize.width;
-        column.cellColumn.setSize( width, childColumnSize.height );
+        final int delta = width - column.bounds.width;
+        column.bounds.width = width;
+        final Dimension cellColumnSize = column.cellColumn.getSize();
+        column.cellColumn.setSize( cellColumnSize.width + delta, cellColumnSize.height );
         for ( final Object cell : column.cellColumn.getChildren() )
             ( ( GridData ) column.cellColumn.getLayoutManager().getConstraint( ( IFigure ) cell ) ).widthHint += delta;
         column.cellColumn.setVisible( visible );
-        Column previousColumn = null;
+        boolean afterColumn = false;
         for ( final Column col : focusTree.columns )
-            if ( col == column ) previousColumn = col;
-            else if ( previousColumn != null ) {
-                final Rectangle previousColumnBounds = previousColumn.cellColumn.getBounds();
-                final Rectangle childColBounds = new Rectangle( col.cellColumn.getBounds() );
-                childColBounds.x = previousColumnBounds.x + previousColumnBounds.width;
-                col.cellColumn.setBounds( childColBounds );
+            if ( col == column ) afterColumn = true;
+            else if ( afterColumn ) {
+                final Point cellColumnLocation = col.cellColumn.getLocation();
+                cellColumnLocation.x += delta;
+                col.cellColumn.setLocation( cellColumnLocation );
                 col.cellColumn.revalidate();
-                final Rectangle backgroundColBounds = new Rectangle( col.backgroundColumn.getBounds() );
-                backgroundColBounds.x = childColBounds.x;
-                col.backgroundColumn.setBounds( backgroundColBounds );
-                col.backgroundColumn.revalidate();
-                previousColumn = col;
+                col.bounds.x += delta;
             }
-        @SuppressWarnings( "null" ) final Rectangle previousColumnBounds = previousColumn.cellColumn.getBounds();
-        final Rectangle canvasBounds = new Rectangle( canvas.getBounds() );
-        canvasBounds.width = previousColumnBounds.x + previousColumnBounds.width;
-        canvas.setBounds( canvasBounds );
+        final Dimension canvasSize = canvas.getSize();
+        canvas.setSize( canvasSize.width + delta, canvasSize.height );
         canvas.revalidate();
     }
 
-    private class AddButton extends ImageFigure {
+    void updateIconViewBounds() {
+        final Dimension size = iconViewColumn.cellColumn.getPreferredSize( getViewport().getClientArea().width, SWT.DEFAULT );
+        iconViewColumn.cellColumn.setBounds( Rectangle.SINGLETON.setBounds( 0, 0, size.width, size.height ) );
+        canvas.setSize( size );
+    }
+
+    private static class AddButton extends ImageFigure {
+
+        int index;
+        Column column;
 
         AddButton( final Image image ) {
             super( image );
         }
-    }
-
-    class AddPanel extends Figure {
-
-        int modelIndex;
-        int viewIndex;
     }
 
     class CellColumn extends Figure {
@@ -1075,6 +1149,13 @@ class FocusTreeCanvas extends FigureCanvas {
         DeleteButton( final Image image ) {
             super( image );
         }
+    }
+
+    private interface EditorHandler {
+
+        Object commit() throws PolyglotterException;
+
+        String problem();
     }
 
     class FocusLineMouseListener extends MouseMotionListener.Stub implements MouseListener {
@@ -1108,6 +1189,13 @@ class FocusTreeCanvas extends FigureCanvas {
         }
     }
 
+    static class IndexField extends Label {
+
+        IndexField( final String text ) {
+            super( text );
+        }
+    }
+
     private class IndicatorButton extends ImageFigure {
 
         final Indicator indicator;
@@ -1119,18 +1207,11 @@ class FocusTreeCanvas extends FigureCanvas {
         }
     }
 
-    private class NameField extends Label {
+    static class NameField extends Label {
 
         NameField( final String text ) {
             super( text );
         }
-    }
-
-    private interface TextEditorHandler {
-
-        Object commit() throws PolyglotterException;
-
-        String problem();
     }
 
     private class TypeField extends Label {
@@ -1140,7 +1221,7 @@ class FocusTreeCanvas extends FigureCanvas {
         }
     }
 
-    private class ValueField extends Label {
+    static class ValueField extends Label {
 
         ValueField( final String text ) {
             super( text );

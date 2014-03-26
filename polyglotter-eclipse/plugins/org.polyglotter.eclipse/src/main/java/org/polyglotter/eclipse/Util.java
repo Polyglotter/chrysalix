@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.polyglotter.common.I18n;
 import org.polyglotter.common.Logger;
+import org.polyglotter.common.Logger.Level;
 
 /**
  * Utilities used in the Polyglotter Eclipse project.
@@ -45,6 +46,11 @@ public final class Util {
      * An empty string.
      */
     public static final String EMPTY_STRING = "";
+
+    private static String context() {
+        final StackTraceElement element = Thread.currentThread().getStackTrace()[ 3 ];
+        return element.getClassName() + '.' + element.getMethodName();
+    }
 
     /**
      * @param path
@@ -72,6 +78,13 @@ public final class Util {
     }
 
     /**
+     * 
+     */
+    public static void logContextTrace() {
+        Logger.getLogger( context() ).trace( "==== " + context() + " ====" );
+    }
+
+    /**
      * @param message
      *        a contextual message to be shown
      * @param messageParameters
@@ -93,8 +106,26 @@ public final class Util {
     public static void logError( final Throwable e,
                                  final I18n message,
                                  final Object... messageParameters ) {
-        final StackTraceElement element = Thread.currentThread().getStackTrace()[ 3 ];
-        Logger.getLogger( element.getClassName() + '.' + element.getMethodName() ).error( e, message, messageParameters );
+        Logger.getLogger( context() ).error( e, message, messageParameters );
+    }
+
+    /**
+     * @param message
+     *        a contextual message to be shown
+     * @param messageParameters
+     *        any parameters required by the supplied message
+     */
+    public static void logTrace( final String message,
+                                 final Object... messageParameters ) {
+        Logger.getLogger( context() ).trace( message, messageParameters );
+    }
+
+    /**
+     * @param level
+     *        a log level
+     */
+    public static void setLogLevel( final Level level ) {
+        Logger.getLogger( context() ).setLevel( level );
     }
 
     /**

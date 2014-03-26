@@ -63,11 +63,9 @@ public final class EclipseI18n {
         new I18n( "Copy the path shown in the path bar as slash-delimited text to the clipboard" );
     public static final I18n focusTreeDeleteToolTip = new I18n( "Delete this cell" );
     public static final I18n focusTreeDuplicateToolTip = new I18n( "Duplicate this tree" );
-    public static final I18n focusTreeFocusColumnToolTip = new I18n( "The focus column" );
     public static final I18n focusTreeFocusLineToolTip = new I18n( "The focus line.  Can be dragged up and down" );
     public static final I18n focusTreeHideColumnToolTip = new I18n( "Hide this column.\n" + focusTreeHeaderToolTip );
     public static final I18n focusTreeHideToolBarToolTip = new I18n( "Hide this tool bar" + focusTreeReopenToolTipSuffix );
-    public static final I18n focusTreeHomeToolTip = new I18n( "Scroll to the focus cell of the focus column" );
     public static final I18n focusTreeLinkToolTip = new I18n( "Link with selections in other widgets" );
     public static final I18n focusTreeNextPathButtonToolTip = new I18n( "Show next path button" );
     public static final I18n focusTreeParentNameToolTip =
@@ -87,13 +85,18 @@ public final class EclipseI18n {
     public static final I18n focusTreeCollapseAllMenuItem = new I18n( "Collapse all columns" );
     public static final I18n focusTreeCopyPathMenuItem = new I18n( "Copy path" );
     public static final I18n focusTreeDuplicateMenuItem = new I18n( "Duplicate tree" );
-    public static final I18n focusTreeFocusMenuItem = new I18n( "Scroll to focus cell of focus column" );
+    public static final I18n focusTreeHideIconViewMenuItem = new I18n( "Hide icon view" );
+    public static final I18n focusTreeShowIconViewMenuItem = new I18n( "Show icon view" );
 
     // Exceptions
     public static final I18n focusTreeColumnNotFound = new I18n( "Column not found" );
     public static final I18n focusTreeErrorText = new I18n( "<Error: %s>" );
-    public static final I18n focusTreeNullReturnedFromCreateChildAt =
-        new I18n( "FocusTreeModel.createChildAt(<%s>, %d) illegally returned null" );
+    public static final I18n focusTreeItemNotFound = new I18n( "Item \"%s\" not found in parent item \"%s\"" );
+    public static final I18n focusTreeNullReturnedFromCreate =
+        new I18n( "FocusTreeModel.create(<%s>, %d) illegally returned null" );
+    public static final I18n focusTreeNullReturnedFromSetName = new I18n( "FocusTreeModel.setName(<%s>) illegally returned null" );
+    public static final I18n focusTreeNullReturnedFromSetType = new I18n( "FocusTreeModel.setType(<%s>) illegally returned null" );
+    public static final I18n focusTreeNullReturnedFromSetValue = new I18n( "FocusTreeModel.setValue(<%s>) illegally returned null" );
     public static final I18n focusTreeUnableToDetermineIfChildrenAddableOrExist =
         new I18n( "Unable to determine if children or addable or already exist for item \"%s\"" );
     public static final I18n focusTreeUnableToDetermineIfChildrenExist =

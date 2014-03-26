@@ -27,20 +27,20 @@ import org.polyglotter.common.I18n;
 import org.polyglotter.common.Logger;
 
 final class Log4jLoggerImpl extends Logger {
-    
+
     private final org.apache.log4j.Logger logger;
-    
+
     public Log4jLoggerImpl( final String name ) {
         logger = org.apache.log4j.Logger.getLogger( name );
     }
-    
+
     @Override
     public void debug( final String message,
                        final Object... params ) {
         if ( !isDebugEnabled() ) return;
         logger.debug( String.format( message, params ) );
     }
-    
+
     @Override
     public void debug( final Throwable t,
                        final String message,
@@ -51,11 +51,11 @@ final class Log4jLoggerImpl extends Logger {
         if ( !isDebugEnabled() ) return;
         logger.debug( String.format( message, params ), t );
     }
-    
+
     private boolean empty( final String str ) {
         return str == null || str.trim().isEmpty();
     }
-    
+
     @Override
     public void error( final I18n message,
                        final Object... params ) {
@@ -65,7 +65,7 @@ final class Log4jLoggerImpl extends Logger {
         if ( !isErrorEnabled() ) return;
         logger.error( message.text( getLoggingLocale(), params ) );
     }
-    
+
     @Override
     public void error( final Throwable t,
                        final I18n message,
@@ -75,14 +75,14 @@ final class Log4jLoggerImpl extends Logger {
         }
         if ( !isErrorEnabled() ) return;
         logger.error( message.text( getLoggingLocale(), params ), t );
-        
+
     }
-    
+
     @Override
     public String getName() {
         return logger.getName();
     }
-    
+
     @Override
     public void info( final I18n message,
                       final Object... params ) {
@@ -92,7 +92,7 @@ final class Log4jLoggerImpl extends Logger {
         if ( !isInfoEnabled() ) return;
         logger.info( message.text( getLoggingLocale(), params ) );
     }
-    
+
     @Override
     public void info( final Throwable t,
                       final I18n message,
@@ -103,32 +103,67 @@ final class Log4jLoggerImpl extends Logger {
         if ( !isInfoEnabled() ) return;
         logger.info( message.text( getLoggingLocale(), params ), t );
     }
-    
+
     @Override
     public boolean isDebugEnabled() {
         return logger.isEnabledFor( org.apache.log4j.Level.DEBUG );
     }
-    
+
     @Override
     public boolean isErrorEnabled() {
         return logger.isEnabledFor( org.apache.log4j.Level.ERROR );
     }
-    
+
     @Override
     public boolean isInfoEnabled() {
         return logger.isEnabledFor( org.apache.log4j.Level.INFO );
     }
-    
+
     @Override
     public boolean isTraceEnabled() {
         return logger.isEnabledFor( org.apache.log4j.Level.TRACE );
     }
-    
+
     @Override
     public boolean isWarnEnabled() {
         return logger.isEnabledFor( org.apache.log4j.Level.WARN );
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.common.Logger#setLevel(org.polyglotter.common.Logger.Level)
+     */
+    @Override
+    public void setLevel( final Level level ) {
+        switch ( level ) {
+            case OFF: {
+                logger.setLevel( org.apache.log4j.Level.OFF );
+                break;
+            }
+            case ERROR: {
+                logger.setLevel( org.apache.log4j.Level.ERROR );
+                break;
+            }
+            case WARNING: {
+                logger.setLevel( org.apache.log4j.Level.WARN );
+                break;
+            }
+            case INFO: {
+                logger.setLevel( org.apache.log4j.Level.INFO );
+                break;
+            }
+            case DEBUG: {
+                logger.setLevel( org.apache.log4j.Level.DEBUG );
+                break;
+            }
+            case TRACE: {
+                logger.setLevel( org.apache.log4j.Level.TRACE );
+                break;
+            }
+        }
+    }
+
     @Override
     public void trace( final String message,
                        final Object... params ) {
@@ -138,7 +173,7 @@ final class Log4jLoggerImpl extends Logger {
         if ( !isTraceEnabled() ) return;
         logger.trace( String.format( message, params ) );
     }
-    
+
     @Override
     public void trace( final Throwable t,
                        final String message,
@@ -149,7 +184,7 @@ final class Log4jLoggerImpl extends Logger {
         if ( !isTraceEnabled() ) return;
         logger.trace( String.format( message, params ), t );
     }
-    
+
     @Override
     public void warn( final I18n message,
                       final Object... params ) {
@@ -159,7 +194,7 @@ final class Log4jLoggerImpl extends Logger {
         if ( !isWarnEnabled() ) return;
         logger.warn( message.text( getLoggingLocale(), params ) );
     }
-    
+
     @Override
     public void warn( final Throwable t,
                       final I18n message,

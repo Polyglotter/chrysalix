@@ -33,13 +33,19 @@ import org.slf4j.LoggerFactory;
  * @since 2.5
  */
 final class SLF4JLoggerImpl extends Logger {
-    
+
+    private static Boolean debugEnabled;
+    private static Boolean errorEnabled;
+    private static Boolean infoEnabled;
+    private static Boolean traceEnabled;
+    private static Boolean warnEnabled;
+
     private final org.slf4j.Logger logger;
-    
+
     public SLF4JLoggerImpl( final String category ) {
         logger = LoggerFactory.getLogger( category );
     }
-    
+
     /**
      * Log a message at the DEBUG level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -57,7 +63,7 @@ final class SLF4JLoggerImpl extends Logger {
         if ( message == null ) return;
         logger.debug( String.format( message, params ) );
     }
-    
+
     /**
      * Log an exception (throwable) at the DEBUG level with an accompanying message. If the exception is null, then this method
      * calls {@link #debug(String, Object...)}.
@@ -84,7 +90,7 @@ final class SLF4JLoggerImpl extends Logger {
         }
         logger.debug( String.format( message, params ), t );
     }
-    
+
     /**
      * Log a message at the ERROR level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -102,7 +108,7 @@ final class SLF4JLoggerImpl extends Logger {
         if ( message == null ) return;
         logger.error( message.text( getLoggingLocale(), params ) );
     }
-    
+
     /**
      * Log an exception (throwable) at the ERROR level with an accompanying message. If the exception is null, then this method
      * calls {@link Logger#error(I18n, Object...)}.
@@ -129,12 +135,12 @@ final class SLF4JLoggerImpl extends Logger {
         }
         logger.error( message.text( getLoggingLocale(), params ), t );
     }
-    
+
     @Override
     public String getName() {
         return logger.getName();
     }
-    
+
     /**
      * Log a message at the INFO level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -152,7 +158,7 @@ final class SLF4JLoggerImpl extends Logger {
         if ( message == null ) return;
         logger.info( message.text( getLoggingLocale(), params ) );
     }
-    
+
     /**
      * Log an exception (throwable) at the INFO level with an accompanying message. If the exception is null, then this method calls
      * {@link Logger#info(I18n, Object...)}.
@@ -179,32 +185,46 @@ final class SLF4JLoggerImpl extends Logger {
         }
         logger.info( message.text( getLoggingLocale(), params ), t );
     }
-    
+
     @Override
     public boolean isDebugEnabled() {
-        return logger.isDebugEnabled();
+        return debugEnabled == null ? logger.isDebugEnabled() : debugEnabled;
     }
-    
+
     @Override
     public boolean isErrorEnabled() {
-        return logger.isErrorEnabled();
+        return errorEnabled == null ? logger.isErrorEnabled() : errorEnabled;
     }
-    
+
     @Override
     public boolean isInfoEnabled() {
-        return logger.isInfoEnabled();
+        return infoEnabled == null ? logger.isInfoEnabled() : infoEnabled;
     }
-    
+
     @Override
     public boolean isTraceEnabled() {
-        return logger.isTraceEnabled();
+        return traceEnabled == null ? logger.isTraceEnabled() : traceEnabled;
     }
-    
+
     @Override
     public boolean isWarnEnabled() {
-        return logger.isWarnEnabled();
+        return warnEnabled == null ? logger.isWarnEnabled() : warnEnabled;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.common.Logger#setLevel(org.polyglotter.common.Logger.Level)
+     */
+    @Override
+    public void setLevel( final Level level ) {
+        errorEnabled = level.ordinal() >= Level.ERROR.ordinal();
+        warnEnabled = level.ordinal() >= Level.WARNING.ordinal();
+        infoEnabled = level.ordinal() >= Level.INFO.ordinal();
+        debugEnabled = level.ordinal() >= Level.DEBUG.ordinal();
+        traceEnabled = level.ordinal() >= Level.TRACE.ordinal();
+    }
+
     /**
      * Log a message at the TRACE level according to the specified format and (optional) parameters. The message should contain a
      * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
@@ -222,7 +242,7 @@ final class SLF4JLoggerImpl extends Logger {
         if ( message == null ) return;
         logger.trace( String.format( message, params ) );
     }
-    
+
     /**
      * Log an exception (throwable) at the TRACE level with an accompanying message. If the exception is null, then this method
      * calls {@link #trace(String, Object...)}.
@@ -249,7 +269,7 @@ final class SLF4JLoggerImpl extends Logger {
         }
         logger.trace( String.format( message, params ), t );
     }
-    
+
     @Override
     public void warn( final I18n message,
                       final Object... params ) {
@@ -257,7 +277,7 @@ final class SLF4JLoggerImpl extends Logger {
         if ( message == null ) return;
         logger.warn( message.text( getLoggingLocale(), params ) );
     }
-    
+
     @Override
     public void warn( final Throwable t,
                       final I18n message,
@@ -273,5 +293,5 @@ final class SLF4JLoggerImpl extends Logger {
         }
         logger.warn( message.text( getLoggingLocale(), params ), t );
     }
-    
+
 }
