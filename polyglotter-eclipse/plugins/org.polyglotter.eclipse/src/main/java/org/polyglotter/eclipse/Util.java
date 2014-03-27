@@ -63,6 +63,15 @@ public final class Util {
     }
 
     /**
+     * @param text
+     *        the text being checked (can be <code>null</code> or empty)
+     * @return <code>true</code> if the text is <code>null</code> or empty
+     */
+    public static boolean isBlank( final String text ) {
+        return ( ( text == null ) || text.isEmpty() );
+    }
+
+    /**
      * @param e
      *        a throwable
      * @param message

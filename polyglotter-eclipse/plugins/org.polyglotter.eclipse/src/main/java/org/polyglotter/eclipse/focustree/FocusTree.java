@@ -210,12 +210,13 @@ public class FocusTree extends Composite {
                 iconViewMenuItem.setText( EclipseI18n.focusTreeShowIconViewMenuItem.text() );
                 final Control control = getDisplay().getCursorControl();
                 Column column = null;
-                if ( control instanceof FocusTreeCanvas ) for ( final Column col : columns ) {
-                    if ( col.bounds.contains( event.x, event.y ) ) {
-                        column = col;
-                        break;
+                if ( control instanceof FocusTreeCanvas )
+                    for ( final Column col : columns ) {
+                        if ( col.bounds.contains( event.x, event.y ) ) {
+                            column = col;
+                            break;
+                        }
                     }
-                }
                 else column = ( Column ) control.getData( COLUMN_PROPERTY );
                 iconViewMenuItem.setEnabled( column != null );
                 iconViewMenuItem.setData( COLUMN_PROPERTY, column );
@@ -365,7 +366,8 @@ public class FocusTree extends Composite {
 
             @Override
             public void handleEvent( final Event event ) {
-                if ( focusTreeCanvas.iconViewShown() ) focusTreeCanvas.updateIconViewBounds();
+                if ( focusTreeCanvas.iconViewShown() )
+                    focusTreeCanvas.updateIconViewBounds();
                 else focusTreeCanvas.updateBounds();
             }
         } );
@@ -436,7 +438,11 @@ public class FocusTree extends Composite {
         column.header.setToolTipText( EclipseI18n.focusTreeHeaderToolTip.text() );
         final Label childCount = new Label( column.header, SWT.NONE );
         GridDataFactory.swtDefaults().applyTo( childCount );
-        childCount.setText( String.valueOf( model.childCount( column.item ) ) );
+        try {
+            childCount.setText( String.valueOf( model.childCount( column.item ) ) );
+        } catch ( final PolyglotterException e1 ) {
+            childCount.setText( EclipseI18n.focusTreeChildCountError.text() );
+        }
         childCount.setToolTipText( EclipseI18n.focusTreeChildCountToolTip.text() );
         childCount.setVisible( false );
         final Label itemName = new Label( column.header, SWT.CENTER );
@@ -679,8 +685,9 @@ public class FocusTree extends Composite {
         final GC gc = new GC( image );
         gc.setAntialias( SWT.ON );
         gc.setForeground( getDisplay().getSystemColor( SWT.COLOR_BLACK ) );
-        if ( leftArrow ) for ( int x = 0, y = size / 2; y >= 0; x++, y-- )
-            gc.drawLine( x, y, x, y + x * 2 );
+        if ( leftArrow )
+            for ( int x = 0, y = size / 2; y >= 0; x++, y-- )
+                gc.drawLine( x, y, x, y + x * 2 );
         else for ( int y = 0, x = 0; y <= size / 2; x++, y++ )
             gc.drawLine( x, y, x, y + size - 1 - x * 2 );
         gc.dispose();
@@ -698,20 +705,21 @@ public class FocusTree extends Composite {
         final ToolItem item = new ToolItem( toolBar, style );
         item.setImage( Util.image( iconName ) );
         item.setToolTipText( toolTip.text() );
-        if ( selectionListener == null ) item.addSelectionListener( new SelectionAdapter() {
+        if ( selectionListener == null )
+            item.addSelectionListener( new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected( final SelectionEvent event ) {
-                final Shell dialog = new Shell( getShell(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL );
-                dialog.setLayout( new RowLayout() );
-                final Label label = new Label( dialog, SWT.NONE );
-                label.setText( "Not yet implemented" );
-                dialog.pack();
-                final Rectangle itemBounds = getDisplay().map( toolBar, null, item.getBounds() );
-                dialog.setLocation( itemBounds.x, itemBounds.y );
-                dialog.open();
-            }
-        } );
+                @Override
+                public void widgetSelected( final SelectionEvent event ) {
+                    final Shell dialog = new Shell( getShell(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL );
+                    dialog.setLayout( new RowLayout() );
+                    final Label label = new Label( dialog, SWT.NONE );
+                    label.setText( "Not yet implemented" );
+                    dialog.pack();
+                    final Rectangle itemBounds = getDisplay().map( toolBar, null, item.getBounds() );
+                    dialog.setLocation( itemBounds.x, itemBounds.y );
+                    dialog.open();
+                }
+            } );
         else item.addSelectionListener( selectionListener );
         return item;
     }
@@ -1023,7 +1031,8 @@ public class FocusTree extends Composite {
         @Override
         public void dragDetected( final DragDetectEvent event ) {
             if ( targetColumn == null ) return;
-            if ( targetColumn == column ) offset = column.header.getSize().x - event.x;
+            if ( targetColumn == column )
+                offset = column.header.getSize().x - event.x;
             else offset = -event.x;
             dragging = true;
         }
@@ -1040,7 +1049,8 @@ public class FocusTree extends Composite {
         @Override
         public void mouseEnter( final MouseEvent event ) {
             if ( focusTreeCanvas.iconViewShown() ) return;
-            if ( event.x >= column.header.getSize().x - 1 - HEADER_MARGIN ) setTargetColumn( column );
+            if ( event.x >= column.header.getSize().x - 1 - HEADER_MARGIN )
+                setTargetColumn( column );
             else if ( event.x <= HEADER_MARGIN && previousColumn != null )
                 setTargetColumn( previousColumn );
         }
@@ -1138,17 +1148,21 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object add( final Object parent,
                            final int index ) throws PolyglotterException {
-            return true;
+            return null;
         }
 
         /**
          * @param item
          *        an item in the tree
          * @return the number of children of the supplied item. Default is 0.
+         * @throws PolyglotterException
+         *         if an error occurs
          */
-        public int childCount( final Object item ) {
+        @SuppressWarnings( "unused" )
+        public int childCount( final Object item ) throws PolyglotterException {
             return 0;
         }
 
@@ -1159,6 +1173,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object[] children( final Object item ) throws PolyglotterException {
             return Util.EMPTY_ARRAY;
         }
@@ -1184,10 +1199,10 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
-         * @return <code>true</code> if the supplied item was successfully deleted. Default is <code>true</code>
+         * @return <code>true</code> if the supplied item was successfully deleted
          */
         public boolean delete( final Object item ) {
-            return true;
+            return deletable( item );
         }
 
         /**
@@ -1197,6 +1212,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public boolean hasChildren( final Object item ) throws PolyglotterException {
             return false;
         }
@@ -1205,8 +1221,11 @@ public class FocusTree extends Composite {
          * @param item
          *        an item in the tree
          * @return <code>true</code> if the supplied item has a name. Default is <code>true</code>
+         * @throws PolyglotterException
+         *         if an error occurs
          */
-        public boolean hasName( final Object item ) {
+        @SuppressWarnings( "unused" )
+        public boolean hasName( final Object item ) throws PolyglotterException {
             return true;
         }
 
@@ -1223,8 +1242,11 @@ public class FocusTree extends Composite {
          * @param item
          *        an item in the tree
          * @return <code>true</code> if the supplied item has a value. Default is <code>false</code>
+         * @throws PolyglotterException
+         *         if an error occurs
          */
-        public boolean hasValue( final Object item ) {
+        @SuppressWarnings( "unused" )
+        public boolean hasValue( final Object item ) throws PolyglotterException {
             return false;
         }
 
@@ -1245,6 +1267,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object name( final Object item ) throws PolyglotterException {
             return item.toString();
         }
@@ -1294,6 +1317,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object setName( final Object item,
                                final Object name ) throws PolyglotterException {
             return item;
@@ -1310,6 +1334,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object setType( final Object item,
                                final Object type ) throws PolyglotterException {
             return item;
@@ -1326,6 +1351,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object setValue( final Object item,
                                 final Object value ) throws PolyglotterException {
             return item;
@@ -1338,6 +1364,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object type( final Object item ) throws PolyglotterException {
             return item.getClass().getSimpleName();
         }
@@ -1371,6 +1398,7 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
+        @SuppressWarnings( "unused" )
         public Object value( final Object item ) throws PolyglotterException {
             return null;
         }

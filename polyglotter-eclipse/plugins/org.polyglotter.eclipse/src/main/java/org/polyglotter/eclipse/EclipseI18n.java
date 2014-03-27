@@ -89,6 +89,7 @@ public final class EclipseI18n {
     public static final I18n focusTreeShowIconViewMenuItem = new I18n( "Show icon view" );
 
     // Exceptions
+    public static final I18n focusTreeChildCountError = new I18n( "<Error>" );
     public static final I18n focusTreeColumnNotFound = new I18n( "Column not found" );
     public static final I18n focusTreeErrorText = new I18n( "<Error: %s>" );
     public static final I18n focusTreeItemNotFound = new I18n( "Item \"%s\" not found in parent item \"%s\"" );

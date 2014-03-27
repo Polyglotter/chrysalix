@@ -23,40 +23,113 @@
  */
 package org.polyglotter.eclipse.view;
 
-import org.modeshape.modeler.ModelerTest;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertThat;
+
+import java.io.File;
+
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.modeshape.modeler.ModeShapeModeler;
+import org.modeshape.modeler.Model;
+import org.modeshape.modeler.ModelObject;
+import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.ModelTypeManager;
+import org.modeshape.modeler.Modeler;
+import org.modeshape.modeler.test.BaseTest;
+import org.polyglotter.eclipse.view.ModelContentProvider.ModelContent;
+import org.polyglotter.eclipse.view.ModelContentProvider.PropertyModel;
+import org.polyglotter.eclipse.view.ModelContentProvider.ValueModel;
 
 /**
  * A test class for {@link ModelContentProvider}.
  */
-// @SuppressWarnings( "javadoc" )
-public final class ModelContentProviderTest extends ModelerTest {
+@SuppressWarnings( "javadoc" )
+public final class ModelContentProviderTest extends BaseTest {
 
-    // private Model model;
-    // private ModelContentProvider provider;
+    private static final boolean DEBUG = false;
 
-    // @Before
-    // public void beforeEach() throws Exception {
-    // super.before();
-    // final ModelTypeManager modelTypeManager = polyglotter().modelTypeManager();
-    // modelTypeManager.install( XML_MODEL_TYPE_CATEGORY );
-    // final ModelType modelType = modelTypeManager.modelType( XML_MODEL_TYPE_NAME );
-    // this.model = polyglotter().generateModel( stream( XML_ARTIFACT ), XML_MODEL_NAME, modelType );
-    //
-    // this.provider = new ModelContentProvider();
-    // }
-    //
-    // @Test
-    // public void shouldProvideChildrenOfNode() {
-    // TestUtil.manager( modeler() ).run( new Task< Void >() {
-    //
-    // @Override
-    // public Void run( final Session session ) throws Exception {
-    // final Node node = session.getNode( path );
-    // assertThat( node, notNullValue() );
-    // assertThat( node.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString(), is( url.toString() ) );
-    // return null;
-    // }
-    // } );
-    // }
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        final Modeler failingModeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
+        failingModeler.close();
+    }
+
+    private ModelContentProvider provider;
+    private ModelType xsdModelType;
+
+    @Before
+    public void beforeEach() throws Exception {
+        super.before();
+
+        final ModelTypeManager modelTypeManager = modelTypeManager();
+        modelTypeManager.install( "sramp" );
+        modelTypeManager.install( "xsd" );
+
+        this.xsdModelType = modelTypeManager.modelType( "org.modeshape.modeler.xsd.Xsd" );
+        this.provider = new ModelContentProvider();
+    }
+
+    void report( final Object[] nodes ) throws Exception {
+        if ( !DEBUG ) return;
+
+        if ( nodes != null && nodes.length != 0 ) {
+            for ( final Object obj : nodes ) {
+                if ( obj instanceof ModelContent ) {
+                    if ( obj instanceof PropertyModel ) {
+                        final PropertyModel content = ( PropertyModel ) obj;
+                        System.err.println( "  property=" + content + ", value=" + content.value() );
+                    } else {
+                        final ValueModel content = ( ValueModel ) obj;
+                        System.err.println( "    --value=" + content + ", parent=" + content.parent().name() );
+                    }
+                } else if ( obj instanceof ModelObject ) {
+                    System.err.println( "model object=" + obj + ", num kids=" + this.provider.childCount( obj ) );
+                } else {
+                    System.err.println( "***" + obj.getClass() );
+                }
+
+                report( this.provider.children( obj ) );
+            }
+        }
+    }
+
+    @Test
+    public void shouldProvideModelContents() throws Exception {
+        final Model model =
+            modeler().generateModel( new File( getClass().getClassLoader().getResource( "Books.xsd" ).toURI() ),
+                                     "/test",
+                                     this.xsdModelType );
+        assertThat( this.provider.childCount( model ), is( 34 ) );
+        assertThat( this.provider.hasChildren( model ), is( true ) );
+        assertThat( this.provider.hasName( model ), is( true ) );
+        assertThat( this.provider.hasType( model ), is( true ) );
+        assertThat( this.provider.hasValue( model ), is( false ) );
+        assertThat( this.provider.qualifiedName( model ), is( ( Object ) "/test/Books.xsd" ) );
+        assertThat( this.provider.name( model ), is( ( Object ) "Books.xsd" ) );
+        assertThat( this.provider.type( model ), is( ( Object ) "xs:schemaDocument" ) );
+
+        Object modelObject = this.provider.child( "AudioBook", model );
+        assertThat( modelObject, is( notNullValue() ) );
+
+        modelObject = this.provider.child( "xs:sequence", modelObject );
+        assertThat( modelObject, is( notNullValue() ) );
+
+        modelObject = this.provider.child( "reader", modelObject );
+        assertThat( modelObject, is( notNullValue() ) );
+
+        if ( DEBUG ) {
+            final Object[] kids = this.provider.children( model );
+
+            for ( final Object kid : kids ) {
+                System.err.println( "kid=" + kid );
+            }
+
+            System.err.println( "\n\n" );
+            report( kids );
+        }
+    }
 
 }

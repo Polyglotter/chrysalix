@@ -42,7 +42,20 @@
         <!-- ================================================================== -->
         <dependency>
             <groupId>org.modeshape</groupId>
+            <artifactId>modeshape-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.modeshape</groupId>
             <artifactId>modeshape-sequencer-xsd</artifactId>
+        </dependency>
+
+        <!-- ================================================================== -->
+        <!-- Other -->
+        <!-- ================================================================== -->
+        <dependency>
+            <groupId>javax.jcr</groupId>
+            <artifactId>jcr</artifactId>
         </dependency>
 
         <!-- ================================================================== -->

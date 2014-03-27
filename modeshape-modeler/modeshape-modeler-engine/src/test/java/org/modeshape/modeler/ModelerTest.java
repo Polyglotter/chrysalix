@@ -47,7 +47,7 @@ import org.modeshape.modeler.internal.Task;
 import org.modeshape.modeler.test.BaseTest;
 
 @SuppressWarnings( "javadoc" )
-public class ModelerTest extends BaseTest {
+public final class ModelerTest extends BaseTest {
 
     private static Modeler failingModeler;
 

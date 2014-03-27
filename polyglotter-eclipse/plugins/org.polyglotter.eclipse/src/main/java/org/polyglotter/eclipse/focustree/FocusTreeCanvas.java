@@ -290,25 +290,25 @@ class FocusTreeCanvas extends FigureCanvas {
         // Save preferred width as minimum width before adding name, type, and value labels
         cell.setMinimumSize( cell.getPreferredSize() );
         // Add name field
-        if ( focusTree.model.hasName( item ) ) {
-            try {
+        try {
+            if ( focusTree.model.hasName( item ) ) {
                 cell.nameField = new NameField( focusTree.model.name( item ).toString() );
-            } catch ( final PolyglotterException e ) {
-                Util.logError( e, EclipseI18n.focusTreeUnableToGetName, item );
-                cell.nameField = new NameField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+                cell.add( cell.nameField );
+                cell.nameField.setTextAlignment( PositionConstants.CENTER );
+                cell.nameField.setForegroundColor( focusTree.viewModel.cellForegroundColor( item ) );
+                try {
+                    cell.nameField.setToolTip( new Label( EclipseI18n.focusTreeCellNameToolTip.text( focusTree.model.qualifiedName( item ) ) ) );
+                } catch ( final PolyglotterException e ) {
+                    Util.logError( e, EclipseI18n.focusTreeUnableToGetQualifiedName, item );
+                    cell.nameField.setToolTip( new Label( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) ) );
+                }
+                gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
+                gridData.horizontalSpan = 3;
+                cell.setConstraint( cell.nameField, gridData );
             }
-            cell.add( cell.nameField );
-            cell.nameField.setTextAlignment( PositionConstants.CENTER );
-            cell.nameField.setForegroundColor( focusTree.viewModel.cellForegroundColor( item ) );
-            try {
-                cell.nameField.setToolTip( new Label( EclipseI18n.focusTreeCellNameToolTip.text( focusTree.model.qualifiedName( item ) ) ) );
-            } catch ( final PolyglotterException e ) {
-                Util.logError( e, EclipseI18n.focusTreeUnableToGetQualifiedName, item );
-                cell.nameField.setToolTip( new Label( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) ) );
-            }
-            gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
-            gridData.horizontalSpan = 3;
-            cell.setConstraint( cell.nameField, gridData );
+        } catch ( final PolyglotterException e ) {
+            Util.logError( e, EclipseI18n.focusTreeUnableToGetName, item );
+            cell.nameField = new NameField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
         }
         if ( focusTree.model.hasType( item ) ) {
             // Add type field
@@ -328,22 +328,22 @@ class FocusTreeCanvas extends FigureCanvas {
             gridData.horizontalSpan = 3;
             cell.setConstraint( typeField, gridData );
         }
-        if ( focusTree.model.hasValue( item ) ) {
-            // Add value field
-            try {
+        try {
+            if ( focusTree.model.hasValue( item ) ) {
+                // Add value field
                 final Object value = focusTree.model.value( item );
                 cell.valueField = new ValueField( value == null ? null : value.toString() );
-            } catch ( final PolyglotterException e ) {
-                Util.logError( e, EclipseI18n.focusTreeUnableToGetValue, item );
-                cell.valueField = new ValueField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+                cell.add( cell.valueField );
+                cell.valueField.setTextAlignment( PositionConstants.CENTER );
+                cell.valueField.setForegroundColor( focusTree.viewModel.cellForegroundColor( item ) );
+                cell.valueField.setToolTip( new Label( EclipseI18n.focusTreeCellValueToolTip.text() ) );
+                gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
+                gridData.horizontalSpan = 3;
+                cell.setConstraint( cell.valueField, gridData );
             }
-            cell.add( cell.valueField );
-            cell.valueField.setTextAlignment( PositionConstants.CENTER );
-            cell.valueField.setForegroundColor( focusTree.viewModel.cellForegroundColor( item ) );
-            cell.valueField.setToolTip( new Label( EclipseI18n.focusTreeCellValueToolTip.text() ) );
-            gridData = new GridData( SWT.FILL, SWT.DEFAULT, true, false );
-            gridData.horizontalSpan = 3;
-            cell.setConstraint( cell.valueField, gridData );
+        } catch ( final PolyglotterException e ) {
+            Util.logError( e, EclipseI18n.focusTreeUnableToGetValue, item );
+            cell.valueField = new ValueField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
         }
         column.cellColumn.revalidate();
         return cell;
@@ -382,7 +382,8 @@ class FocusTreeCanvas extends FigureCanvas {
         column.cellColumn.getLayoutManager().layout( column.cellColumn );
         // Set bounds
         if ( column.focusCell != null ) column.focusCell.setSize( column.focusCell.getPreferredSize() );
-        if ( focusTree.columns.size() == 1 ) column.bounds.x = 0;
+        if ( focusTree.columns.size() == 1 )
+            column.bounds.x = 0;
         else {
             final Column previousColumn = focusTree.columns.get( focusTree.columns.size() - 2 );
             column.bounds.x = previousColumn.bounds.x + previousColumn.bounds.width;
@@ -416,8 +417,14 @@ class FocusTreeCanvas extends FigureCanvas {
 
                     @Override
                     public void run() {
-                        if ( focusTree.model.hasName( cell.item ) ) editNameField( cell );
-                        else editValueField( cell );
+                        try {
+                            if ( focusTree.model.hasName( cell.item ) )
+                                editNameField( cell );
+                            else editValueField( cell );
+                        } catch ( final PolyglotterException e ) {
+                            Util.logError( e, EclipseI18n.focusTreeUnableToGetName, item );
+                            cell.nameField = new NameField( EclipseI18n.focusTreeErrorText.text( e.getMessage() ) );
+                        }
                     }
                 } );
             }
@@ -436,7 +443,8 @@ class FocusTreeCanvas extends FigureCanvas {
                           final Cell cell ) {
         if ( column.focusCell == cell ) {
             // Collapse current focus cell if expanded
-            if ( column.focusCellExpanded ) removeColumnsAfter( column );
+            if ( column.focusCellExpanded )
+                removeColumnsAfter( column );
             // Else expand focus cell if it has children
             else expandFocusCell( column );
         } else {
@@ -722,7 +730,8 @@ class FocusTreeCanvas extends FigureCanvas {
     void mouseClickedOverCanvas( final MouseEvent event ) {
         if ( editor != null ) endEdit();
         final IFigure figure = canvas.findFigureAt( event.x, event.y );
-        if ( figure instanceof AddButton ) addItem();
+        if ( figure instanceof AddButton )
+            addItem();
         else if ( figure instanceof DeleteButton ) {
             final Cell cell = cell( figure );
             String name;
@@ -858,7 +867,8 @@ class FocusTreeCanvas extends FigureCanvas {
                 mouseOverButton = addButton;
                 return;
             }
-        } else if ( figure instanceof AddButton ) return;
+        } else if ( figure instanceof AddButton )
+            return;
         else {
             final Cell cell = cell( figure );
             if ( cell != null ) {
@@ -1110,7 +1120,8 @@ class FocusTreeCanvas extends FigureCanvas {
         column.cellColumn.setVisible( visible );
         boolean afterColumn = false;
         for ( final Column col : focusTree.columns )
-            if ( col == column ) afterColumn = true;
+            if ( col == column )
+                afterColumn = true;
             else if ( afterColumn ) {
                 final Point cellColumnLocation = col.cellColumn.getLocation();
                 cellColumnLocation.x += delta;
