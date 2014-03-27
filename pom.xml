@@ -108,8 +108,6 @@
         <slf4j.log4j.version>1.6.1</slf4j.log4j.version>
         <slf4j.nop.version>1.6.1</slf4j.nop.version>
         <tycho.version>0.20.0</tycho.version>
-        <tycho.extras.version>${tycho.version}</tycho.extras.version>
-
     </properties>
 
     <!-- ================================================================== -->
@@ -444,6 +442,13 @@
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${jsoup.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.jcr</groupId>
+                <artifactId>jcr</artifactId>
+                <version>${jcr.version}</version>
                 <scope>compile</scope>
             </dependency>
 

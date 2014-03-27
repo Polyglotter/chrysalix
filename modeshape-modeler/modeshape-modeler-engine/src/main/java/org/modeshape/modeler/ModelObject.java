@@ -208,4 +208,23 @@ public interface ModelObject {
      *         if any error occurs
      */
     String[] stringValues( String propertyName ) throws ModelerException;
+
+    /**
+     * @param propertyName
+     *        the name of one of this model object's single-valued properties
+     * @return the value of the supplied property, or <code>null</code> if the property doesn't exist
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    Object value( String propertyName ) throws ModelerException;
+
+    /**
+     * @param propertyName
+     *        the name of one of this model object's properties
+     * @return the values of the supplied property, or <code>null</code> if the property doesn't exist
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    Object[] values( String propertyName ) throws ModelerException;
+
 }

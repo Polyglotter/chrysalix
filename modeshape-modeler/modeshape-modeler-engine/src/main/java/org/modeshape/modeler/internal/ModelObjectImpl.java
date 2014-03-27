@@ -32,6 +32,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.PropertyType;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
@@ -546,5 +547,89 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public String toString() {
         return path;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#value(java.lang.String)
+     */
+    @Override
+    public Object value( final String propertyName ) throws ModelerException {
+        CheckArg.isNotEmpty( propertyName, "propertyName" );
+        return manager.run( new Task< Object >() {
+
+            @Override
+            public Object run( final Session session ) throws Exception {
+                try {
+                    final Property property = session.getNode( path ).getProperty( propertyName );
+                    final Value value = property.getValue();
+                    final int propType = property.getType();
+
+                    if ( propType == PropertyType.BINARY ) {
+                        return value.getBinary();
+                    }
+
+                    if ( propType == PropertyType.BOOLEAN ) {
+                        return Boolean.valueOf( value.getBoolean() );
+                    }
+
+                    if ( propType == PropertyType.DATE ) {
+                        return value.getDate();
+                    }
+
+                    if ( propType == PropertyType.DOUBLE ) {
+                        return Double.valueOf( value.getDouble() );
+                    }
+
+                    if ( ( propType == PropertyType.LONG ) || ( propType == PropertyType.REFERENCE ) || ( propType == PropertyType.WEAKREFERENCE ) ) {
+                        return value.getString();
+                    }
+
+                    if ( ( propType == PropertyType.STRING ) || ( propType == PropertyType.NAME ) || ( propType == PropertyType.PATH ) ) {
+                        return value.toString();
+                    }
+
+                    if ( propType == PropertyType.URI ) {
+                        return value.toString();
+                    }
+
+                    return null;
+                } catch ( final ValueFormatException e ) {
+                    throw new IllegalArgumentException( e );
+                } catch ( final PathNotFoundException e ) {
+                    return null;
+                }
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#stringValues(java.lang.String)
+     */
+    @Override
+    public Object[] values( final String propertyName ) throws ModelerException {
+        CheckArg.isNotEmpty( propertyName, "propertyName" );
+        return manager.run( new Task< Object[] >() {
+
+            @Override
+            public Object[] run( final Session session ) throws Exception {
+                try {
+                    final Property prop = session.getNode( path ).getProperty( propertyName );
+                    if ( !prop.isMultiple() ) return new Object[] { value( propertyName ) };
+                    final Value[] vals = prop.getValues();
+                    final Object[] stringVals = new String[ vals.length ];
+                    for ( int ndx = 0; ndx < stringVals.length; ndx++ )
+                        stringVals[ ndx ] = vals[ ndx ].getString();
+                    return stringVals;
+                } catch ( final ValueFormatException e ) {
+                    throw new IllegalArgumentException( e );
+                } catch ( final PathNotFoundException e ) {
+                    return null;
+                }
+            }
+        } );
     }
 }
