@@ -27,7 +27,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
+import java.net.URL;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -44,7 +44,7 @@ import org.polyglotter.eclipse.view.ModelContentProvider.PropertyModel;
 import org.polyglotter.eclipse.view.ModelContentProvider.ValueModel;
 
 /**
- * A test class for {@link ModelContentProvider}.
+ * A test class for ModelContentProvider.
  */
 @SuppressWarnings( "javadoc" )
 public final class ModelContentProviderTest extends BaseTest {
@@ -70,6 +70,15 @@ public final class ModelContentProviderTest extends BaseTest {
 
         this.xsdModelType = modelTypeManager.modelType( "org.modeshape.modeler.xsd.Xsd" );
         this.provider = new ModelContentProvider();
+    }
+
+    @Override
+    protected URL modelTypeRepository() throws Exception {
+        if ( this.modelTypeRepository == null ) {
+            this.modelTypeRepository = new URL( "file:resources/" );
+        }
+
+        return this.modelTypeRepository;
     }
 
     void report( final Object[] nodes ) throws Exception {
@@ -98,10 +107,7 @@ public final class ModelContentProviderTest extends BaseTest {
 
     @Test
     public void shouldProvideModelContents() throws Exception {
-        final Model model =
-            modeler().generateModel( new File( getClass().getClassLoader().getResource( "Books.xsd" ).toURI() ),
-                                     "/test",
-                                     this.xsdModelType );
+        final Model model = modeler().generateModel( new URL( "file:resources/Books.xsd" ), "/test", this.xsdModelType );
         assertThat( this.provider.childCount( model ), is( 34 ) );
         assertThat( this.provider.hasChildren( model ), is( true ) );
         assertThat( this.provider.hasName( model ), is( true ) );

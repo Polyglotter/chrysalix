@@ -50,7 +50,6 @@ public abstract class BaseTest {
 
     protected static final String TEST_MODESHAPE_CONFIGURATION_PATH = "testModeShapeConfig.json";
     protected static final String TEST_REPOSITORY_STORE_PARENT_PATH;
-    protected static final URL MODEL_TYPE_REPOSITORY;
 
     protected static final String ARTIFACT_NAME = "artifact";
     protected static final String MODEL_NAME = "model";
@@ -72,7 +71,6 @@ public abstract class BaseTest {
 
     static {
         try {
-            MODEL_TYPE_REPOSITORY = new URL( "file:src/test/resources/" );
             final Path path = Files.createTempDirectory( null );
             path.toFile().deleteOnExit();
             TEST_REPOSITORY_STORE_PARENT_PATH = path.toString();
@@ -82,6 +80,7 @@ public abstract class BaseTest {
     }
 
     private ModeShapeModeler modeler;
+    protected URL modelTypeRepository;
 
     @After
     public void after() throws Exception {
@@ -130,12 +129,20 @@ public abstract class BaseTest {
             modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
         for ( final URL url : modeler.modelTypeManager().modelTypeRepositories() )
             modeler.modelTypeManager().unregisterModelTypeRepository( url );
-        modeler.modelTypeManager().registerModelTypeRepository( MODEL_TYPE_REPOSITORY );
+        modeler.modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
         return modeler;
     }
 
     public ModelTypeManagerImpl modelTypeManager() throws Exception {
         return ( ModelTypeManagerImpl ) modeler().modelTypeManager();
+    }
+
+    protected URL modelTypeRepository() throws Exception {
+        if ( modelTypeRepository == null ) {
+            modelTypeRepository = new URL( "file:src/test/resources/" );
+        }
+
+        return modelTypeRepository;
     }
 
     public InputStream stream( final String content ) {

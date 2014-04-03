@@ -1,5 +1,6 @@
 # ignore Maven generated target folders
 target
+bin
 
 # ignore eclipse files and folders
 .project
@@ -15,3 +16,7 @@ target
 
 # ignore OS X (Mac) files
 .DS_Store
+
+# libraries copied during build
+lib
+test-lib

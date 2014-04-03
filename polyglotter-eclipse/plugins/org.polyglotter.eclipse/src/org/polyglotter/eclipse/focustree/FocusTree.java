@@ -794,7 +794,7 @@ public class FocusTree extends Composite {
             hideIconView( column );
             focusTreeCanvas.hideIconView( column );
         }
-        focusColumn( column );
+        // focusColumn( column );
     }
 
     private void setColors() {
