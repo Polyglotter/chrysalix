@@ -83,7 +83,9 @@
         <!-- Maven plugin versions -->
         <maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
         <maven.bundle.plugin.version>2.1.0</maven.bundle.plugin.version>
+        <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
         <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
+        <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
         <maven.deploy.plugin.version>2.5</maven.deploy.plugin.version>
         <maven.failsafe.plugin.version>2.16</maven.failsafe.plugin.version>
         <build.helper.maven.plugin.version>1.8</build.helper.maven.plugin.version>
@@ -98,9 +100,11 @@
 
         <!-- Dependency versions -->
         <eclipse.gef.version>3.9.0</eclipse.gef.version>
+        <eclipse.m2e.version>1.0.0</eclipse.m2e.version>
         <jcr.version>2.0</jcr.version>
         <jsoup.version>1.7.2</jsoup.version>
         <junit.version>4.11</junit.version>
+        <hamcrest.version>1.3</hamcrest.version>
         <log4j.version>1.2.16</log4j.version>
         <mockito.version>1.9.5</mockito.version>
         <modeshape.version>3.5.0.Final</modeshape.version>
@@ -108,6 +112,15 @@
         <slf4j.log4j.version>1.6.1</slf4j.log4j.version>
         <slf4j.nop.version>1.6.1</slf4j.nop.version>
         <tycho.version>0.20.0</tycho.version>
+        
+        <!-- Polyglotter -->
+        <polyglotter.common.version>${project.version}</polyglotter.common.version>
+        <polyglotter.eclipse.version>${project.version}</polyglotter.eclipse.version>
+        <polyglotter.engine.version>${project.version}</polyglotter.engine.version>
+        <modeshape.modeler.engine.version>${project.version}</modeshape.modeler.engine.version>
+        <modeshape.modeler.java.version>${project.version}</modeshape.modeler.java.version>
+        <modeshape.modeler.xsd.version>${project.version}</modeshape.modeler.xsd.version>
+        
     </properties>
 
     <!-- ================================================================== -->
@@ -347,13 +360,13 @@
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>polyglotter-common</artifactId>
-                <version>${project.version}</version>
+                <version>${polyglotter.common.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>polyglotter-common</artifactId>
-                <version>${project.version}</version>
+                <version>${polyglotter.common.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -361,25 +374,19 @@
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>polyglotter-engine</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>modeshape-modeler</artifactId>
-                <version>${project.version}</version>
+                <version>${polyglotter.engine.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>modeshape-modeler-engine</artifactId>
-                <version>${project.version}</version>
+                <version>${modeshape.modeler.engine.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>modeshape-modeler-engine</artifactId>
-                <version>${project.version}</version>
+                <version>${modeshape.modeler.engine.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -387,31 +394,19 @@
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>modeshape-modeler-java</artifactId>
-                <version>${project.version}</version>
+                <version>${modeshape.modeler.java.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>modeshape-modeler-xsd</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>polyglotter-eclipse</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>plugins</artifactId>
-                <version>${project.version}</version>
+                <version>${modeshape.modeler.xsd.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
                 <artifactId>org.polyglotter.eclipse</artifactId>
-                <version>${project.version}</version>
+                <version>${polyglotter.eclipse.version}</version>
             </dependency>
 
             <!-- ================================================================== -->
@@ -435,6 +430,13 @@
                 <scope>compile</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.eclipse.m2e</groupId>
+                <artifactId>lifecycle-mapping</artifactId>
+                <version>${eclipse.m2e.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
             <!-- ================================================================== -->
             <!-- Other -->
             <!-- ================================================================== -->
@@ -449,6 +451,13 @@
                 <groupId>javax.jcr</groupId>
                 <artifactId>jcr</artifactId>
                 <version>${jcr.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven.dependency.plugin.version}</version>
                 <scope>compile</scope>
             </dependency>
 
@@ -483,6 +492,13 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-library</artifactId>
+                <version>${hamcrest.version}</version>
                 <scope>test</scope>
             </dependency>
 

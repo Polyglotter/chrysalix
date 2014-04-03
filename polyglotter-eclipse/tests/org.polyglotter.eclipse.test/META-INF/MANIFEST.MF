@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: org.polyglotter.eclipse.test;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Fragment-Host: org.polyglotter.eclipse
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Localization: OSGI-INF/l10n/bundle
+Bundle-ClassPath: .,
+ lib/mockito-all-1.9.5.jar,
+ lib/modeshape-modeler-engine-0.0.1-SNAPSHOT-tests.jar,
+ .
+Require-Bundle: org.junit

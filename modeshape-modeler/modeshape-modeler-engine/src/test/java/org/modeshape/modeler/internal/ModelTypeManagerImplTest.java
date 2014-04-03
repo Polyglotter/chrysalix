@@ -109,7 +109,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToMoveModelTypeRepositoryDownIfUrlNotFound() throws Exception {
-        failingModelTypeManager().moveModelTypeRepositoryDown( MODEL_TYPE_REPOSITORY );
+        failingModelTypeManager().moveModelTypeRepositoryDown( modelTypeRepository() );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -119,7 +119,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToMoveModelTypeRepositoryUpIfUrlNotFound() throws Exception {
-        failingModelTypeManager().moveModelTypeRepositoryUp( MODEL_TYPE_REPOSITORY );
+        failingModelTypeManager().moveModelTypeRepositoryUp( modelTypeRepository() );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -166,7 +166,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
     public void shouldGetExistingRegisteredModelTypeRepositoriesIfRegisteringRegisteredUrl() throws Exception {
         final URL[] origRepos = modelTypeManager().modelTypeRepositories();
         final URL[] repos =
-            modelTypeManager().registerModelTypeRepository( MODEL_TYPE_REPOSITORY );
+            modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
         assertThat( repos, notNullValue() );
         assertThat( repos, is( origRepos ) );
     }
@@ -217,7 +217,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
             repos = modelTypeManager.modelTypeRepositories().length;
             for ( final URL url : modelTypeManager.modelTypeRepositories() )
                 modelTypeManager.unregisterModelTypeRepository( url );
-            modelTypeManager.registerModelTypeRepository( MODEL_TYPE_REPOSITORY );
+            modelTypeManager.registerModelTypeRepository( modelTypeRepository() );
             modelTypeManager.install( "java" );
             modelTypeManager.install( "xsd" );
         }
@@ -298,7 +298,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
     @Test
     public void shouldNotMoveModelTypeRepositoryUpIfUrlFirst() throws Exception {
         final URL[] urls = modelTypeManager().modelTypeRepositories();
-        modelTypeManager().moveModelTypeRepositoryUp( MODEL_TYPE_REPOSITORY );
+        modelTypeManager().moveModelTypeRepositoryUp( modelTypeRepository() );
         assertThat( modelTypeManager().modelTypeRepositories(), is( urls ) );
     }
 

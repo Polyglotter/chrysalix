@@ -33,6 +33,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
@@ -43,11 +44,59 @@ import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelerException;
+import org.modeshape.modeler.ModelerI18n;
 
 /**
  * 
  */
 public class ModelObjectImpl implements ModelObject {
+
+    /**
+     * @param value
+     *        the JCR value holder whose value is being requested (cannot be <code>null</code>)
+     * @param propertyType
+     *        the {@link PropertyType type} of the value being requested
+     * @return the value
+     * @throws ModelerException
+     *         if there is a problem obtaining the value
+     */
+    public static Object getValue( final Value value,
+                                   final int propertyType ) throws ModelerException {
+        try {
+            if ( propertyType == PropertyType.BINARY ) {
+                return value.getBinary();
+            }
+
+            if ( propertyType == PropertyType.BOOLEAN ) {
+                return Boolean.valueOf( value.getBoolean() );
+            }
+
+            if ( propertyType == PropertyType.DATE ) {
+                return value.getDate();
+            }
+
+            if ( propertyType == PropertyType.DOUBLE ) {
+                return Double.valueOf( value.getDouble() );
+            }
+
+            if ( ( propertyType == PropertyType.LONG ) ) {
+                return value.getLong();
+            }
+
+            if ( ( propertyType == PropertyType.STRING )
+                 || ( propertyType == PropertyType.NAME )
+                 || ( propertyType == PropertyType.PATH )
+                 || ( propertyType == PropertyType.REFERENCE )
+                 || ( propertyType == PropertyType.WEAKREFERENCE )
+                 || ( propertyType == PropertyType.URI ) ) {
+                return value.toString();
+            }
+
+            return null;
+        } catch ( final Exception e ) {
+            throw new ModelerException( e );
+        }
+    }
 
     /**
      * 
@@ -559,47 +608,25 @@ public class ModelObjectImpl implements ModelObject {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
         return manager.run( new Task< Object >() {
 
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modeshape.modeler.internal.Task#run(javax.jcr.Session)
+             */
             @Override
-            public Object run( final Session session ) throws Exception {
+            public Object run( final Session session ) throws ModelerException {
+                Value value;
+                int propType;
+
                 try {
                     final Property property = session.getNode( path ).getProperty( propertyName );
-                    final Value value = property.getValue();
-                    final int propType = property.getType();
-
-                    if ( propType == PropertyType.BINARY ) {
-                        return value.getBinary();
-                    }
-
-                    if ( propType == PropertyType.BOOLEAN ) {
-                        return Boolean.valueOf( value.getBoolean() );
-                    }
-
-                    if ( propType == PropertyType.DATE ) {
-                        return value.getDate();
-                    }
-
-                    if ( propType == PropertyType.DOUBLE ) {
-                        return Double.valueOf( value.getDouble() );
-                    }
-
-                    if ( ( propType == PropertyType.LONG ) || ( propType == PropertyType.REFERENCE ) || ( propType == PropertyType.WEAKREFERENCE ) ) {
-                        return value.getString();
-                    }
-
-                    if ( ( propType == PropertyType.STRING ) || ( propType == PropertyType.NAME ) || ( propType == PropertyType.PATH ) ) {
-                        return value.toString();
-                    }
-
-                    if ( propType == PropertyType.URI ) {
-                        return value.toString();
-                    }
-
-                    return null;
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
+                    value = property.getValue();
+                    propType = property.getType();
+                } catch ( final RepositoryException e ) {
+                    throw new ModelerException( e );
                 }
+
+                return getValue( value, propType );
             }
         } );
     }
@@ -614,20 +641,32 @@ public class ModelObjectImpl implements ModelObject {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
         return manager.run( new Task< Object[] >() {
 
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modeshape.modeler.internal.Task#run(javax.jcr.Session)
+             */
             @Override
-            public Object[] run( final Session session ) throws Exception {
+            public Object[] run( final Session session ) throws ModelerException {
                 try {
                     final Property prop = session.getNode( path ).getProperty( propertyName );
-                    if ( !prop.isMultiple() ) return new Object[] { value( propertyName ) };
-                    final Value[] vals = prop.getValues();
-                    final Object[] stringVals = new String[ vals.length ];
-                    for ( int ndx = 0; ndx < stringVals.length; ndx++ )
-                        stringVals[ ndx ] = vals[ ndx ].getString();
-                    return stringVals;
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
+
+                    if ( !prop.isMultiple() ) {
+                        throw new ModelerException( ModelerI18n.notMultiValuedProperty, propertyName );
+                    }
+
+                    final int propType = prop.getType();
+                    final Value[] values = prop.getValues();
+                    final Object[] result = new Object[ values.length ];
+                    int i = 0;
+
+                    for ( final Value value : values ) {
+                        result[ i++ ] = getValue( value, propType );
+                    }
+
+                    return result;
+                } catch ( final Exception e ) {
+                    throw new ModelerException( e );
                 }
             }
         } );
