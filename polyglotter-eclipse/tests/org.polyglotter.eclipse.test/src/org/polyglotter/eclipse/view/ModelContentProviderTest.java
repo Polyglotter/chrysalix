@@ -49,7 +49,7 @@ import org.polyglotter.eclipse.view.ModelContentProvider.ValueModel;
 @SuppressWarnings( "javadoc" )
 public final class ModelContentProviderTest extends BaseTest {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     @BeforeClass
     public static void beforeClass() throws Exception {

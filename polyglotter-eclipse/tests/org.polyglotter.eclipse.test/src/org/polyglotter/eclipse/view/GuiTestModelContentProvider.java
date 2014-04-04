@@ -58,7 +58,7 @@ public final class GuiTestModelContentProvider {
 
     static {
         try {
-            MODEL_TYPE_REPOSITORY = new URL( "file:src/test/resources/" );
+            MODEL_TYPE_REPOSITORY = new URL( "file:resources/" );
             final Path path = Files.createTempDirectory( null );
             path.toFile().deleteOnExit();
             TEST_REPOSITORY_STORE_PARENT_PATH = path.toString();
