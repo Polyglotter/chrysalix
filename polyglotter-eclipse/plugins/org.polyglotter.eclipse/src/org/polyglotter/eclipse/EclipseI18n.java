@@ -113,4 +113,6 @@ public final class EclipseI18n {
     public static final I18n confirmDialogTitle = new I18n( "Confirm" );
     public static final I18n deleteConfirmationMessage = new I18n( "Delete \"%s\"?" );
     public static final I18n errorDialogTitle = new I18n( "Error" );
+
+    public static final I18n modelCollectionTypeSuffix = new I18n( " (%s)" );
 }

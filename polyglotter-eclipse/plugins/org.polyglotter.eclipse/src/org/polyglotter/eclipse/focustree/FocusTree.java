@@ -122,6 +122,7 @@ public class FocusTree extends Composite {
 
     private static final String HIDE_BUTTON_PROPERTY = "org.polyglotter.hideButton";
     private static final String COLUMN_PROPERTY = "org.polyglotter.column";
+    private static final String JAVA_PKG = "java.lang.";
 
     Object root;
     Model model;
@@ -1139,6 +1140,73 @@ public class FocusTree extends Composite {
         public static final Indicator[] NO_INDICATORS = new Indicator[ 0 ];
 
         /**
+         * Obtains an element count suffix.
+         * 
+         * @param item
+         *        the item whose collection type suffix is being requested (cannot be <code>null</code>)
+         * @param value
+         *        the item value (can be <code>null</code>)
+         * @return the suffix or empty string
+         */
+        public static String collectionTypeSuffix( final Object item,
+                                                   final Object value ) {
+            if ( item.getClass().isArray() ) {
+                if ( value != null ) {
+                    return EclipseI18n.modelCollectionTypeSuffix.text( ( ( Object[] ) item ).length );
+                }
+            } else if ( Collection.class.isAssignableFrom( item.getClass() ) ) {
+                if ( value != null ) {
+                    return EclipseI18n.modelCollectionTypeSuffix.text( ( ( Collection< ? > ) item ).size() );
+                }
+            }
+
+            return Util.EMPTY_STRING;
+        }
+
+        /**
+         * @param typeToFormat
+         *        the type being formatted (cannot be <code>null</code>)
+         * @return the formatted type (never <code>null</code>)
+         */
+        public static String formatType( final String typeToFormat ) {
+            String type = typeToFormat;
+
+            // see if an array
+            if ( type.startsWith( "[" ) ) {
+                String temp = type.substring( 1 );
+                int count = 1;
+
+                while ( temp.startsWith( "[" ) ) {
+                    ++count;
+                    temp = temp.substring( count );
+                }
+
+                // strip off single letter representing JNI type
+                type = temp.substring( 1 );
+
+                // array class name will have a semicolon at the end so strip it off
+                if ( type.endsWith( ";" ) ) {
+                    type = type.substring( 0, ( type.length() - 1 ) );
+                }
+
+                // add array brackets at the end
+                for ( int i = 0; i < count; ++i ) {
+                    type += '[';
+                }
+
+                for ( int i = 0; i < count; ++i ) {
+                    type += ']';
+                }
+            }
+
+            if ( type.indexOf( JAVA_PKG ) == 0 ) {
+                return type.substring( JAVA_PKG.length() );
+            }
+
+            return type;
+        }
+
+        /**
          * @param parent
          *        a parent item in the tree
          * @param index
@@ -1364,9 +1432,8 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object type( final Object item ) throws PolyglotterException {
-            return item.getClass().getSimpleName();
+            return ( formatType( item.getClass().getSimpleName() ) + collectionTypeSuffix( item, value( item ) ) );
         }
 
         /**

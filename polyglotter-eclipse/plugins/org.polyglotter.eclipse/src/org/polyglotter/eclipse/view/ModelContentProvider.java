@@ -32,6 +32,8 @@ import java.util.List;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelerException;
+import org.polyglotter.common.Logger;
+import org.polyglotter.common.Logger.Level;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.eclipse.Util;
 import org.polyglotter.eclipse.focustree.FocusTree;
@@ -40,6 +42,10 @@ import org.polyglotter.eclipse.focustree.FocusTree;
  * A {@link FocusTree} content provider for Polyglotter {@link Model models}.
  */
 public final class ModelContentProvider extends FocusTree.Model {
+
+    private static final boolean DEBUG = false;
+
+    private static Logger _logger;
 
     /**
      * No arg methods from {@link ModelObject} that will be added as properties
@@ -63,6 +69,18 @@ public final class ModelContentProvider extends FocusTree.Model {
                         "missingDependencies",
                         "modelType"
         };
+
+    private static void debug( final String message,
+                               final Object... args ) {
+        if ( DEBUG ) {
+            if ( _logger == null ) {
+                _logger = Logger.getLogger( ModelContentProvider.class );
+                _logger.setLevel( Level.DEBUG );
+            }
+
+            _logger.debug( message, args );
+        }
+    }
 
     private Collection< PropertyModel > addPropertiesFromMethods( final ModelObject modelObj,
                                                                   final String[] methodNames ) throws Exception {
@@ -178,7 +196,8 @@ public final class ModelContentProvider extends FocusTree.Model {
     public boolean hasChildren( final Object item ) throws PolyglotterException {
         if ( item instanceof ModelObject ) {
             try {
-                return ( ( ModelObject ) item ).hasChildren();
+                debug( "%s has children: %s", ( ( ModelObject ) item ).name(), ( ( ModelObject ) item ).hasChildren() );
+                return ( children( item ).length != 0 );
             } catch ( final Exception e ) {
                 throw new PolyglotterException( e );
             }
@@ -275,13 +294,13 @@ public final class ModelContentProvider extends FocusTree.Model {
     public Object type( final Object item ) throws PolyglotterException {
         if ( item instanceof ModelObject ) {
             try {
-                return ( ( ModelObject ) item ).primaryType();
+                return FocusTree.Model.formatType( ( ( ModelObject ) item ).primaryType() );
             } catch ( final Exception e ) {
                 throw new PolyglotterException( e );
             }
         }
 
-        if ( item instanceof ModelContent ) return ( ( ModelContent ) item ).type();
+        if ( item instanceof ModelContent ) return FocusTree.Model.formatType( ( ( ModelContent ) item ).type() );
         return super.type( item );
     }
 
@@ -382,8 +401,6 @@ public final class ModelContentProvider extends FocusTree.Model {
         }
 
         private boolean isPrimitive() {
-            // final Class< ? > clazz = this.type.getClass();
-
             if ( this.type.equals( Boolean.class )
                  || this.type.equals( String.class )
                  || this.type.equals( Byte.class )
@@ -426,7 +443,8 @@ public final class ModelContentProvider extends FocusTree.Model {
 
         @Override
         public String type() {
-            return this.type.getName();
+            return ( FocusTree.Model.formatType( this.type.getName() )
+            + FocusTree.Model.collectionTypeSuffix( this.type, value() ) );
         }
 
         @Override
@@ -501,7 +519,8 @@ public final class ModelContentProvider extends FocusTree.Model {
 
         @Override
         public String type() {
-            return this.type.getName();
+            return ( FocusTree.Model.formatType( this.type.getName() )
+            + FocusTree.Model.collectionTypeSuffix( this.type, this.value ) );
         }
 
         @Override
