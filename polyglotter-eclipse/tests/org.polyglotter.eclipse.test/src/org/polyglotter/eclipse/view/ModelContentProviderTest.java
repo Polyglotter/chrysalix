@@ -49,7 +49,7 @@ import org.polyglotter.eclipse.view.ModelContentProvider.ValueModel;
 @SuppressWarnings( "javadoc" )
 public final class ModelContentProviderTest extends BaseTest {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -74,11 +74,11 @@ public final class ModelContentProviderTest extends BaseTest {
 
     @Override
     protected URL modelTypeRepository() throws Exception {
-        if ( this.modelTypeRepository == null ) {
-            this.modelTypeRepository = new URL( "file:resources/" );
+        if ( modelTypeRepository == null ) {
+            modelTypeRepository = new URL( "file:target/test-classes" );
         }
 
-        return this.modelTypeRepository;
+        return modelTypeRepository;
     }
 
     void report( final Object[] nodes ) throws Exception {

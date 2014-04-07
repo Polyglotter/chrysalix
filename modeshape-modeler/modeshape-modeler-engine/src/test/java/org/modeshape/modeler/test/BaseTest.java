@@ -139,7 +139,7 @@ public abstract class BaseTest {
 
     protected URL modelTypeRepository() throws Exception {
         if ( modelTypeRepository == null ) {
-            modelTypeRepository = new URL( "file:src/test/resources/" );
+            modelTypeRepository = new URL( "file:target/test-classes" );
         }
 
         return modelTypeRepository;

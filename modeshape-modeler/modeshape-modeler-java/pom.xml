@@ -55,6 +55,79 @@
             <artifactId>mockito-all</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.polyglotter</groupId>
+            <artifactId>polyglotter-test</artifactId>
+            <type>test-jar</type>
+        </dependency>
+
     </dependencies>
 
+    <!-- ================================================================== -->
+    <!-- Build -->
+    <!-- ================================================================== -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>${maven.remote.resources.plugin.version}</version>
+                <configuration>
+                    <phase>generate-test-resources</phase>
+                    <resourceBundles>
+                        <resourceBundle>org.polyglotter:polyglotter-test:${project.version}</resourceBundle>
+                    </resourceBundles>
+                    <attachToTest>true</attachToTest>
+                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <!-- ================================================================== -->
+        <!-- Plugin Management -->
+        <!-- ================================================================== -->
+        <pluginManagement>
+            <plugins>
+
+                <!--This plugin's is used to store Eclipse m2e settings has no influence on the Maven build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>${eclipse.m2e.version}</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-remote-resources-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.0.0,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>process</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
