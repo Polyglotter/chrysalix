@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src/"/>
+	<classpathentry kind="src" path="resources/"/>
 	<classpathentry exported="true" kind="lib" path="lib/avro-1.6.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-codec-1.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.4.1.jar"/>
@@ -26,11 +26,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/lucene-core-3.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-facet-3.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lucene-regex-3.0.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/modeshape-common-3.5.0.Final.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/modeshape-jcr-3.5.0.Final.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/modeshape-jcr-api-3.5.0.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/modeshape-modeler-engine-0.0.1-SNAPSHOT.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/modeshape-schematic-3.5.0.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/paranamer-2.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.10-beta1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.10-beta1.jar"/>
@@ -48,5 +44,9 @@
 	<classpathentry exported="true" kind="lib" path="lib/vorbis-java-tika-0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xmlbeans-2.3.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xz-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/modeshape-common-3.7.1.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/modeshape-jcr-3.7.1.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/modeshape-jcr-api-3.7.1.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/modeshape-schematic-3.7.1.Final.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
