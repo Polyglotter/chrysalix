@@ -338,7 +338,7 @@ public final class ModelerTest extends BaseTest {
             public Void run( final Session session ) throws Exception {
                 final Node node = session.getNode( path );
                 assertThat( node, notNullValue() );
-                assertThat( node.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString(), is( url.toString() ) );
+                assertThat( node.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString(), is( url.toString() ) );
                 return null;
             }
         } );
@@ -354,7 +354,7 @@ public final class ModelerTest extends BaseTest {
             public Void run( final Session session ) throws Exception {
                 final Node node = session.getNode( path );
                 assertThat( node, notNullValue() );
-                assertThat( node.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString(), is( uri.toString() ) );
+                assertThat( node.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString(), is( uri.toString() ) );
                 return null;
             }
         } );

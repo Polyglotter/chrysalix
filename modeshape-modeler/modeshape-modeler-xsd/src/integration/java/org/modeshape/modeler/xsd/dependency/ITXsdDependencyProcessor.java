@@ -117,7 +117,7 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
 
                 final Node dependencyNode = dependenciesNode.getNodes().nextNode();
                 final String dependencyModelName = "/model/" + c.getFileName() + '/' + dependencyXsdPath.getFileName();
-                assertThat( dependencyNode.getProperty( ModelerLexicon.PATH ).getString(), is( dependencyModelName ) );
+                assertThat( dependencyNode.getProperty( ModelerLexicon.Dependency.PATH ).getString(), is( dependencyModelName ) );
 
                 // TODO uncomment this test out when the artifact path is correct
                 // session.getNode( "/artifact/" + c.getFileName().toString() + '/' + dependencyXsdPath.getFileName() );
@@ -181,15 +181,15 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
                 final String soapEncodingSourceRef = "./encoding/soap_encoding.xsd";
 
                 final Node depOneNode = itr.nextNode();
-                assertThat( depOneNode.getPrimaryNodeType().getName(), is( ModelerLexicon.DEPENDENCY ) );
+                assertThat( depOneNode.getPrimaryNodeType().getName(), is( ModelerLexicon.Dependency.DEPENDENCY ) );
 
                 final Node depTwoNode = itr.nextNode();
-                assertThat( depOneNode.getPrimaryNodeType().getName(), is( ModelerLexicon.DEPENDENCY ) );
+                assertThat( depOneNode.getPrimaryNodeType().getName(), is( ModelerLexicon.Dependency.DEPENDENCY ) );
 
-                if ( depOneNode.getProperty( ModelerLexicon.PATH ).getString().equals( dataTypesModelPath ) ) {
+                if ( depOneNode.getProperty( ModelerLexicon.Dependency.PATH ).getString().equals( dataTypesModelPath ) ) {
                     { // first dependency node is datatypes
                         final String input =
-                            depOneNode.getProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
+                            depOneNode.getProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
                         assertThat( input, is( dataTypesSourceRef ) );
 
                         // make sure dependency resource was imported and model created (getNode throws exception if path not found)
@@ -199,17 +199,17 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
 
                     { // dependency two must be soap encoding
                         final String input =
-                            depTwoNode.getProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
+                            depTwoNode.getProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
                         assertThat( input, is( soapEncodingSourceRef ) );
 
                         // make sure dependency resource was imported and model created (getNode throws exception if path not found)
                         session.getNode( soapEncodingArtifactPath );
                         session.getNode( soapEncodingModelPath );
                     }
-                } else if ( depOneNode.getProperty( ModelerLexicon.PATH ).getString().equals( soapEncodingModelPath ) ) {
+                } else if ( depOneNode.getProperty( ModelerLexicon.Dependency.PATH ).getString().equals( soapEncodingModelPath ) ) {
                     { // first dependency is soap encoding
                         final String input =
-                            depOneNode.getProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
+                            depOneNode.getProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
                         assertThat( input, is( soapEncodingSourceRef ) );
 
                         // make sure dependency resource was imported and model created (getNode throws exception if path not found)
@@ -219,7 +219,7 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
 
                     { // dependency two must be datatypes
                         final String input =
-                            depTwoNode.getProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
+                            depTwoNode.getProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
                         assertThat( input, is( dataTypesSourceRef ) );
 
                         // make sure dependency resource was imported and model created (getNode throws exception if path not found)
@@ -227,7 +227,7 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
                         session.getNode( dataTypesModelPath );
                     }
                 } else {
-                    fail( "path=" + depOneNode.getProperty( ModelerLexicon.PATH ).getString() );
+                    fail( "path=" + depOneNode.getProperty( ModelerLexicon.Dependency.PATH ).getString() );
                 }
 
                 return null;
@@ -256,13 +256,13 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
                 assertThat( dependenciesNode.getNodes().getSize(), is( 1L ) );
 
                 final Node dependencyNode = dependenciesNode.getNodes().nextNode();
-                assertThat( dependencyNode.getPrimaryNodeType().getName(), is( ModelerLexicon.DEPENDENCY ) );
+                assertThat( dependencyNode.getPrimaryNodeType().getName(), is( ModelerLexicon.Dependency.DEPENDENCY ) );
 
                 final String dependencyPath = "/Model/Books/data/types/BookDatatypes.xsd";
-                assertThat( dependencyNode.getProperty( ModelerLexicon.PATH ).getString(), is( dependencyPath ) );
+                assertThat( dependencyNode.getProperty( ModelerLexicon.Dependency.PATH ).getString(), is( dependencyPath ) );
 
                 final String input =
-                    dependencyNode.getProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
+                    dependencyNode.getProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
                 assertThat( input, is( "./data/types/BookDatatypes.xsd" ) );
 
                 // make sure dependency resource was imported and model created (getNode throws exception if path not found)
@@ -298,7 +298,7 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
                 // the node with the invalid relative path should not have its path set
                 final NodeIterator itr = dependenciesNode.getNodes();
 
-                if ( itr.nextNode().hasProperty( ModelerLexicon.PATH ) && itr.nextNode().hasProperty( ModelerLexicon.PATH ) ) {
+                if ( itr.nextNode().hasProperty( ModelerLexicon.Dependency.PATH ) && itr.nextNode().hasProperty( ModelerLexicon.Dependency.PATH ) ) {
                     fail( "Invalid dependency relative path should not have a path property on its dependency node" );
                 }
 
@@ -328,13 +328,13 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
                 assertThat( dependenciesNode.getNodes().getSize(), is( 1L ) );
 
                 final Node dependencyNode = dependenciesNode.getNodes().nextNode();
-                assertThat( dependencyNode.getPrimaryNodeType().getName(), is( ModelerLexicon.DEPENDENCY ) );
+                assertThat( dependencyNode.getPrimaryNodeType().getName(), is( ModelerLexicon.Dependency.DEPENDENCY ) );
 
                 final String dependencyPath = "/Model/MovieDatatypes.xsd";
-                assertThat( dependencyNode.getProperty( ModelerLexicon.PATH ).getString(), is( dependencyPath ) );
+                assertThat( dependencyNode.getProperty( ModelerLexicon.Dependency.PATH ).getString(), is( dependencyPath ) );
 
                 final String input =
-                    dependencyNode.getProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
+                    dependencyNode.getProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ).getValues()[ 0 ].getString();
                 assertThat( input, is( "MovieDatatypes.xsd" ) );
 
                 // make sure dependency resource was imported and model created (getNode throws exception if path not found)

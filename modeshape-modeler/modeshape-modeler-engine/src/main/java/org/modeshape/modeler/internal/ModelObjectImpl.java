@@ -439,7 +439,7 @@ public class ModelObjectImpl implements ModelObject {
 
     Node modelNode( final Session session ) throws Exception {
         Node node = session.getNode( path );
-        while ( !node.isNodeType( ModelerLexicon.MODEL_MIXIN ) )
+        while ( !node.isNodeType( ModelerLexicon.Model.MODEL_MIXIN ) )
             node = node.getParent();
         return node;
     }

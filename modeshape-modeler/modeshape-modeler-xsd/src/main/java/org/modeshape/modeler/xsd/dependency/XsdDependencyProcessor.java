@@ -150,18 +150,19 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
 
                 // create dependencies folder node if not already created
                 if ( dependenciesNode == null ) {
-                    dependenciesNode = modelNode.addNode( ModelerLexicon.DEPENDENCIES, ModelerLexicon.DEPENDENCIES );
+                    dependenciesNode = modelNode.addNode( ModelerLexicon.Model.DEPENDENCIES,
+                                                          ModelerLexicon.Model.DEPENDENCIES );
                     LOGGER.debug( "Created dependencies folder node '%s'", dependenciesNode.getPath() );
                 }
 
                 // create dependency node
                 final Node dependencyNode =
-                    dependenciesNode.addNode( ModelerLexicon.DEPENDENCY, ModelerLexicon.DEPENDENCY );
+                    dependenciesNode.addNode( ModelerLexicon.Dependency.DEPENDENCY, ModelerLexicon.Dependency.DEPENDENCY );
 
                 // set input property
                 final Property locationProp = kid.getProperty( XsdLexicon.SCHEMA_LOCATION );
                 final String location = locationProp.getString();
-                dependencyNode.setProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY, new String[] { location } );
+                dependencyNode.setProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY, new String[] { location } );
                 LOGGER.debug( "Setting dependency source reference property to '%s'", location );
 
                 // derive path using model node parent as starting point
@@ -195,7 +196,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
                     }
 
                     final String fullModelPath = parentModelPath + path;
-                    dependencyNode.setProperty( ModelerLexicon.PATH, fullModelPath );
+                    dependencyNode.setProperty( ModelerLexicon.Dependency.PATH, fullModelPath );
                     LOGGER.debug( "Setting dependency path property to '%s'", fullModelPath );
 
                     final boolean exists = node.hasNode( path );
@@ -208,8 +209,8 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
                     LOGGER.debug( "Found absolute dependency path '%s'", path );
 
                     // find common part of path and external location to determine workspace location
-                    if ( modelNode.hasProperty( ModelerLexicon.EXTERNAL_LOCATION ) ) {
-                        String extLocation = modelNode.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString();
+                    if ( modelNode.hasProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ) ) {
+                        String extLocation = modelNode.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString();
                         extLocation = normalizePath( extLocation );
                         extLocation = extLocation.substring( 0, extLocation.lastIndexOf( "/" ) );
 
@@ -269,7 +270,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
                         }
 
                         dependencyModelPath = parentPath + dependencyModelPath;
-                        dependencyNode.setProperty( ModelerLexicon.PATH, dependencyModelPath );
+                        dependencyNode.setProperty( ModelerLexicon.Dependency.PATH, dependencyModelPath );
                         LOGGER.debug( "Setting dependency path property to '%s'", dependencyModelPath );
 
                         if ( !exists ) {
@@ -307,17 +308,17 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
         assert ( missingDependencies != null );
         assert ( modeler != null );
 
-        if ( !modelNode.hasProperty( ModelerLexicon.EXTERNAL_LOCATION )
-             || !modelNode.hasProperty( ModelerLexicon.MODEL_TYPE )
+        if ( !modelNode.hasProperty( ModelerLexicon.Model.EXTERNAL_LOCATION )
+             || !modelNode.hasProperty( ModelerLexicon.Model.MODEL_TYPE )
              || missingDependencies.isEmpty() ) {
             return;
         }
 
         final String modelName = modelNode.getName();
-        final String type = modelNode.getProperty( ModelerLexicon.MODEL_TYPE ).getString();
+        final String type = modelNode.getProperty( ModelerLexicon.Model.MODEL_TYPE ).getString();
         final ModelType modelType = modeler.modelTypeManager().modelType( type );
 
-        String externalLocation = modelNode.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString();
+        String externalLocation = modelNode.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString();
         externalLocation = externalLocation.substring( 0, ( externalLocation.lastIndexOf( "/" ) ) );
 
         final String artifactDir = artifactPath.substring( 0, ( artifactPath.lastIndexOf( "/" ) ) );

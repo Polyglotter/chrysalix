@@ -25,53 +25,19 @@ package org.modeshape.modeler.internal;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.net.URL;
-
-import javax.jcr.Node;
-import javax.jcr.Session;
 
 import org.junit.Test;
 import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.Modeler;
-import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.integration.BaseIntegrationTest;
 
 @SuppressWarnings( "javadoc" )
 public class ITModelTypeManager extends BaseIntegrationTest {
-
-    @Test
-    public void shouldAllowRequestWhenModelTypeDoesNotHaveDependencyProcessor() throws Exception {
-        manager().run( new Task< Void >() {
-
-            @Override
-            public Void run( final Session session ) throws Exception {
-                final Node rootNode = session.getRootNode();
-                final Node modelNode = rootNode.addNode( "elvis" );
-                modelNode.addMixin( ModelerLexicon.MODEL_MIXIN );
-                assertThat( modelTypeManager().dependencyProcessor( modelNode ), nullValue() );
-                return null;
-            }
-        } );
-    }
-
-    @Test( expected = ModelerException.class )
-    public void shouldFailToProcessDependenciesWhenNotAModelNode() throws Exception {
-        final ModelTypeManagerImpl modelTypeMgr = modelTypeManager();
-        modelTypeManager().manager.run( new Task< Void >() {
-
-            @Override
-            public Void run( final Session session ) throws Exception {
-                final Node rootNode = session.getRootNode();
-                modelTypeMgr.dependencyProcessor( rootNode );
-                return null;
-            }
-        } );
-    }
 
     @Test
     public void shouldGetApplicableModelTypeManager() throws Exception {
@@ -98,8 +64,7 @@ public class ITModelTypeManager extends BaseIntegrationTest {
 
     @Test
     public void shouldInstallModelTypes() throws Exception {
-        final String[] potentialSequencerClassNames = modelTypeManager().install( "java" );
-        assertThat( potentialSequencerClassNames.length == 0, is( true ) );
+        modelTypeManager().install( "java" );
         assertThat( modelTypeManager().modelTypes().length == 0, is( false ) );
     }
 
@@ -112,11 +77,4 @@ public class ITModelTypeManager extends BaseIntegrationTest {
         assertThat( modelTypeManager().modelTypes().length, is( size ) );
     }
 
-    @Test
-    public void shouldReturnUninstantiablePotentialSequencerClassNames() throws Exception {
-        String[] potentialSequencerClassNames = modelTypeManager().install( "xsd" );
-        assertThat( potentialSequencerClassNames.length == 0, is( false ) );
-        potentialSequencerClassNames = modelTypeManager().install( "sramp" );
-        assertThat( potentialSequencerClassNames.length == 0, is( true ) );
-    }
 }

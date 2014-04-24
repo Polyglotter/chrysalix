@@ -73,7 +73,7 @@ public class ITModeler extends BaseIntegrationTest {
 
     @Test
     public void shouldExportToFile() throws Exception {
-        assertThat( modelTypeManager().install( "java" ).length == 0, is( true ) );
+        modelTypeManager().install( "java" );
         final String name = ModelImpl.class.getName();
         final File file = new File( "src/main/java/" + name.replace( '.', '/' ) + ".java" );
         assertThat( file.exists(), is( true ) );
@@ -146,7 +146,7 @@ public class ITModeler extends BaseIntegrationTest {
 
             @Override
             public Void run( final Session session ) throws Exception {
-                assertThat( modelTypeManager().dependencyProcessor( session.getNode( model.absolutePath() ) ), nullValue() );
+                assertThat( model.modelType().dependencyProcessor(), nullValue() );
                 return null;
             }
         } );

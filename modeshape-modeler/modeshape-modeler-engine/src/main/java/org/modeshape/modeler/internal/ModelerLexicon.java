@@ -31,90 +31,179 @@ public interface ModelerLexicon {
     /**
      * The ModeShape ModeShapeModeler namespace prefix. Value is {@value} .
      */
-    String NAMESPACE_PREFIX = "mm:";
+    String NAMESPACE_PREFIX = "mm";
 
     /**
-     * the system workspace model type category property
+     * The node type name whose children are all model type categories.
      */
-    String CATEGORY = "category";
-
-    /**
-     * The node type name of the dependencies node. This node will have dependency child nodes.
-     */
-    String DEPENDENCIES = NAMESPACE_PREFIX + "dependencies";
-
-    /**
-     * The node type name of a dependency node.
-     */
-    String DEPENDENCY = NAMESPACE_PREFIX + "dependency";
-
-    /**
-     * The name of the external location property the imported resource was sourced from.
-     */
-    String EXTERNAL_LOCATION = NAMESPACE_PREFIX + "externalLocation";
-
-    /**
-     * the system workspace node containing the installed jar files
-     */
-    String JARS = "jars";
-
-    /**
-     * The mixin type of a model node.
-     */
-    String MODEL_MIXIN = NAMESPACE_PREFIX + "model";
-
-    /**
-     * the model type of a model node
-     */
-    String MODEL_TYPE = NAMESPACE_PREFIX + "modelType";
+    String MODEL_TYPE_CATEGORIES = NAMESPACE_PREFIX + ":modelTypeCategories";
 
     /**
      * the system workspace property containing the registered model type repositories
      */
-    String MODEL_TYPE_REPOSITORIES = NAMESPACE_PREFIX + "modelTypeRepositories";
-
-    /**
-     * the system workspace node containing the installed model types
-     */
-    String MODEL_TYPES = "modelTypes";
-
-    /**
-     * The name of a dependency node's derived path property.
-     */
-    String PATH = NAMESPACE_PREFIX + "path";
-
-    /**
-     * the system workspace node containing unresolvable potential class names by category
-     */
-    String POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY = "potentialSequencerClassNamesByCategory";
-
-    /**
-     * the system workspace category property containing unresolvable potential class names
-     */
-    String POTENTIAL_SEQUENCER_CLASS_NAMES = "potentialSequencerClassNames";
-
-    /**
-     * the system workspace model type sequencer class property
-     */
-    String SEQUENCER_CLASS = "sequencerClass";
-
-    /**
-     * The name of a dependency node's source reference property.
-     */
-    String SOURCE_REFERENCE_PROPERTY = NAMESPACE_PREFIX + "sourceReference";
+    String MODEL_TYPE_REPOSITORIES = NAMESPACE_PREFIX + ":modelTypeRepositories";
 
     /**
      * Temporary workspace folder
      */
-    String TEMP_FOLDER = NAMESPACE_PREFIX + "temp";
+    String TEMP_FOLDER = NAMESPACE_PREFIX + ":temp";
 
     /**
      * The mixin for the node where model nodes can be added to.
      */
-    String UNSTRUCTURED_MIXIN = NAMESPACE_PREFIX + "unstructured";
+    String UNSTRUCTURED_MIXIN = NAMESPACE_PREFIX + ":unstructured";
 
     /**
-     * the system workspace property containing the names of the installed modeshape-sequencer-*-modules-with-dependencies.zip files
+     * JCR names related to a model type category.
      */
-    String ZIPS = "zips";
+    interface Category {
+
+        /**
+         * The node type name of a category.
+         */
+        String NODE_TYPE = NAMESPACE_PREFIX + ":modelTypeCategory";
+
+        /**
+         * The node type name and type whose children are all archives.
+         */
+        String ARCHIVES = NAMESPACE_PREFIX + ":archives";
+
+        /**
+         * The node type name and type whose children are all model types.
+         */
+        String MODEL_TYPES = NAMESPACE_PREFIX + ":modelTypes";
+
+    }
+
+    /**
+     * JCR names related to a model dependency.
+     */
+    interface Dependency {
+
+        /**
+         * The node type name of a dependency node.
+         */
+        String DEPENDENCY = NAMESPACE_PREFIX + ":dependency";
+
+        /**
+         * The name of a dependency node's derived path property.
+         */
+        String PATH = NAMESPACE_PREFIX + ":path";
+
+        /**
+         * The name of a dependency node's source reference property.
+         */
+        String SOURCE_REFERENCE_PROPERTY = NAMESPACE_PREFIX + ":sourceReference";
+
+    }
+
+    /**
+     * JCR names related to a model.
+     */
+    interface Model {
+
+        /**
+         * The node type name of the dependencies node. This node will have dependency child nodes.
+         */
+        String DEPENDENCIES = NAMESPACE_PREFIX + ":dependencies";
+
+        /**
+         * The name of the external location property the imported resource was sourced from.
+         */
+        String EXTERNAL_LOCATION = NAMESPACE_PREFIX + ":externalLocation";
+
+        /**
+         * The mixin type of a model node.
+         */
+        String MODEL_MIXIN = NAMESPACE_PREFIX + ":model";
+
+        /**
+         * The name of the property whose value is a reference to the model's model type.
+         */
+        String MODEL_TYPE = NAMESPACE_PREFIX + ":modelType";
+
+    }
+
+    /**
+     * JCR names related to a model type.
+     */
+    interface ModelType {
+
+        /**
+         * The node type name of a category.
+         */
+        String NODE_TYPE = NAMESPACE_PREFIX + ":modelType";
+
+        /**
+         * The name of the multi-valued property whose value is the file extensions processable by a model type.
+         */
+        String FILE_EXTENSIONS = NAMESPACE_PREFIX + ":fileExtensions";
+
+        /**
+         * The name of the property whose value is the class name of the model type's sequencer.
+         */
+        String SEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":sequencerClassName";
+
+        /**
+         * The name of the property whose value is the class name of the model type's desequencer.
+         */
+        String DESEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":desequencerClassName";
+
+        /**
+         * The name of the property whose value is the class name of the model type's dependency processor.
+         */
+        String DEPENDENCY_PROCESSOR_CLASS_NAME = NAMESPACE_PREFIX + ":dependencyProcessorClassName";
+
+    }
+
+    /**
+     * JCR names related to a model type extension.
+     */
+    interface ModelTypeExtension {
+
+        /**
+         * The node type name of the abstract node type definition for a model type extension.
+         */
+        String NODE_TYPE = NAMESPACE_PREFIX + ":modelTypeExtension";
+
+        /**
+         * The property name whose value is the an extension type.
+         */
+
+        String EXTENSION_TYPE = NAMESPACE_PREFIX + ":extensionType";
+
+        /**
+         * The property name whose value is the class name of the model type extension.
+         */
+        String CLASS_NAME = NAMESPACE_PREFIX + ":className";
+
+        /**
+         * The property name whose value is the reference to the archive that was used to create the model type or load a model type
+         * extension.
+         */
+        String ARCHIVE_REFERENCE = NAMESPACE_PREFIX + ":archiveReference";
+
+        /**
+         * The name of the dependency processor node type definition.
+         */
+        String DEPENDENCY_PROCESSOR_NODE_TYPE = NAMESPACE_PREFIX + ":dependencyProcessor";
+
+        /**
+         * The name of the desequencer node type definition.
+         */
+        String DESEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":desequencer";
+
+        /**
+         * The name of the multi-valued property whose values are regular expressions used to mark file names as potential
+         * extensions of this type.
+         */
+        String NAME_PATTERNS = NAMESPACE_PREFIX + ":namePatterns";
+
+        /**
+         * The name of the sequencer node type definition.
+         */
+        String SEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":sequencer";
+
+    }
+
 }

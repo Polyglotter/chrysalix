@@ -35,13 +35,19 @@ public final class ModelerI18n {
         new I18n( "A dependency node exists for '%s' but has no source references" );
     public static final I18n modelerStarted = new I18n( "ModeShape Modeler started" );
     public static final I18n modelerStopped = new I18n( "ModeShape Modeler stopped" );
+    public static final I18n modelExportDesequencerNotFound =
+        new I18n( "Model '%s' cannot be exported since a desequencer was not found" );
+    public static final I18n modelTypeCategoryParentNodeNotFound =
+        new I18n( "Expected categories child node of '%s' was not found" );
     public static final I18n mustBeModelNode = new I18n( "Node '%s' is not a model node" );
     public static final I18n sessionNotSavedWhenCreatingModel =
         new I18n( "The session was not saved when creating model for '%s'" );
     public static final I18n unableToDetermineDefaultModelType = new I18n( "Unable to determine default model type for file %s" );
     public static final I18n unableToFindModelTypeCategory =
-        new I18n( "Unable to find model type category \"%s\" in registered model type repositories" );
+        new I18n( "Unable to find model type category '%s' in registered model type repositories" );
+    public static final I18n unableToFindModelTypeCategoryInCache = new I18n( "Model type category '%s' was not found in cache" );
     public static final I18n urlNotFound = new I18n( "URL not found: %s" );
     public static final I18n notModelPath = new I18n( "Not a path to a model: %s" );
     public static final I18n notMultiValuedProperty = new I18n( "Property \"%s\" is not a multi-value property" );
+    public static final I18n sessionRollbackFailed = new I18n( "*** Session rollback failed for category '%s' ***" );
 }
