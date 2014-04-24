@@ -104,9 +104,47 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                              final Node systemNode ) throws Exception {
                 loadModelTypeRepositories( session, systemNode );
                 loadCategories( session, systemNode );
+                session.save();
+
                 return null;
             }
         } );
+    }
+
+    /**
+     * @param category
+     *        the category name whose node is being requested (cannot be <code>null</code>)
+     * @param systemNode
+     *        the system node (cannot be <code>null</code>)
+     * @param create
+     *        <code>true</code> if the category node should be created if not found
+     * @return the category node or <code>null</code> if not found
+     * @throws Exception
+     *         if the categories parent node is not found or if another error occurs
+     */
+    Node categoryNode( final String category,
+                       final Node systemNode,
+                       final boolean create ) throws Exception {
+        if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ) ) {
+            throw new ModelerException( ModelerI18n.modelTypeCategoryParentNodeNotFound, systemNode.getPath() );
+        }
+
+        final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
+        Node categoryNode = null;
+
+        if ( !categoriesNode.hasNode( category ) ) {
+            if ( create ) {
+                categoryNode = categoriesNode.addNode( category, ModelerLexicon.Category.NODE_TYPE );
+                categoryNode.addNode( ModelerLexicon.Category.ARCHIVES, ModelerLexicon.Category.ARCHIVES );
+                categoryNode.addNode( ModelerLexicon.Category.MODEL_TYPES, ModelerLexicon.Category.MODEL_TYPES );
+                LOGGER.debug( "Created category node '%s'", category );
+            }
+        } else {
+            categoryNode = categoriesNode.getNode( category );
+            LOGGER.debug( "Found category node '%s'", category );
+        }
+
+        return categoryNode;
     }
 
     /**
@@ -144,42 +182,6 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                 return type == null ? null : type;
             }
         } );
-    }
-
-    /**
-     * @param category
-     *        the category name whose node is being requested (cannot be <code>null</code>)
-     * @param systemNode
-     *        the system node (cannot be <code>null</code>)
-     * @param create
-     *        <code>true</code> if the category node should be created if not found
-     * @return the category node or <code>null</code> if not found
-     * @throws Exception
-     *         if the categories parent node is not found or if another error occurs
-     */
-    Node getCategoryNode( final String category,
-                          final Node systemNode,
-                          final boolean create ) throws Exception {
-        if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ) ) {
-            throw new ModelerException( ModelerI18n.modelTypeCategoryParentNodeNotFound, systemNode.getPath() );
-        }
-
-        final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
-        Node categoryNode = null;
-
-        if ( !categoriesNode.hasNode( category ) ) {
-            if ( create ) {
-                categoryNode = categoriesNode.addNode( category, ModelerLexicon.Category.NODE_TYPE );
-                categoryNode.addNode( ModelerLexicon.Category.ARCHIVES, ModelerLexicon.Category.ARCHIVES );
-                categoryNode.addNode( ModelerLexicon.Category.MODEL_TYPES, ModelerLexicon.Category.MODEL_TYPES );
-                LOGGER.debug( "Created category node '%s'", category );
-            }
-        } else {
-            categoryNode = categoriesNode.getNode( category );
-            LOGGER.debug( "Found category node '%s'", category );
-        }
-
-        return categoryNode;
     }
 
     /**
@@ -230,6 +232,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
             } );
 
             // session successfully rolled back
+            if ( e instanceof RuntimeException ) throw e;
             if ( e instanceof ModelerException ) throw ( ModelerException ) e;
             throw new ModelerException( e );
         }
@@ -278,11 +281,11 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                            final Session session,
                            final Node systemNode ) throws Exception {
         // don't install sequencer if already installed
-        if ( getCategoryNode( category, systemNode, false ) != null ) {
+        if ( categoryNode( category, systemNode, false ) != null ) {
             return;
         }
 
-        final Node categoryNode = getCategoryNode( category, systemNode, true );
+        final Node categoryNode = categoryNode( category, systemNode, true );
         final String archiveName = String.format( SEQUENCER_ZIP_PATTERN, category, version() );
         final Path archivePath = library.resolve( archiveName );
         final String sequencerArchivePath = String.format( SEQUENCER_PATH_PATTERN, category, version(), archiveName );
@@ -409,7 +412,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
         }
 
         if ( !sequencerArchiveFound ) {
-            throw new ModelerException( ModelerI18n.unableToFindModelTypeCategory, category );
+            throw new IllegalArgumentException( ModelerI18n.unableToFindModelTypeCategory.text( category ) );
         }
     }
 
@@ -417,7 +420,6 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                          final Node systemNode ) throws Exception {
         if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ) ) {
             systemNode.addNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
-            session.save();
             LOGGER.debug( "'%s' node created", ModelerLexicon.MODEL_TYPE_CATEGORIES );
         } else {
             final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
@@ -434,7 +436,6 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                                final Node categoryNode ) throws Exception {
         if ( !categoryNode.hasNode( ModelerLexicon.Category.ARCHIVES ) ) {
             categoryNode.addNode( ModelerLexicon.Category.ARCHIVES );
-            session.save();
             LOGGER.debug( "'%s' node created", ModelerLexicon.Category.ARCHIVES );
         } else {
             final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
@@ -462,7 +463,6 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
             vals[ 0 ] = session.getValueFactory().createValue( JBOSS_MODEL_TYPE_REPOSITORY );
             vals[ 1 ] = session.getValueFactory().createValue( MAVEN_MODEL_TYPE_REPOSITORY );
             systemNode.setProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES, vals );
-            session.save();
         }
 
         for ( final String url : JcrUtil.values( systemNode, ModelerLexicon.MODEL_TYPE_REPOSITORIES ) ) {
@@ -474,7 +474,6 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                          final Node categoryNode ) throws Exception {
         if ( !categoryNode.hasNode( ModelerLexicon.Category.MODEL_TYPES ) ) {
             categoryNode.addNode( ModelerLexicon.Category.MODEL_TYPES );
-            session.save();
             LOGGER.debug( "'%s' node created", ModelerLexicon.Category.MODEL_TYPES );
         } else {
             final Node modelTypesNode = categoryNode.getNode( ModelerLexicon.Category.MODEL_TYPES );
@@ -718,7 +717,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
             @Override
             public Void run( final Session session,
                              final Node systemNode ) throws Exception {
-                final Node categoryNode = getCategoryNode( category, systemNode, false );
+                final Node categoryNode = categoryNode( category, systemNode, false );
                 if ( categoryNode == null ) throw new ModelerException( ModelerI18n.unableToFindModelTypeCategory, category );
 
                 // remove category archive paths from classpath
@@ -726,17 +725,16 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                     final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
 
                     for ( final NodeIterator iter = archivesNode.getNodes(); iter.hasNext(); ) {
-                        final Node arciveNode = iter.nextNode();
-                        final Path archivePath = library.resolve( arciveNode.getName() );
+                        final Node archiveNode = iter.nextNode();
+                        final Path archivePath = library.resolve( archiveNode.getName() );
                         if ( !archivePath.toFile().delete() ) LOGGER.debug( "Unable to delete jar: %s", archivePath );
-                        // TODO does this remove it from classpath also????
                     }
                 }
 
                 // remove from MS repo now
                 categoryNode.remove();
                 session.save();
-                // TODO what about models that have been saved with that category????
+
                 return null;
             }
         } );

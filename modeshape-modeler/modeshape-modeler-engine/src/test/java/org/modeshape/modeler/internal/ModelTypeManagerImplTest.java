@@ -43,7 +43,6 @@ import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.Modeler;
-import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.TestUtil;
 import org.modeshape.modeler.test.BaseTest;
 
@@ -104,7 +103,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
         failingModelTypeManager().install( null );
     }
 
-    @Test( expected = ModelerException.class )
+    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToInstallModelTypesIfCategoryNotFound() throws Exception {
         modelTypeManager().install( "bogus" );
     }
