@@ -53,12 +53,10 @@ public interface ModelTypeManager {
      * @param category
      *        the name of an {@link #installableModelTypeCategories() installable model type category} from an on-line <a
      *        href="http://maven.apache.org">Maven</a> {@link #modelTypeRepositories() model type repository}
-     * @return the collection of names of potential sequencer classes that could not be instantiated, usually due to missing
-     *         dependencies.
      * @throws ModelerException
      *         if any problem occurs
      */
-    String[] install( final String category ) throws ModelerException;
+    void install( final String category ) throws ModelerException;
 
     /**
      * @return the installable {@link ModelType model type} categories from the {@link #modelTypeRepositories() registered

@@ -30,14 +30,15 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.Session;
-import javax.jcr.Value;
 
 import org.junit.Test;
+import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
@@ -200,8 +201,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
 
     @Test
     public void shouldInstallModelTypes() throws Exception {
-        final String[] potentialSequencerClassNames = modelTypeManager().install( "java" );
-        assertThat( potentialSequencerClassNames.length == 0, is( true ) );
+        modelTypeManager().install( "java" );
         assertThat( modelTypeManager().modelTypes().length == 0, is( false ) );
         final ModelTypeImpl type = ( ModelTypeImpl ) modelTypeManager().modelTypes()[ 0 ];
         assertThat( type.category(), is( "java" ) );
@@ -226,13 +226,12 @@ public class ModelTypeManagerImplTest extends BaseTest {
             assertThat( modelTypeManager.modelTypeRepositories().length, not( repos ) );
             assertThat( modelTypeManager.modelTypes().length == 0, is( false ) );
             assertThat( modelTypeManager.libraryClassLoader.getURLs().length > 0, is( true ) );
-            assertThat( modelTypeManager.potentialSequencerClassNamesByCategory.isEmpty(), is( false ) );
             TestUtil.manager( modeler ).run( modelTypeManager, new SystemTask< Void >() {
 
                 @Override
                 public Void run( final Session session,
                                  final Node systemNode ) throws Exception {
-                    assertThat( systemNode.getProperty( ModelerLexicon.ZIPS ).getValues().length > 0, is( true ) );
+                    assertThat( systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ).getNodes().getSize(), is( 2L ) );
                     return null;
                 }
             } );
@@ -267,6 +266,8 @@ public class ModelTypeManagerImplTest extends BaseTest {
 
     @Test
     public void shouldNotInstallModelTypeCategoryIfAlreadyInstalled() throws Exception {
+        final String category = "test";
+
         manager().run( modelTypeManager(), new SystemTask< Void >() {
 
             @Override
@@ -274,13 +275,23 @@ public class ModelTypeManagerImplTest extends BaseTest {
                              final Node systemNode ) throws Exception {
                 final String version = manager().repository().getDescriptor( Repository.REP_VERSION_DESC );
                 final String archiveName = "modeshape-sequencer-test-" + version + "-module-with-dependencies.zip";
-                final Value[] vals = new Value[] { session.getValueFactory().createValue( archiveName ) };
-                systemNode.setProperty( ModelerLexicon.ZIPS, vals );
+                final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
+                final Node categoryNode = categoriesNode.addNode( category, ModelerLexicon.Category.NODE_TYPE );
+                final Node archivesNode = categoryNode.addNode( ModelerLexicon.Category.ARCHIVES, ModelerLexicon.Category.ARCHIVES );
+
+                // add jar to category node in repository
+                try ( final InputStream stream = getClass().getClassLoader().getResourceAsStream( archiveName ) ) {
+                    new JcrTools().uploadFile( session,
+                                               archivesNode.getPath() + '/' + archiveName,
+                                               stream );
+                }
+
                 session.save();
                 return null;
             }
         } );
-        modelTypeManager().install( "test" );
+
+        modelTypeManager().install( category );
         assertThat( modelTypeManager().modelTypes().length == 0, is( true ) );
     }
 
@@ -326,51 +337,16 @@ public class ModelTypeManagerImplTest extends BaseTest {
 
     @Test
     public void shouldUninstall() throws Exception {
-        assertThat( modelTypeManager().install( "java" ).length, is( 0 ) );
-        assertThat( modelTypeManager().modelTypes().length, not( 0 ) );
-        assertThat( modelTypeManager().potentialSequencerClassNamesByCategory.isEmpty(), is( true ) );
+        modelTypeManager().install( "java" );
+        assertThat( modelTypeManager().modelTypes().length, is( 2 ) ); // JavaFile, ClassFile
         modelTypeManager().uninstall( "java" );
         assertThat( modelTypeManager().modelTypes().length, is( 0 ) );
-        assertThat( modelTypeManager().potentialSequencerClassNamesByCategory.isEmpty(), is( true ) );
         manager().run( modelTypeManager(), new SystemTask< Void >() {
 
             @Override
             public Void run( final Session session,
                              final Node systemNode ) throws Exception {
-                assertThat( systemNode.getProperty( ModelerLexicon.ZIPS ).getValues().length, is( 0 ) );
-                assertThat( systemNode.getNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY ).hasNode( "java" ),
-                            is( false ) );
-                return null;
-            }
-        } );
-    }
-
-    @Test
-    public void shouldUninstallWhenClassNamesUnresolvable() throws Exception {
-        assertThat( modelTypeManager().install( "xsd" ).length, not( 0 ) );
-        manager().run( modelTypeManager(), new SystemTask< Void >() {
-
-            @Override
-            public Void run( final Session session,
-                             final Node systemNode ) throws Exception {
-                assertThat( systemNode.getProperty( ModelerLexicon.ZIPS ).getValues().length, not( 0 ) );
-                assertThat( systemNode.getNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY ).hasNode( "xsd" ),
-                            is( true ) );
-                return null;
-            }
-        } );
-        assertThat( modelTypeManager().modelTypes().length, is( 0 ) );
-        assertThat( modelTypeManager().potentialSequencerClassNamesByCategory.isEmpty(), is( false ) );
-        modelTypeManager().uninstall( "xsd" );
-        assertThat( modelTypeManager().potentialSequencerClassNamesByCategory.isEmpty(), is( true ) );
-        manager().run( modelTypeManager(), new SystemTask< Void >() {
-
-            @Override
-            public Void run( final Session session,
-                             final Node systemNode ) throws Exception {
-                assertThat( systemNode.getProperty( ModelerLexicon.ZIPS ).getValues().length, is( 0 ) );
-                assertThat( systemNode.getNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY ).hasNode( "xsd" ),
-                            is( false ) );
+                assertThat( systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ).getNodes().getSize(), is( 0L ) );
                 return null;
             }
         } );

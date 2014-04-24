@@ -23,6 +23,10 @@
  */
 package org.modeshape.modeler;
 
+import org.modeshape.jcr.api.sequencer.Sequencer;
+import org.modeshape.modeler.extensions.DependencyProcessor;
+import org.modeshape.modeler.extensions.Desequencer;
+
 /**
  * 
  */
@@ -34,6 +38,20 @@ public interface ModelType {
     String category();
 
     /**
+     * @return the dependency processor or <code>null</code> if one does not exist
+     * @throws ModelerException
+     *         if a problem occurs
+     */
+    DependencyProcessor dependencyProcessor() throws ModelerException;
+
+    /**
+     * @return this model type's desequencer or <code>null</code> if one does not exist
+     * @throws ModelerException
+     *         if a problem occurs
+     */
+    Desequencer desequencer() throws ModelerException;
+
+    /**
      * @return the ID of this model type
      */
     String id();
@@ -42,6 +60,13 @@ public interface ModelType {
      * @return the name of this model type
      */
     String name();
+
+    /**
+     * @return this model type's sequencer (never <code>null</code>)
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    Sequencer sequencer() throws ModelerException;
 
     /**
      * @param name

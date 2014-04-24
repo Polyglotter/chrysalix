@@ -37,4 +37,30 @@
   + mm:dependency (mm:dependency) sns
 
 [mm:model] mixin
+  - mm:modelType (string)
   + mm:dependencies (mm:dependencies)
+
+// parent node of all model type categories
+[mm:modelTypeCategories] > nt:unstructured
+  + * (mm:modelTypeCategory) = mm:modelTypeCategory copy
+
+// parent node of archive files
+[mm:archives] > nt:unstructured
+  + * (nt:file, mix:referenceable) = nt:file copy // node name is archive name
+
+// parent node of model types
+[mm:modelTypes] > nt:unstructured
+  + * (mm:modelType) = mm:modelType copy
+
+// node name is the category name
+[mm:modelTypeCategory] > nt:unstructured
+  + mm:archives (mm:archives) = mm:archives copy
+  + mm:modelTypes (mm:modelType) = mm:modelTypes copy
+  
+// node name is the model type name
+[mm:modelType] > nt:unstructured, mix:referenceable
+  - mm:fileExtensions (string) multiple
+  - mm:sequencerClassName (string)
+  - mm:desequencerClassName (string)
+  - mm:dependencyProcessorClassName (string)  
+  

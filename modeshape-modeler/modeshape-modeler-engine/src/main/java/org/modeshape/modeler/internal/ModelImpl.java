@@ -43,7 +43,6 @@ import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.extensions.Dependency;
-import org.modeshape.modeler.extensions.DependencyProcessor;
 
 /**
  * 
@@ -87,17 +86,17 @@ public class ModelImpl extends ModelObjectImpl implements Model {
                 public Set< Dependency > run( final Session session ) throws Exception {
                     final Node modelNode = session.getNode( absolutePath() );
 
-                    if ( modelNode.hasNode( ModelerLexicon.DEPENDENCIES ) ) {
-                        final NodeIterator itr = modelNode.getNode( ModelerLexicon.DEPENDENCIES ).getNodes();
+                    if ( modelNode.hasNode( ModelerLexicon.Model.DEPENDENCIES ) ) {
+                        final NodeIterator itr = modelNode.getNode( ModelerLexicon.Model.DEPENDENCIES ).getNodes();
                         final Set< Dependency > result = new HashSet<>( ( int ) itr.getSize() );
 
                         while ( itr.hasNext() ) {
                             final Node dependencyNode = itr.nextNode();
 
                             // must have source references
-                            if ( dependencyNode.hasProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ) ) {
+                            if ( dependencyNode.hasProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ) ) {
                                 final Value[] values =
-                                    dependencyNode.getProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY ).getValues();
+                                    dependencyNode.getProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY ).getValues();
                                 final List< String > refs = new ArrayList<>( values.length );
 
                                 for ( final Value value : values ) {
@@ -107,8 +106,8 @@ public class ModelImpl extends ModelObjectImpl implements Model {
                                 String dependencyPath = null;
                                 boolean exists = false;
 
-                                if ( dependencyNode.hasProperty( ModelerLexicon.PATH ) ) {
-                                    dependencyPath = dependencyNode.getProperty( ModelerLexicon.PATH ).getString();
+                                if ( dependencyNode.hasProperty( ModelerLexicon.Dependency.PATH ) ) {
+                                    dependencyPath = dependencyNode.getProperty( ModelerLexicon.Dependency.PATH ).getString();
                                 }
 
                                 if ( !StringUtil.isBlank( dependencyPath ) ) {
@@ -134,15 +133,6 @@ public class ModelImpl extends ModelObjectImpl implements Model {
     }
 
     /**
-     * @return the dependency processor or <code>null</code> if one does not exist
-     * @throws ModelerException
-     *         if there is an error constructing the dependency processor
-     */
-    public DependencyProcessor dependencyProcessor() throws ModelerException {
-        return ( ( ModelTypeImpl ) modelType() ).dependencyProcessor();
-    }
-
-    /**
      * {@inheritDoc}
      * 
      * @see org.modeshape.modeler.Model#externalLocation()
@@ -154,8 +144,9 @@ public class ModelImpl extends ModelObjectImpl implements Model {
             @Override
             public URL run( final Session session ) throws Exception {
                 final Node model = session.getNode( path );
-                return model.hasProperty( ModelerLexicon.EXTERNAL_LOCATION ) ? new URL( model.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString() )
-                                                                            : null;
+                return model.hasProperty( ModelerLexicon.Model.EXTERNAL_LOCATION )
+                                                                                  ? new URL( model.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString() )
+                                                                                  : null;
             }
         } );
     }
@@ -219,7 +210,7 @@ public class ModelImpl extends ModelObjectImpl implements Model {
         assert ( node != null );
 
         for ( final NodeType nodeType : node.getMixinNodeTypes() ) {
-            if ( ModelerLexicon.MODEL_MIXIN.equals( nodeType.getName() ) ) {
+            if ( ModelerLexicon.Model.MODEL_MIXIN.equals( nodeType.getName() ) ) {
                 return true;
             }
         }
@@ -239,7 +230,7 @@ public class ModelImpl extends ModelObjectImpl implements Model {
             @Override
             public ModelType run( final Session session ) throws Exception {
                 return manager.modelTypeManager().modelType( session.getNode( path )
-                                                                    .getProperty( ModelerLexicon.MODEL_TYPE )
+                                                                    .getProperty( ModelerLexicon.Model.MODEL_TYPE )
                                                                     .getString() );
             }
         } );

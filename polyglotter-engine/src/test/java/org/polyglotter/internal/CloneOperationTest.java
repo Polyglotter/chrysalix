@@ -64,7 +64,7 @@ public class CloneOperationTest extends BaseTest {
         assertThat( model.child( XML_ROOT ), notNullValue() );
         assertThat( model.primaryType(), is( this.model.primaryType() ) );
         assertThat( model.mixinTypes(), is( this.model.mixinTypes() ) );
-        assertThat( model.stringValue( ModelerLexicon.MODEL_TYPE ), is( this.model.stringValue( ModelerLexicon.MODEL_TYPE ) ) );
+        assertThat( model.stringValue( ModelerLexicon.Model.MODEL_TYPE ), is( this.model.stringValue( ModelerLexicon.Model.MODEL_TYPE ) ) );
     }
 
     @Test

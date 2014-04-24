@@ -43,6 +43,7 @@ import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.jcr.api.ValueFactory;
 import org.modeshape.jcr.api.sequencer.Sequencer;
 import org.modeshape.modeler.extensions.DependencyProcessor;
+import org.modeshape.modeler.extensions.Desequencer;
 import org.modeshape.modeler.internal.Manager;
 import org.modeshape.modeler.internal.ModelImpl;
 import org.modeshape.modeler.internal.ModelTypeImpl;
@@ -129,7 +130,18 @@ public final class ModeShapeModeler implements Modeler {
                         final OutputStream stream ) throws ModelerException {
         CheckArg.isNotNull( model, "model" );
         CheckArg.isNotNull( stream, "stream" );
-        ( ( ModelTypeImpl ) model.modelType() ).desequencer().execute( model, stream );
+
+        final ModelType modelType = model.modelType();
+
+        if ( modelType != null ) {
+            final Desequencer desequencer = modelType.desequencer();
+
+            if ( desequencer != null ) {
+                desequencer.execute( model, stream );
+            }
+        }
+
+        throw new ModelerException( ModelerI18n.modelExportDesequencerNotFound, model.name() );
     }
 
     /**
@@ -237,10 +249,10 @@ public final class ModeShapeModeler implements Modeler {
                     final Calendar cal = Calendar.getInstance();
                     final ModelTypeImpl modelType = ( ModelTypeImpl ) type;
                     final Node modelNode = new JcrTools().findOrCreateNode( session, absolutePath( modelPath ) );
-                    modelNode.addMixin( ModelerLexicon.MODEL_MIXIN );
-                    if ( artifactNode.hasProperty( ModelerLexicon.EXTERNAL_LOCATION ) )
-                        modelNode.setProperty( ModelerLexicon.EXTERNAL_LOCATION,
-                                               artifactNode.getProperty( ModelerLexicon.EXTERNAL_LOCATION ).getString() );
+                    modelNode.addMixin( ModelerLexicon.Model.MODEL_MIXIN );
+                    if ( artifactNode.hasProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ) )
+                        modelNode.setProperty( ModelerLexicon.Model.EXTERNAL_LOCATION,
+                                               artifactNode.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString() );
                     final boolean save = modelType.sequencer().execute( artifactNode.getNode( JcrLexicon.CONTENT.getString() )
                                                                                     .getProperty( JcrLexicon.DATA.getString() ),
                                                                         modelNode,
@@ -257,7 +269,7 @@ public final class ModeShapeModeler implements Modeler {
                                                                             }
                                                                         } );
                     if ( save ) {
-                        modelNode.setProperty( ModelerLexicon.MODEL_TYPE, modelType.id() );
+                        modelNode.setProperty( ModelerLexicon.Model.MODEL_TYPE, modelType.id() );
                         final ModelImpl model = new ModelImpl( manager, modelNode.getPath() );
                         session.save();
                         processDependencies( artifactPath, modelNode, model, persistArtifact );
@@ -398,7 +410,7 @@ public final class ModeShapeModeler implements Modeler {
                 try {
                     final String absPath = absolutePath( path );
                     final Node node = session.getNode( absPath );
-                    if ( !node.isNodeType( ModelerLexicon.MODEL_MIXIN ) )
+                    if ( !node.isNodeType( ModelerLexicon.Model.MODEL_MIXIN ) )
                         throw new IllegalArgumentException( ModelerI18n.notModelPath.text( absPath ) );
                     return new ModelImpl( manager, absPath );
                 } catch ( final PathNotFoundException e ) {
@@ -440,7 +452,13 @@ public final class ModeShapeModeler implements Modeler {
                               final Node modelNode,
                               final ModelImpl model,
                               final boolean persistArtifacts ) throws Exception {
-        final DependencyProcessor dependencyProcessor = model.dependencyProcessor();
+        if ( model.modelType() == null ) {
+            Logger.getLogger( getClass() ).debug( "No model type found for model '%s'", modelNode.getName() );
+            return;
+        }
+
+        final DependencyProcessor dependencyProcessor = model.modelType().dependencyProcessor();
+
         if ( dependencyProcessor == null ) {
             Logger.getLogger( getClass() ).debug( "No dependency processor found for model '%s'", modelNode.getName() );
         } else {
@@ -476,7 +494,7 @@ public final class ModeShapeModeler implements Modeler {
 
             @Override
             public Void run( final Session session ) throws Exception {
-                session.getNode( path ).setProperty( ModelerLexicon.EXTERNAL_LOCATION, location );
+                session.getNode( path ).setProperty( ModelerLexicon.Model.EXTERNAL_LOCATION, location );
                 session.save();
                 return null;
             }

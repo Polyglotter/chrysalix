@@ -31,24 +31,21 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-import javax.jcr.Property;
 import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.jcr.Value;
-import javax.jcr.nodetype.NodeType;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -63,11 +60,10 @@ import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
-import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.polyglotter.common.Logger;
 
 /**
- * 
+ * The default implementation of a model type manager.
  */
 public final class ModelTypeManagerImpl implements ModelTypeManager {
 
@@ -75,92 +71,80 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
 
     private static final String MODESHAPE_GROUP = "org/modeshape";
 
+    // pass in category, version, name
+    private static final String SEQUENCER_PATH_PATTERN = MODESHAPE_GROUP + "/modeshape-sequencer-%s/%s/%s";
+
+    // pass in category, version
+    private static final String SEQUENCER_ZIP_PATTERN = "modeshape-sequencer-%s-%s-module-with-dependencies.zip";
+
     final Manager manager;
 
     final LinkedList< URL > modelTypeRepositories = new LinkedList<>();
 
     final Set< ModelType > modelTypes = new HashSet<>();
     final LibraryClassLoader libraryClassLoader = new LibraryClassLoader();
-    final Map< String, Set< String > > potentialSequencerClassNamesByCategory = new HashMap<>();
     final Path library;
-    final Map< String, DependencyProcessor > dependencyProcessorsByModelTypeName = new HashMap<>();
 
     ModelTypeManagerImpl( final Manager manager ) throws ModelerException {
         this.manager = manager;
+
+        // setup classpath area for model type archives
         try {
             library = Files.createTempDirectory( null );
         } catch ( final IOException e ) {
             throw new ModelerException( e );
         }
         library.toFile().deleteOnExit();
+
+        // load caches from MS repository
         manager.run( this, new SystemTask< Void >() {
 
-            @SuppressWarnings( "unchecked" )
             @Override
             public Void run( final Session session,
                              final Node systemNode ) throws Exception {
-                // Load model type repositories
-                if ( !systemNode.hasProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES ) ) {
-                    final Value[] vals = new Value[ 2 ];
-                    vals[ 0 ] = session.getValueFactory().createValue( JBOSS_MODEL_TYPE_REPOSITORY );
-                    vals[ 1 ] = session.getValueFactory().createValue( MAVEN_MODEL_TYPE_REPOSITORY );
-                    systemNode.setProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES, vals );
-                    session.save();
-                }
-                for ( final Value val : systemNode.getProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES ).getValues() )
-                    modelTypeRepositories.add( new URL( val.getString() ) );
-                // Load jars
-                if ( !systemNode.hasNode( ModelerLexicon.JARS ) ) {
-                    systemNode.addNode( ModelerLexicon.JARS );
-                    session.save();
-                }
-                for ( final NodeIterator iter = systemNode.getNode( ModelerLexicon.JARS ).getNodes(); iter.hasNext(); ) {
-                    final Node node = iter.nextNode();
-                    final Path jarPath = library.resolve( node.getName() );
-                    try ( InputStream stream =
-                        node.getNode( JcrLexicon.CONTENT.getString() ).getProperty( JcrLexicon.DATA.getString() ).getBinary()
-                            .getStream() ) {
-                        Files.copy( stream, jarPath );
-                    }
-                    jarPath.toFile().deleteOnExit();
-                    libraryClassLoader.addURL( jarPath.toUri().toURL() );
-                    LOGGER.debug( "Installed jar: %s", jarPath );
-                }
-                // Load model types
-                if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPES ) ) {
-                    systemNode.addNode( ModelerLexicon.MODEL_TYPES );
-                    session.save();
-                }
-                for ( final NodeIterator iter = systemNode.getNode( ModelerLexicon.MODEL_TYPES ).getNodes(); iter.hasNext(); ) {
-                    final Node node = iter.nextNode();
-                    modelTypes.add( new ModelTypeImpl( manager,
-                                                       node.getProperty( ModelerLexicon.CATEGORY ).getString(),
-                                                       node.getName(),
-                                                       ( Class< Sequencer > ) libraryClassLoader.loadClass( node.getProperty( ModelerLexicon.SEQUENCER_CLASS )
-                                                                                                                .getString() ),
-                                                       null,
-                                                       null ) );
-                }
-                // Load potential sequencer class names
-                if ( !systemNode.hasNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY ) ) {
-                    systemNode.addNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY );
-                    session.save();
-                }
-                for ( final NodeIterator iter =
-                    systemNode.getNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY ).getNodes(); iter.hasNext(); ) {
-                    final Node node = iter.nextNode();
-                    final Set< String > names = new HashSet<>();
-                    for ( final Value val : node.getProperty( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES ).getValues() )
-                        names.add( val.getString() );
-                    potentialSequencerClassNamesByCategory.put( node.getName(), names );
-                }
+                loadModelTypeRepositories( session, systemNode );
+                loadCategories( session, systemNode );
+                session.save();
+
                 return null;
             }
         } );
     }
 
-    String archiveName( final String category ) throws ModelerException {
-        return "modeshape-sequencer-" + category + "-" + version() + "-module-with-dependencies.zip";
+    /**
+     * @param category
+     *        the category name whose node is being requested (cannot be <code>null</code>)
+     * @param systemNode
+     *        the system node (cannot be <code>null</code>)
+     * @param create
+     *        <code>true</code> if the category node should be created if not found
+     * @return the category node or <code>null</code> if not found
+     * @throws Exception
+     *         if the categories parent node is not found or if another error occurs
+     */
+    Node categoryNode( final String category,
+                       final Node systemNode,
+                       final boolean create ) throws Exception {
+        if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ) ) {
+            throw new ModelerException( ModelerI18n.modelTypeCategoryParentNodeNotFound, systemNode.getPath() );
+        }
+
+        final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
+        Node categoryNode = null;
+
+        if ( !categoriesNode.hasNode( category ) ) {
+            if ( create ) {
+                categoryNode = categoriesNode.addNode( category, ModelerLexicon.Category.NODE_TYPE );
+                categoryNode.addNode( ModelerLexicon.Category.ARCHIVES, ModelerLexicon.Category.ARCHIVES );
+                categoryNode.addNode( ModelerLexicon.Category.MODEL_TYPES, ModelerLexicon.Category.MODEL_TYPES );
+                LOGGER.debug( "Created category node '%s'", category );
+            }
+        } else {
+            categoryNode = categoriesNode.getNode( category );
+            LOGGER.debug( "Found category node '%s'", category );
+        }
+
+        return categoryNode;
     }
 
     /**
@@ -201,215 +185,57 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     }
 
     /**
-     * @param modelNode
-     *        the model node whose dependency processor is being requested (cannot be <code>null</code>)
-     * @return the dependency processor or <code>null</code> if not found
-     * @throws ModelerException
-     *         if specified node is not a model node or if an error occurs
-     */
-    public DependencyProcessor dependencyProcessor( final Node modelNode ) throws ModelerException {
-        CheckArg.isNotNull( modelNode, "modelNode" );
-
-        try {
-            boolean foundMixin = false;
-
-            for ( final NodeType mixin : modelNode.getMixinNodeTypes() ) {
-                if ( ModelerLexicon.MODEL_MIXIN.equals( mixin.getName() ) ) {
-                    foundMixin = true;
-                    break;
-                }
-            }
-
-            if ( !foundMixin ) {
-                throw new ModelerException( ModelerI18n.mustBeModelNode, modelNode.getName() );
-            }
-
-            return dependencyProcessorsByModelTypeName.get( modelNode.getPath() );
-        } catch ( final Exception e ) {
-            throw new ModelerException( e );
-        }
-    }
-
-    /**
      * {@inheritDoc}
      * 
      * @see ModelTypeManager#install(String)
      */
     @Override
-    public String[] install( final String category ) throws ModelerException {
+    public void install( final String category ) throws ModelerException {
         CheckArg.isNotEmpty( category, "category" );
-        LOGGER.debug( "Installing model types from category %s", category );
+        LOGGER.debug( "Installing category '%s'", category );
+
         try {
-            final String archiveName = archiveName( category );
-            // Return if archive has already been installed
-            if ( manager.run( this, new SystemTask< Boolean >() {
+            manager.run( this, new SystemTask< Void >() {
 
                 @Override
-                public Boolean run( final Session session,
-                                    final Node systemNode ) throws Exception {
-                    if ( systemNode.hasProperty( ModelerLexicon.ZIPS ) )
-                        for ( final Value val : systemNode.getProperty( ModelerLexicon.ZIPS ).getValues() )
-                            if ( val.getString().equals( archiveName ) ) {
-                                LOGGER.debug( "Archive already installed: %s", archiveName );
-                                return true;
-                            }
-                    return false;
+                public Void run( final Session session,
+                                 final Node systemNode ) throws Exception {
+                    installSequencer( category, session, systemNode );
+                    installExtensions( category, session, systemNode );
+                    session.save();
+                    LOGGER.debug( "Session saved" );
+
+                    return null;
                 }
-            } ) ) return potentialSequencerClassNames();
-            final Path archivePath = library.resolve( archiveName );
-            final String sequencerArchivePath =
-                MODESHAPE_GROUP + "/modeshape-sequencer-" + category + '/' + version() + '/' + archiveName;
-            for ( final URL repositoryUrl : modelTypeRepositories ) {
-                final URL url = new URL( path( repositoryUrl.toString(), sequencerArchivePath ) );
-                InputStream urlStream = null;
-                IOException err = null;
-                try {
+            } );
+        } catch ( final Exception e ) {
+            // try to rollback session
+            manager.run( this, new SystemTask< Void >() {
+
+                /**
+                 * {@inheritDoc}
+                 * 
+                 * @see org.modeshape.modeler.internal.SystemTask#run(javax.jcr.Session, javax.jcr.Node)
+                 */
+                @Override
+                public Void run( final Session session,
+                                 final Node systemNode ) {
                     try {
-                        urlStream = url.openStream();
-                    } catch ( final IOException e ) {
-                        continue;
+                        session.refresh( false );
+                        LOGGER.debug( "*** Session rollback success ***" );
+                    } catch ( final Exception err ) {
+                        LOGGER.error( err, ModelerI18n.sessionRollbackFailed, category );
                     }
-                    Files.copy( urlStream, archivePath );
-                } catch ( final IOException e ) {
-                    err = e;
-                } finally {
-                    if ( urlStream != null ) try {
-                        urlStream.close();
-                    } catch ( final IOException e ) {
-                        if ( err == null ) throw e;
-                        err.addSuppressed( e );
-                        throw err;
-                    }
+
+                    return null;
                 }
-                try ( final ZipFile archive = new ZipFile( archivePath.toFile() ) ) {
-                    for ( final Enumeration< ? extends ZipEntry > archiveIter = archive.entries(); archiveIter.hasMoreElements(); ) {
-                        final ZipEntry archiveEntry = archiveIter.nextElement();
-                        if ( archiveEntry.isDirectory() ) continue;
-                        String name = archiveEntry.getName().toLowerCase();
-                        if ( !name.endsWith( ".jar" ) || name.endsWith( "-tests.jar" ) || name.endsWith( "-sources.jar" ) ) {
-                            LOGGER.debug( "Ignoring Jar: %s", name );
-                            continue;
-                        }
-                        final Path jarPath =
-                            library.resolve( archiveEntry.getName().substring( archiveEntry.getName().lastIndexOf( '/' ) + 1 ) );
-                        if ( jarPath.toFile().exists() ) {
-                            LOGGER.debug( "Jar already installed: %s", jarPath );
-                            continue;
-                        }
-                        manager.run( this, new SystemTask< Void >() {
+            } );
 
-                            @Override
-                            public Void run( final Session session,
-                                             final Node systemNode ) throws Exception {
-                                try ( InputStream stream = archive.getInputStream( archiveEntry ) ) {
-                                    final Node node =
-                                        new JcrTools().uploadFile( session,
-                                                                   systemNode.getPath() + '/' + ModelerLexicon.JARS + '/'
-                                                                                   + jarPath.getFileName().toString(),
-                                                                   stream );
-                                    node.addMixin( ModelerLexicon.UNSTRUCTURED_MIXIN );
-                                    node.setProperty( ModelerLexicon.CATEGORY, category );
-                                    session.save();
-                                }
-                                return null;
-                            }
-                        } );
-                        try ( InputStream stream = archive.getInputStream( archiveEntry ) ) {
-                            Files.copy( stream, jarPath );
-                        }
-                        jarPath.toFile().deleteOnExit();
-                        libraryClassLoader.addURL( jarPath.toUri().toURL() );
-                        LOGGER.debug( "Installed jar: %s", jarPath );
-                        try ( final ZipFile jar = new ZipFile( jarPath.toFile() ) ) {
-                            for ( final Enumeration< ? extends ZipEntry > jarIter = jar.entries(); jarIter.hasMoreElements(); ) {
-                                final ZipEntry jarEntry = jarIter.nextElement();
-                                if ( jarEntry.isDirectory() ) continue;
-                                name = jarEntry.getName();
-                                if ( jarPath.getFileName().toString().contains( "sequencer" )
-                                     && name.endsWith( "Sequencer.class" ) ) {
-                                    Set< String > names = potentialSequencerClassNamesByCategory.get( category );
-                                    if ( names == null ) {
-                                        names = new HashSet<>();
-                                        potentialSequencerClassNamesByCategory.put( category, names );
-                                    }
-                                    names.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                    LOGGER.debug( "Potential sequencer: %s", name );
-                                }
-                            }
-                        }
-                    }
-                    for ( final Iterator< Entry< String, Set< String > > > categoryIter =
-                        potentialSequencerClassNamesByCategory.entrySet().iterator(); categoryIter.hasNext(); ) {
-                        final Entry< String, Set< String > > entry = categoryIter.next();
-                        for ( final Iterator< String > iter = entry.getValue().iterator(); iter.hasNext(); ) {
-                            try {
-                                @SuppressWarnings( "unchecked" ) final Class< Sequencer > sequencerClass =
-                                    ( Class< Sequencer > ) libraryClassLoader.loadClass( iter.next() );
-                                if ( Sequencer.class.isAssignableFrom( sequencerClass )
-                                     && !Modifier.isAbstract( sequencerClass.getModifiers() ) ) {
-                                    String id = ModeShapeModeler.class.getPackage().getName() + '.' + category + '.'
-                                                + sequencerClass.getSimpleName();
-                                    id = id.endsWith( "Sequencer" ) ? id.substring( 0, id.length() - "Sequencer".length() ) : id;
-                                    final ModelTypeImpl type =
-                                        new ModelTypeImpl( manager, category, id, sequencerClass, null, null );
-                                    modelTypes.add( type );
-                                    manager.run( this, new SystemTask< Void >() {
-
-                                        @Override
-                                        public Void run( final Session session,
-                                                         final Node systemNode ) throws Exception {
-                                            final Node node = systemNode.getNode( ModelerLexicon.MODEL_TYPES ).addNode( type.id() );
-                                            node.setProperty( ModelerLexicon.SEQUENCER_CLASS, sequencerClass.getName() );
-                                            node.setProperty( ModelerLexicon.CATEGORY, category );
-                                            session.save();
-                                            return null;
-                                        }
-                                    } );
-                                }
-                                iter.remove();
-                            } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
-                                // Class will be re-tested as a Sequencer when the next archive is installed
-                            }
-                        }
-                        if ( entry.getValue().isEmpty() ) categoryIter.remove();
-                    }
-                }
-                archivePath.toFile().delete();
-                manager.run( this, new SystemTask< Void >() {
-
-                    @Override
-                    public Void run( final Session session,
-                                     final Node systemNode ) throws Exception {
-                        // Save that archive has been installed
-                        Value[] vals =
-                            systemNode.hasProperty( ModelerLexicon.ZIPS ) ? systemNode.getProperty( ModelerLexicon.ZIPS ).getValues()
-                                                                         : new Value[ 0 ];
-                        final Value[] newVals = new Value[ vals.length + 1 ];
-                        System.arraycopy( vals, 0, newVals, 0, vals.length );
-                        newVals[ vals.length ] = session.getValueFactory().createValue( archiveName );
-                        systemNode.setProperty( ModelerLexicon.ZIPS, newVals );
-                        // Save potential class names
-                        final Node categoryNode = systemNode.getNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY );
-                        for ( final Entry< String, Set< String > > entry : potentialSequencerClassNamesByCategory.entrySet() ) {
-                            final Node node =
-                                !categoryNode.hasNode( entry.getKey() ) ? categoryNode.addNode( entry.getKey() ) :
-                                                                       categoryNode.getNode( entry.getKey() );
-                            vals = new Value[ entry.getValue().size() ];
-                            int ndx = 0;
-                            for ( final String className : entry.getValue() )
-                                vals[ ndx++ ] = session.getValueFactory().createValue( className );
-                            node.setProperty( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES, vals );
-                        }
-                        session.save();
-                        return null;
-                    }
-                } );
-                return potentialSequencerClassNames();
-            }
-        } catch ( final IOException e ) {
+            // session successfully rolled back
+            if ( e instanceof RuntimeException ) throw e;
+            if ( e instanceof ModelerException ) throw ( ModelerException ) e;
             throw new ModelerException( e );
         }
-        throw new IllegalArgumentException( ModelerI18n.unableToFindModelTypeCategory.text( category ) );
     }
 
     /**
@@ -443,6 +269,253 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
             }
         }
         return categories.toArray( new String[ categories.size() ] );
+    }
+
+    void installExtensions( final String category,
+                            final Session session,
+                            final Node systemNode ) {
+        // TODO implement installExtensions
+    }
+
+    void installSequencer( final String category,
+                           final Session session,
+                           final Node systemNode ) throws Exception {
+        // don't install sequencer if already installed
+        if ( categoryNode( category, systemNode, false ) != null ) {
+            return;
+        }
+
+        final Node categoryNode = categoryNode( category, systemNode, true );
+        final String archiveName = String.format( SEQUENCER_ZIP_PATTERN, category, version() );
+        final Path archivePath = library.resolve( archiveName );
+        final String sequencerArchivePath = String.format( SEQUENCER_PATH_PATTERN, category, version(), archiveName );
+        boolean sequencerArchiveFound = false;
+
+        // loop through repositories until we find the sequencer archive
+        for ( final URL repositoryUrl : modelTypeRepositories ) {
+            final URL url = new URL( path( repositoryUrl.toString(), sequencerArchivePath ) );
+            InputStream urlStream = null;
+            IOException err = null;
+
+            // copy archive over to library if found at this repository
+            try {
+                try {
+                    urlStream = url.openStream();
+                    sequencerArchiveFound = true;
+                } catch ( final IOException e ) {
+                    continue;
+                }
+
+                Files.copy( urlStream, archivePath );
+            } catch ( final IOException e ) {
+                err = e;
+            } finally {
+                if ( urlStream != null ) try {
+                    urlStream.close();
+                } catch ( final IOException e ) {
+                    if ( err == null ) throw e;
+                    err.addSuppressed( e );
+                    throw err;
+                }
+            }
+
+            try ( final ZipFile archive = new ZipFile( archivePath.toFile() ) ) {
+                final Collection< String > potentialSequencerClassNames = new ArrayList<>();
+                final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
+
+                for ( final Enumeration< ? extends ZipEntry > archiveIter = archive.entries(); archiveIter.hasMoreElements(); ) {
+                    final ZipEntry archiveEntry = archiveIter.nextElement();
+                    if ( archiveEntry.isDirectory() ) continue;
+
+                    // see if archive should be ignored
+                    String name = archiveEntry.getName().toLowerCase();
+
+                    if ( !name.endsWith( ".jar" ) || name.endsWith( "-tests.jar" ) || name.endsWith( "-sources.jar" ) ) {
+                        LOGGER.debug( "Ignoring Jar: %s", name );
+                        continue;
+                    }
+
+                    // see if this jar has already been installed
+                    final Path jarPath =
+                        library.resolve( archiveEntry.getName().substring( archiveEntry.getName().lastIndexOf( '/' ) + 1 ) );
+
+                    if ( jarPath.toFile().exists() ) {
+                        LOGGER.debug( "Jar already installed: %s", jarPath );
+                        continue;
+                    }
+
+                    // copy to library path
+                    try ( final InputStream stream = archive.getInputStream( archiveEntry ) ) {
+                        Files.copy( stream, jarPath );
+                        jarPath.toFile().deleteOnExit();
+                    }
+
+                    // add to classpath
+                    libraryClassLoader.addURL( jarPath.toUri().toURL() );
+
+                    // add jar to category node in repository
+                    try ( final InputStream stream = archive.getInputStream( archiveEntry ) ) {
+                        new JcrTools().uploadFile( session,
+                                                   archivesNode.getPath() + '/' + jarPath.getFileName().toString(),
+                                                   stream );
+                    }
+
+                    // Iterate through entries looking for appropriate extension classes
+                    try ( final ZipFile jar = new ZipFile( jarPath.toFile() ) ) {
+                        for ( final Enumeration< ? extends ZipEntry > jarIter = jar.entries(); jarIter.hasMoreElements(); ) {
+                            final ZipEntry jarEntry = jarIter.nextElement();
+                            if ( jarEntry.isDirectory() ) continue;
+
+                            name = jarEntry.getName();
+
+                            // see if class is a possible sequencer
+                            if ( jarPath.getFileName().toString().contains( "sequencer" )
+                                 && name.endsWith( "Sequencer.class" ) ) {
+                                potentialSequencerClassNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                                LOGGER.debug( "Potential sequencer: %s", name );
+                            }
+                        }
+                    }
+                }
+
+                final Node modelTypesNode = categoryNode.getNode( ModelerLexicon.Category.MODEL_TYPES );
+
+                // try and load each potential sequencer class that was found
+                for ( final String sequencerClassName : potentialSequencerClassNames ) {
+                    Class< ? > sequencerClass = null;
+
+                    try {
+                        sequencerClass = libraryClassLoader.loadClass( sequencerClassName );
+
+                        if ( Sequencer.class.isAssignableFrom( sequencerClass )
+                             && !Modifier.isAbstract( sequencerClass.getModifiers() ) ) {
+                            String id = ModeShapeModeler.class.getPackage().getName() + '.' + category + '.'
+                                        + sequencerClass.getSimpleName();
+                            id = id.endsWith( "Sequencer" ) ? id.substring( 0, id.length() - "Sequencer".length() ) : id;
+
+                            // add model type to MS repository
+                            final Node modelTypeNode = modelTypesNode.addNode( id, ModelerLexicon.ModelType.NODE_TYPE );
+                            modelTypeNode.setProperty( ModelerLexicon.ModelType.SEQUENCER_CLASS_NAME, sequencerClass.getName() );
+
+                            // add to cache
+                            @SuppressWarnings( "unchecked" ) final ModelTypeImpl type =
+                                new ModelTypeImpl( manager, category, id, ( Class< Sequencer > ) sequencerClass );
+                            modelTypes.add( type );
+                        }
+                    } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
+                        LOGGER.debug( "Potential sequencer class '%s' cannot be loaded", sequencerClass );
+                    }
+                }
+            }
+
+            archivePath.toFile().delete();
+        }
+
+        if ( !sequencerArchiveFound ) {
+            throw new IllegalArgumentException( ModelerI18n.unableToFindModelTypeCategory.text( category ) );
+        }
+    }
+
+    void loadCategories( final Session session,
+                         final Node systemNode ) throws Exception {
+        if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ) ) {
+            systemNode.addNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
+            LOGGER.debug( "'%s' node created", ModelerLexicon.MODEL_TYPE_CATEGORIES );
+        } else {
+            final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
+
+            for ( final NodeIterator iter = categoriesNode.getNodes(); iter.hasNext(); ) {
+                final Node categoryNode = iter.nextNode();
+                loadCategoryArchives( session, categoryNode );
+                loadModelTypes( session, categoryNode );
+            }
+        }
+    }
+
+    void loadCategoryArchives( final Session session,
+                               final Node categoryNode ) throws Exception {
+        if ( !categoryNode.hasNode( ModelerLexicon.Category.ARCHIVES ) ) {
+            categoryNode.addNode( ModelerLexicon.Category.ARCHIVES );
+            LOGGER.debug( "'%s' node created", ModelerLexicon.Category.ARCHIVES );
+        } else {
+            final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
+
+            for ( final NodeIterator iter = archivesNode.getNodes(); iter.hasNext(); ) {
+                final Node archiveNode = iter.nextNode();
+                final Path archivePath = library.resolve( archiveNode.getName() );
+                final Node contentNode = archiveNode.getNode( JcrLexicon.CONTENT.getString() );
+
+                try ( InputStream stream = contentNode.getProperty( JcrLexicon.DATA.getString() ).getBinary().getStream() ) {
+                    Files.copy( stream, archivePath );
+                }
+
+                archivePath.toFile().deleteOnExit();
+                libraryClassLoader.addURL( archivePath.toUri().toURL() );
+                LOGGER.debug( "Loaded archive: %s", archivePath );
+            }
+        }
+    }
+
+    void loadModelTypeRepositories( final Session session,
+                                    final Node systemNode ) throws Exception {
+        if ( !systemNode.hasProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES ) ) {
+            final Value[] vals = new Value[ 2 ];
+            vals[ 0 ] = session.getValueFactory().createValue( JBOSS_MODEL_TYPE_REPOSITORY );
+            vals[ 1 ] = session.getValueFactory().createValue( MAVEN_MODEL_TYPE_REPOSITORY );
+            systemNode.setProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES, vals );
+        }
+
+        for ( final String url : JcrUtil.values( systemNode, ModelerLexicon.MODEL_TYPE_REPOSITORIES ) ) {
+            modelTypeRepositories.add( new URL( url ) );
+        }
+    }
+
+    void loadModelTypes( final Session session,
+                         final Node categoryNode ) throws Exception {
+        if ( !categoryNode.hasNode( ModelerLexicon.Category.MODEL_TYPES ) ) {
+            categoryNode.addNode( ModelerLexicon.Category.MODEL_TYPES );
+            LOGGER.debug( "'%s' node created", ModelerLexicon.Category.MODEL_TYPES );
+        } else {
+            final Node modelTypesNode = categoryNode.getNode( ModelerLexicon.Category.MODEL_TYPES );
+            final String category = categoryNode.getName();
+
+            for ( final NodeIterator iter = modelTypesNode.getNodes(); iter.hasNext(); ) {
+                final Node modelTypeNode = iter.nextNode();
+                String sequencerClassName = null;
+                String desequencerClassName = null;
+                String dependencyProcessorClassName = null;
+
+                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.SEQUENCER_CLASS_NAME ) ) {
+                    sequencerClassName = JcrUtil.value( modelTypeNode,
+                                                        ModelerLexicon.ModelType.SEQUENCER_CLASS_NAME );
+                }
+
+                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.DESEQUENCER_CLASS_NAME ) ) {
+                    desequencerClassName = JcrUtil.value( modelTypeNode,
+                                                          ModelerLexicon.ModelType.DESEQUENCER_CLASS_NAME );
+                }
+
+                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.DEPENDENCY_PROCESSOR_CLASS_NAME ) ) {
+                    dependencyProcessorClassName = JcrUtil.value( modelTypeNode,
+                                                                  ModelerLexicon.ModelType.DEPENDENCY_PROCESSOR_CLASS_NAME );
+                }
+
+                final ModelTypeImpl modelType = new ModelTypeImpl( manager,
+                                                                   category,
+                                                                   modelTypeNode.getName(),
+                                                                   sequencerClassName,
+                                                                   desequencerClassName,
+                                                                   dependencyProcessorClassName );
+
+                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.FILE_EXTENSIONS ) ) {
+                    final String[] fileExtensions = JcrUtil.values( modelTypeNode, ModelerLexicon.ModelType.FILE_EXTENSIONS );
+                    modelType.setSourceFileExtensions( fileExtensions );
+                }
+
+                modelTypes.add( modelType );
+                LOGGER.debug( "Loaded modelType: %s", modelType.id() );
+            }
+        }
     }
 
     /**
@@ -500,11 +573,13 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
      */
     public ModelType[] modelTypes( final Node fileNode ) throws Exception {
         final Set< ModelType > applicableModelTypes = new HashSet<>();
-        for ( final ModelType type : modelTypes() )
-            if ( ( ( ModelTypeImpl ) type ).sequencer()
-                                           .isAccepted( fileNode.getNode( JcrLexicon.CONTENT.getString() )
-                                                                .getProperty( JcrLexicon.MIMETYPE.getString() ).getString() ) )
-                applicableModelTypes.add( type );
+        final String mimeType = JcrUtil.value( fileNode.getNode( JcrLexicon.CONTENT.getString() ),
+                                               JcrLexicon.MIMETYPE.getString() );
+
+        for ( final ModelType type : modelTypes() ) {
+            if ( ( ( ModelTypeImpl ) type ).sequencer().isAccepted( mimeType ) ) applicableModelTypes.add( type );
+        }
+
         return applicableModelTypes.toArray( new ModelType[ applicableModelTypes.size() ] );
     }
 
@@ -578,13 +653,6 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
         return suffix.charAt( 0 ) == '/' ? prefix + suffix : prefix + '/' + suffix;
     }
 
-    private String[] potentialSequencerClassNames() {
-        final Set< String > classNames = new HashSet<>();
-        for ( final Set< String > names : potentialSequencerClassNamesByCategory.values() )
-            classNames.addAll( names );
-        return classNames.toArray( new String[ classNames.size() ] );
-    }
-
     /**
      * {@inheritDoc}
      * 
@@ -625,37 +693,48 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     @Override
     public void uninstall( final String category ) throws ModelerException {
         CheckArg.isNotEmpty( category, "category" );
-        for ( final Iterator< ModelType > iter = modelTypes.iterator(); iter.hasNext(); )
-            if ( category.equals( iter.next().category() ) ) iter.remove();
-        potentialSequencerClassNamesByCategory.remove( category );
+
+        // delete from cache all model types of that category
+        boolean deleted = false;
+
+        for ( final Iterator< ModelType > iter = modelTypes.iterator(); iter.hasNext(); ) {
+            final ModelType modelType = iter.next();
+
+            if ( category.equals( modelType.category() ) ) {
+                deleted = true;
+                iter.remove();
+                LOGGER.debug( "Uninstalled modelType '%s'", modelType.id() );
+            }
+        }
+
+        if ( !deleted ) {
+            throw new ModelerException( ModelerI18n.unableToFindModelTypeCategory, category );
+        }
+
+        // delete from MS repository
         manager.run( this, new SystemTask< Void >() {
 
             @Override
             public Void run( final Session session,
                              final Node systemNode ) throws Exception {
-                final Property prop = systemNode.getProperty( ModelerLexicon.ZIPS );
-                final Value[] vals = prop.getValues();
-                final Value[] newVals = new Value[ vals.length - 1 ];
-                boolean found = false;
-                int newNdx = 0;
-                final String archiveName = archiveName( category );
-                for ( final Value val : vals )
-                    if ( val.getString().equals( archiveName ) )
-                        found = true;
-                    else if ( newVals.length > 0 ) newVals[ Math.min( newNdx++, newVals.length ) ] = val;
-                if ( !found ) return null;
-                prop.setValue( newVals );
-                for ( final NodeIterator iter = systemNode.getNode( ModelerLexicon.JARS ).getNodes(); iter.hasNext(); ) {
-                    final Node node = iter.nextNode();
-                    if ( !node.getProperty( ModelerLexicon.CATEGORY ).equals( category ) ) continue;
-                    final Path jarPath = library.resolve( node.getName() );
-                    if ( jarPath.toFile().delete() ) LOGGER.debug( "Unable to delete jar: %s", jarPath );
-                    node.remove();
-                    LOGGER.debug( "Uninstalled jar: %s", jarPath );
+                final Node categoryNode = categoryNode( category, systemNode, false );
+                if ( categoryNode == null ) throw new ModelerException( ModelerI18n.unableToFindModelTypeCategory, category );
+
+                // remove category archive paths from classpath
+                if ( categoryNode.hasNode( ModelerLexicon.Category.ARCHIVES ) ) {
+                    final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
+
+                    for ( final NodeIterator iter = archivesNode.getNodes(); iter.hasNext(); ) {
+                        final Node archiveNode = iter.nextNode();
+                        final Path archivePath = library.resolve( archiveNode.getName() );
+                        if ( !archivePath.toFile().delete() ) LOGGER.debug( "Unable to delete jar: %s", archivePath );
+                    }
                 }
-                final Node node = systemNode.getNode( ModelerLexicon.POTENTIAL_SEQUENCER_CLASS_NAMES_BY_CATEGORY );
-                if ( node.hasNode( category ) ) node.getNode( category ).remove();
+
+                // remove from MS repo now
+                categoryNode.remove();
                 session.save();
+
                 return null;
             }
         } );

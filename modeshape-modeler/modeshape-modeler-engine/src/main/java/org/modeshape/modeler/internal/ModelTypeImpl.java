@@ -29,6 +29,8 @@ import java.util.Set;
 import javax.jcr.Session;
 
 import org.infinispan.util.ReflectionUtil;
+import org.jsoup.helper.StringUtil;
+import org.modeshape.common.util.CheckArg;
 import org.modeshape.jcr.ExtensionLogger;
 import org.modeshape.jcr.api.Repository;
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
@@ -44,26 +46,96 @@ import org.modeshape.modeler.extensions.Desequencer;
 public final class ModelTypeImpl implements ModelType {
 
     private final Manager manager;
+
+    Sequencer sequencer;
+    final String sequencerClassName;
     final Class< Sequencer > sequencerClass;
-    final Class< DependencyProcessor > dependencyProcessorClass;
-    final Class< Desequencer > desequencerClass;
+
+    private DependencyProcessor dependencyProcessor;
+    private String dependencyProcessorClassName;
+
+    private Desequencer desequencer;
+    private String desequencerClassName;
+
     private final String category;
     private final String id;
     private String name;
     private final Set< String > sourceFileExtensions = new HashSet<>();
 
+    /**
+     * @param manager
+     *        the manager used to access the MS repository (cannot be <code>null</code>)
+     * @param category
+     *        the model type category (cannot be <code>null</code> or empty)
+     * @param id
+     *        the model type identifier (cannot be <code>null</code> or empty)
+     * @param sequencerClass
+     *        the sequencer class (cannot be <code>null</code>)
+     */
     ModelTypeImpl( final Manager manager,
                    final String category,
                    final String id,
-                   final Class< Sequencer > sequencerClass,
-                   final Class< DependencyProcessor > dependencyProcessorClass,
-                   final Class< Desequencer > desequencerClass ) {
+                   final Class< Sequencer > sequencerClass ) {
+        this( manager, category, id, sequencerClass, null );
+    }
+
+    /**
+     * @param manager
+     *        the manager used to access the MS repository (cannot be <code>null</code>)
+     * @param category
+     *        the model type category (cannot be <code>null</code> or empty)
+     * @param id
+     *        the model type identifier (cannot be <code>null</code> or empty)
+     * @param sequencerClass
+     *        the sequencer class (cannot be <code>null</code> if sequencer class name is <code>null</code> or empty)
+     * @param sequencerClassName
+     *        the name of the sequencer class (cannot be <code>null</code> or empty if sequencer class is <code>null</code>)
+     */
+    private ModelTypeImpl( final Manager manager,
+                           final String category,
+                           final String id,
+                           final Class< Sequencer > sequencerClass,
+                           final String sequencerClassName ) {
+        CheckArg.isNotNull( manager, "manager" );
+        CheckArg.isNotEmpty( category, "category" );
+        CheckArg.isNotEmpty( id, "id" );
+
+        if ( sequencerClass == null ) {
+            CheckArg.isNotEmpty( sequencerClassName, "sequencerClassName" );
+        } else if ( StringUtil.isBlank( sequencerClassName ) ) {
+            CheckArg.isNotNull( sequencerClass, "sequencerClass" );
+        }
+
         this.manager = manager;
         this.category = category;
         this.id = id;
         this.sequencerClass = sequencerClass;
-        this.dependencyProcessorClass = dependencyProcessorClass;
-        this.desequencerClass = desequencerClass;
+        this.sequencerClassName = sequencerClassName;
+    }
+
+    /**
+     * @param manager
+     *        the manager used to access the MS repository (cannot be <code>null</code>)
+     * @param category
+     *        the model type category (cannot be <code>null</code> or empty)
+     * @param id
+     *        the model type identifier (cannot be <code>null</code> or empty)
+     * @param sequencerClassName
+     *        the name of the sequencer class (cannot be <code>null</code> or empty)
+     * @param desequencerClassName
+     *        the name of the desequencer class (can be <code>null</code> or empty)
+     * @param dependencyProcessorClassName
+     *        the name of the dependency processor class (can be <code>null</code> or empty)
+     */
+    ModelTypeImpl( final Manager manager,
+                   final String category,
+                   final String id,
+                   final String sequencerClassName,
+                   final String desequencerClassName,
+                   final String dependencyProcessorClassName ) {
+        this( manager, category, id, null, sequencerClassName );
+        this.desequencerClassName = desequencerClassName;
+        this.dependencyProcessorClassName = dependencyProcessorClassName;
     }
 
     /**
@@ -77,28 +149,38 @@ public final class ModelTypeImpl implements ModelType {
     }
 
     /**
-     * @return the dependency processor or <code>null</code> if one does not exist
-     * @throws ModelerException
-     *         if there is an error constructing the dependency processor
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelType#dependencyProcessor()
      */
+    @Override
     public DependencyProcessor dependencyProcessor() throws ModelerException {
-        if ( this.dependencyProcessorClass == null ) return null;
+        if ( dependencyProcessor != null ) return dependencyProcessor;
+        if ( StringUtil.isBlank( dependencyProcessorClassName ) ) return null;
+
         try {
-            return this.dependencyProcessorClass.newInstance();
+            final Class< ? > clazz = libraryClassLoader().loadClass( dependencyProcessorClassName );
+            dependencyProcessor = ( DependencyProcessor ) clazz.newInstance();
+            return dependencyProcessor;
         } catch ( final Exception e ) {
             throw new ModelerException( e );
         }
     }
 
     /**
-     * @return this model type's desequencer
-     * @throws ModelerException
-     *         if any problem occurs
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelType#desequencer()
      */
+    @Override
     public Desequencer desequencer() throws ModelerException {
-        if ( desequencerClass == null ) return null;
+        if ( desequencer != null ) return desequencer;
+        if ( StringUtil.isBlank( desequencerClassName ) ) return null;
+
         try {
-            return desequencerClass.newInstance();
+            final Class< ? > clazz = libraryClassLoader().loadClass( desequencerClassName );
+            desequencer = ( Desequencer ) clazz.newInstance();
+            return desequencer;
         } catch ( final Exception e ) {
             throw new ModelerException( e );
         }
@@ -114,6 +196,10 @@ public final class ModelTypeImpl implements ModelType {
         return id;
     }
 
+    ClassLoader libraryClassLoader() throws Exception {
+        return manager.modelTypeManager().libraryClassLoader;
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -125,16 +211,25 @@ public final class ModelTypeImpl implements ModelType {
     }
 
     /**
-     * @return this model type's sequencer
-     * @throws ModelerException
-     *         if any problem occurs
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelType#sequencer()
      */
+    @Override
     public Sequencer sequencer() throws ModelerException {
+        if ( sequencer != null ) return sequencer;
+
         return manager.run( new Task< Sequencer >() {
 
             @Override
             public Sequencer run( final Session session ) throws Exception {
-                final Sequencer sequencer = sequencerClass.newInstance();
+                if ( sequencerClass == null ) {
+                    final Class< ? > clazz = libraryClassLoader().loadClass( sequencerClassName );
+                    sequencer = ( Sequencer ) clazz.newInstance();
+                } else {
+                    sequencer = sequencerClass.newInstance();
+                }
+
                 // Initialize
                 ReflectionUtil.setValue( sequencer, "logger", ExtensionLogger.getLogger( sequencer.getClass() ) );
                 ReflectionUtil.setValue( sequencer, "repositoryName",
@@ -142,6 +237,7 @@ public final class ModelTypeImpl implements ModelType {
                 ReflectionUtil.setValue( sequencer, "name", sequencer.getClass().getSimpleName() );
                 sequencer.initialize( session.getWorkspace().getNamespaceRegistry(),
                                       ( NodeTypeManager ) session.getWorkspace().getNodeTypeManager() );
+
                 return sequencer;
             }
         } );
@@ -155,6 +251,20 @@ public final class ModelTypeImpl implements ModelType {
     @Override
     public void setName( final String name ) {
         this.name = name;
+    }
+
+    /**
+     * @param newFileExtensions
+     *        the new file extensions (can be <code>null</code> or empty)
+     */
+    void setSourceFileExtensions( final String[] newFileExtensions ) {
+        sourceFileExtensions.clear();
+
+        if ( newFileExtensions != null ) {
+            for ( final String ext : newFileExtensions ) {
+                sourceFileExtensions.add( ext );
+            }
+        }
     }
 
     /**

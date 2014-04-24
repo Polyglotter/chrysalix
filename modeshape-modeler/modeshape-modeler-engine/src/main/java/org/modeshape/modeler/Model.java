@@ -62,7 +62,7 @@ public interface Model extends ModelObject {
     Set< Dependency > missingDependencies() throws ModelerException;
 
     /**
-     * @return this model's type; never <code>null</code>.
+     * @return this model's type (can be <code>null</code> if a model type is not found)
      * @throws ModelerException
      *         if any error occurs
      */

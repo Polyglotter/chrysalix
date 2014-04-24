@@ -46,16 +46,17 @@ public class ModelImplTest extends BaseModelObjectImplTest {
 
     Node createDependenciesNode( final Session session,
                                  final Model model ) throws Exception {
-        final Node dependenciesNode = session.getNode( model.absolutePath() ).addNode( ModelerLexicon.DEPENDENCIES );
+        final Node dependenciesNode = session.getNode( model.absolutePath() ).addNode( ModelerLexicon.Model.DEPENDENCIES );
         return dependenciesNode;
     }
 
     Node createDependencyNode( final Node dependenciesNode,
                                final String dependencyNodeName,
                                final String dependencyWorkspacePath ) throws Exception {
-        final Node dependencyNode = dependenciesNode.addNode( dependencyNodeName, ModelerLexicon.DEPENDENCY );
-        dependencyNode.setProperty( ModelerLexicon.PATH, dependencyWorkspacePath );
-        dependencyNode.setProperty( ModelerLexicon.SOURCE_REFERENCE_PROPERTY, new String[] { "import" } ); // mandatory property
+        final Node dependencyNode = dependenciesNode.addNode( dependencyNodeName, ModelerLexicon.Dependency.DEPENDENCY );
+        dependencyNode.setProperty( ModelerLexicon.Dependency.PATH, dependencyWorkspacePath );
+        dependencyNode.setProperty( ModelerLexicon.Dependency.SOURCE_REFERENCE_PROPERTY, new String[] { "import" } ); // mandatory
+                                                                                                                      // property
         return dependencyNode;
     }
 
@@ -99,7 +100,7 @@ public class ModelImplTest extends BaseModelObjectImplTest {
                                                      null,
                                                      modelTypeManager().modelType( XML_MODEL_TYPE_ID ) );
         assertThat( model, notNullValue() );
-        assertThat( model.stringValue( ModelerLexicon.EXTERNAL_LOCATION ), is( location ) );
+        assertThat( model.stringValue( ModelerLexicon.Model.EXTERNAL_LOCATION ), is( location ) );
     }
 
     @Test
@@ -112,7 +113,7 @@ public class ModelImplTest extends BaseModelObjectImplTest {
         final String[] types = modelObject().mixinTypes();
         assertThat( types, notNullValue() );
         assertThat( types.length > 0, is( true ) );
-        assertThat( types[ 0 ], is( ModelerLexicon.MODEL_MIXIN ) );
+        assertThat( types[ 0 ], is( ModelerLexicon.Model.MODEL_MIXIN ) );
     }
 
     @Test
@@ -188,7 +189,7 @@ public class ModelImplTest extends BaseModelObjectImplTest {
     @Test
     public void shouldIndicateIfItHasProperty() throws Exception {
         final ModelObject modelObject = modelObject();
-        assertThat( modelObject.hasProperty( ModelerLexicon.MODEL_TYPE ), is( true ) );
+        assertThat( modelObject.hasProperty( ModelerLexicon.Model.MODEL_TYPE ), is( true ) );
         assertThat( modelObject.hasProperty( "bogus" ), is( false ) );
     }
 
