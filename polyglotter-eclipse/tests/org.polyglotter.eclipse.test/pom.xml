@@ -95,7 +95,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <excludeGroupIds>p2.eclipse-plugin,junit,org.hamcrest,org.mockito</excludeGroupIds>
+                            <excludeGroupIds>p2.eclipse-plugin,junit,org.hamcrest</excludeGroupIds>
                             <skip>false</skip>
                             <outputDirectory>${basedir}/lib/</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
