@@ -77,16 +77,16 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     // pass in category, version
     private static final String SEQUENCER_ZIP_PATTERN = "modeshape-sequencer-%s-%s-module-with-dependencies.zip";
 
+    private final ExtensionInstaller extensionInstaller;
     final Manager manager;
-
     final LinkedList< URL > modelTypeRepositories = new LinkedList<>();
-
     final Set< ModelType > modelTypes = new HashSet<>();
     final LibraryClassLoader libraryClassLoader = new LibraryClassLoader();
     final Path library;
 
     ModelTypeManagerImpl( final Manager manager ) throws ModelerException {
         this.manager = manager;
+        this.extensionInstaller = new ExtensionInstaller();
 
         // setup classpath area for model type archives
         try {
@@ -200,8 +200,12 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                 @Override
                 public Void run( final Session session,
                                  final Node systemNode ) throws Exception {
+                    LOGGER.debug( "Installing sequencer for category '%s'", category );
                     installSequencer( category, session, systemNode );
+
+                    LOGGER.debug( "Installing extensions for category '%s'", category );
                     installExtensions( category, session, systemNode );
+
                     session.save();
                     LOGGER.debug( "Session saved" );
 
@@ -273,8 +277,19 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
 
     void installExtensions( final String category,
                             final Session session,
-                            final Node systemNode ) {
-        // TODO implement installExtensions
+                            final Node systemNode ) throws Exception {
+        final Node categoryNode = categoryNode( category, systemNode, false );
+
+        if ( extensionInstaller.install( categoryNode,
+                                         libraryClassLoader,
+                                         library,
+                                         modelTypeRepositories,
+                                         version(),
+                                         modelTypes ) ) {
+            LOGGER.debug( "Installed extensions for category '%s'", category );
+        } else {
+            LOGGER.debug( "No extensions installed for category '%s'", category );
+        }
     }
 
     void installSequencer( final String category,

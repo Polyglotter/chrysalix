@@ -40,12 +40,12 @@ import org.polyglotter.grammar.GrammarEvent.EventType;
  *        the operation result term type
  */
 public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterable< Term< ? > > {
-    
+
     /**
      * An empty list of operations.
      */
     List< Operation< ? > > NO_OPERATIONS = Collections.emptyList();
-    
+
     /**
      * @param terms
      *        the terms being added (cannot be <code>null</code>)
@@ -55,12 +55,12 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      *         if any of the terms have already been added
      */
     void add( Term< ? >... terms ) throws PolyglotterException;
-    
+
     /**
      * @return the operation's category (never <code>null</code>)
      */
     Category category();
-    
+
     /**
      * @param termId
      *        the identifier of the term being requested (cannot be <code>null</code>)
@@ -71,12 +71,12 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      *         if the term cannot be found
      */
     Term< ? > get( final QName termId ) throws PolyglotterException;
-    
+
     /**
      * @return the validation problems (never <code>null</code> but can be empty)
      */
     ValidationProblems problems();
-    
+
     /**
      * @param termIds
      *        the identifiers of the terms being removed (cannot be <code>null</code>)
@@ -86,7 +86,7 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      *         if any of the terms cannot be found or cannot be removed
      */
     void remove( QName... termIds ) throws PolyglotterException;
-    
+
     /**
      * @return the result (can be <code>null</code>)
      * @throws PolyglotterException
@@ -94,102 +94,102 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      * @see #problems()
      */
     T result() throws PolyglotterException;
-    
+
     /**
      * @return an unmodifiable ordered collection of the input terms (never <code>null</code> but can be empty)
      * @see Term#NO_TERMS
      */
     List< Term< ? >> terms();
-    
+
     /**
      * @return the identifier of the owning {@link Transform transform} (never <code>null</code>)
      */
     QName transformId();
-    
+
     /**
      * Categories of an operation.
      */
     enum Category {
-        
+
         /**
          *
          */
         ARITHMETIC( PolyglotterI18n.opCatArithmeticLabel, PolyglotterI18n.opCatArithmeticDescription ),
-        
+
         /**
          *
          */
         ASSIGNMENT( PolyglotterI18n.opCatAssignmentLabel, PolyglotterI18n.opCatAssignmentDescription ),
-        
+
         /**
          *
          */
         BITWISE( PolyglotterI18n.opCatBitwiseLabel, PolyglotterI18n.opCatBitwiseDescription ),
-        
+
         /**
          *
          */
         DATE_TIME( PolyglotterI18n.opCatDateTimeLabel, PolyglotterI18n.opCatDateTimeDescription ),
-        
+
         /**
          *
          */
         LOGICAL( PolyglotterI18n.opCatLogicalLabel, PolyglotterI18n.opCatLogicalDescription ),
-        
+
         /**
          *
          */
         OTHER( PolyglotterI18n.opCatOtherLabel, PolyglotterI18n.opCatOtherDescription ),
-        
+
         /**
          *
          */
         RELATIONAL( PolyglotterI18n.opCatRelationalLabel, PolyglotterI18n.opCatRelationalDescription ),
-        
+
         /**
          *
          */
         STRING( PolyglotterI18n.opCatStringLabel, PolyglotterI18n.opCatStringDescription );
-        
+
         private final I18n description;
         private final I18n label;
-        
+
         private Category( final I18n categoryLabel,
                           final I18n categoryDescription ) {
             this.label = categoryLabel;
             this.description = categoryDescription;
         }
-        
+
         public String description() {
             return this.description.text();
         }
-        
+
         public String label() {
             return this.label.text();
         }
-        
+
     }
-    
+
     /**
      * The event types pertaining to operations.
      */
     enum OperationEventType implements EventType {
-        
+
         /**
          * The result value has changed.
          */
         RESULT_CHANGED,
-        
+
         /**
          * A term has been added.
          */
         TERM_ADDED,
-        
+
         /**
          * A term has been removed.
          */
         TERM_REMOVED;
-        
+
     }
-    
+
 }

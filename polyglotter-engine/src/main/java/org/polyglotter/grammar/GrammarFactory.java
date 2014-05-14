@@ -32,12 +32,13 @@ import javax.xml.namespace.QName;
 import org.polyglotter.common.CheckArg;
 import org.polyglotter.grammar.GrammarEvent.EventType;
 import org.polyglotter.grammar.ValidationProblem.Severity;
+import org.polyglotter.internal.NumberTerm;
 
 /**
  * A factory for grammar-related objects.
  */
 public final class GrammarFactory {
-    
+
     /**
      * @param grammarPartId
      *        the source grammar part's identifier (cannot be <code>null</code>)
@@ -52,7 +53,7 @@ public final class GrammarFactory {
         CheckArg.notNull( grammarPartId, "grammarPartId" );
         return new Problem( Severity.ERROR, grammarPartId, message );
     }
-    
+
     /**
      * @param type
      *        the event type (cannot be <code>null</code>)
@@ -65,13 +66,13 @@ public final class GrammarFactory {
      *         if the type or source identifier is <code>null</code>
      */
     public static GrammarEvent createEvent( final EventType type,
-                                                final QName sourceId,
-                                                final Map< String, Object > data ) {
+                                            final QName sourceId,
+                                            final Map< String, Object > data ) {
         CheckArg.notNull( type, "type" );
         CheckArg.notNull( sourceId, "sourceId" );
         return new Event( type, sourceId, data );
     }
-    
+
     /**
      * @param grammarPartId
      *        the source grammar part's identifier (cannot be <code>null</code>)
@@ -86,7 +87,22 @@ public final class GrammarFactory {
         CheckArg.notNull( grammarPartId, "grammarPartId" );
         return new Problem( Severity.INFO, grammarPartId, message );
     }
-    
+
+    /**
+     * @param id
+     *        the term identifier (cannot be <code>null</code>)
+     * @param operationId
+     *        the operation identifier that owns this term (cannot be <code>null</code>)
+     * @param number
+     *        the initial value (can be <code>null</code>)
+     * @return the new term (never <code>null</code>)
+     */
+    public static Term< Number > createNumberTerm( final QName id,
+                                                   final QName operationId,
+                                                   final Number number ) {
+        return new NumberTerm( id, operationId, number );
+    }
+
     /**
      * @param grammarPartId
      *        the source grammar part's identifier (cannot be <code>null</code>)
@@ -101,14 +117,14 @@ public final class GrammarFactory {
         CheckArg.notNull( grammarPartId, "grammarPartId" );
         return new Problem( Severity.OK, grammarPartId, message );
     }
-    
+
     /**
      * @return an empty validation problems collection (never <code>null</code>)
      */
     public static ValidationProblems createValidationProblems() {
         return new Problems();
     }
-    
+
     /**
      * @param grammarPartId
      *        the source grammar part's identifier (cannot be <code>null</code>)
@@ -123,28 +139,28 @@ public final class GrammarFactory {
         CheckArg.notNull( grammarPartId, "grammarPartId" );
         return new Problem( Severity.WARNING, grammarPartId, message );
     }
-    
+
     /**
      * Don't allow construction outside this class.
      */
     private GrammarFactory() {
         // nothing to do
     }
-    
+
     private static class Event implements GrammarEvent {
-        
+
         private final Map< String, Object > data;
         private final QName sourceId;
         private final EventType type;
-        
+
         Event( final EventType type,
-                      final QName sourceId,
-                      final Map< String, Object > data ) {
+               final QName sourceId,
+               final Map< String, Object > data ) {
             this.type = type;
             this.sourceId = sourceId;
             this.data = data;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -154,7 +170,7 @@ public final class GrammarFactory {
         public Map< String, ? > data() {
             return this.data;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -164,7 +180,7 @@ public final class GrammarFactory {
         public QName sourceId() {
             return this.sourceId;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -174,7 +190,7 @@ public final class GrammarFactory {
         public String toString() {
             return ( "event type = " + this.type + ", source = " + this.sourceId + ", data = " + this.data );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -184,15 +200,15 @@ public final class GrammarFactory {
         public EventType type() {
             return this.type;
         }
-        
+
     }
-    
+
     private static final class Problem implements ValidationProblem {
-        
+
         private final Severity severity;
         private final String message;
         private final QName sourceId;
-        
+
         Problem( final Severity problemSeverity,
                  final QName problemPartId,
                  final String problemMessage ) {
@@ -200,7 +216,7 @@ public final class GrammarFactory {
             this.message = problemMessage;
             this.sourceId = problemPartId;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -210,7 +226,7 @@ public final class GrammarFactory {
         public boolean isError() {
             return ( this.severity == Severity.ERROR );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -220,7 +236,7 @@ public final class GrammarFactory {
         public boolean isInfo() {
             return ( this.severity == Severity.INFO );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -230,7 +246,7 @@ public final class GrammarFactory {
         public boolean isOk() {
             return ( this.severity == Severity.OK );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -240,7 +256,7 @@ public final class GrammarFactory {
         public boolean isWarning() {
             return ( this.severity == Severity.WARNING );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -250,7 +266,7 @@ public final class GrammarFactory {
         public String message() {
             return this.message;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -260,7 +276,7 @@ public final class GrammarFactory {
         public Severity severity() {
             return this.severity;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -270,17 +286,17 @@ public final class GrammarFactory {
         public QName sourceId() {
             return this.sourceId;
         }
-        
+
     }
-    
+
     private static final class Problems extends ArrayList< ValidationProblem > implements ValidationProblems {
-        
+
         private Severity severity;
-        
+
         Problems() {
             this.severity = Severity.OK;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -292,7 +308,7 @@ public final class GrammarFactory {
             super.add( index, problem );
             updateSeverity( problem );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -301,14 +317,14 @@ public final class GrammarFactory {
         @Override
         public boolean add( final ValidationProblem problem ) {
             final boolean added = super.add( problem );
-            
+
             if ( added ) {
                 updateSeverity( problem );
             }
-            
+
             return added;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -319,16 +335,16 @@ public final class GrammarFactory {
             if ( this.severity != Severity.ERROR ) {
                 for ( final ValidationProblem problem : c ) {
                     updateSeverity( problem );
-                    
+
                     if ( this.severity == Severity.ERROR ) {
                         break;
                     }
                 }
             }
-            
+
             return super.addAll( c );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -340,16 +356,16 @@ public final class GrammarFactory {
             if ( this.severity != Severity.ERROR ) {
                 for ( final ValidationProblem problem : c ) {
                     updateSeverity( problem );
-                    
+
                     if ( this.severity == Severity.ERROR ) {
                         break;
                     }
                 }
             }
-            
+
             return super.addAll( index, c );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -360,19 +376,19 @@ public final class GrammarFactory {
             super.clear();
             this.severity = Severity.OK;
         }
-        
+
         private void determineSeverity() {
             this.severity = Severity.OK;
-            
+
             for ( final ValidationProblem problem : this ) {
                 updateSeverity( problem );
-                
+
                 if ( this.severity == Severity.ERROR ) {
                     break;
                 }
             }
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -382,7 +398,7 @@ public final class GrammarFactory {
         public boolean isError() {
             return ( this.severity == Severity.ERROR );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -392,7 +408,7 @@ public final class GrammarFactory {
         public boolean isInfo() {
             return ( this.severity == Severity.INFO );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -402,7 +418,7 @@ public final class GrammarFactory {
         public boolean isOk() {
             return ( this.severity == Severity.OK );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -412,7 +428,7 @@ public final class GrammarFactory {
         public boolean isWarning() {
             return ( this.severity == Severity.WARNING );
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -421,14 +437,14 @@ public final class GrammarFactory {
         @Override
         public ValidationProblem remove( final int index ) {
             final ValidationProblem problem = super.remove( index );
-            
+
             if ( this.severity == problem.severity() ) {
                 determineSeverity();
             }
-            
+
             return problem;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -437,18 +453,18 @@ public final class GrammarFactory {
         @Override
         public boolean remove( final Object o ) {
             final boolean removed = super.remove( o );
-            
+
             if ( removed ) {
                 final ValidationProblem problem = ( ValidationProblem ) o;
-                
+
                 if ( problem.severity() == this.severity ) {
                     determineSeverity();
                 }
             }
-            
+
             return removed;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -457,14 +473,14 @@ public final class GrammarFactory {
         @Override
         public boolean removeAll( final Collection< ? > c ) {
             final boolean changed = super.removeAll( c );
-            
+
             if ( changed ) {
                 determineSeverity();
             }
-            
+
             return changed;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -473,14 +489,14 @@ public final class GrammarFactory {
         @Override
         public boolean retainAll( final Collection< ? > c ) {
             final boolean changed = super.retainAll( c );
-            
+
             if ( changed ) {
                 determineSeverity();
             }
-            
+
             return changed;
         }
-        
+
         /**
          * {@inheritDoc}
          * 
@@ -490,22 +506,22 @@ public final class GrammarFactory {
         public ValidationProblem set( final int index,
                                       final ValidationProblem newProblem ) {
             final ValidationProblem oldProblem = super.set( index, newProblem );
-            
+
             if ( newProblem.severity().isMoreSevereThan( this.severity ) ) {
                 this.severity = newProblem.severity();
             } else if ( oldProblem.severity() == this.severity ) {
                 determineSeverity();
             }
-            
+
             return oldProblem;
         }
-        
+
         private void updateSeverity( final ValidationProblem problem ) {
             if ( problem.severity().isMoreSevereThan( this.severity ) ) {
                 this.severity = problem.severity();
             }
         }
-        
+
     }
-    
+
 }

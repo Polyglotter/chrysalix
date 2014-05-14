@@ -34,7 +34,7 @@ import org.polyglotter.grammar.ValidationProblem;
  * A string concatenation operation.
  */
 public class Concat extends BaseOperation< String > {
-    
+
     /**
      * @param id
      *        the add operation unique identifier (cannot be <code>null</code>)
@@ -45,7 +45,7 @@ public class Concat extends BaseOperation< String > {
                    final QName transformId ) {
         super( id, transformId );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -54,17 +54,17 @@ public class Concat extends BaseOperation< String > {
     @Override
     protected String calculate() {
         assert !problems().isError();
-        
+
         final StringBuilder result = new StringBuilder();
-        
+
         for ( final Term< ? > term : terms() ) {
             final Object value = term.value();
             result.append( ( value == null ) ? "null" : value.toString() );
         }
-        
+
         return result.toString();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -74,7 +74,7 @@ public class Concat extends BaseOperation< String > {
     public Category category() {
         return Category.STRING;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -84,7 +84,27 @@ public class Concat extends BaseOperation< String > {
     public String description() {
         return PolyglotterI18n.concatOperationDescription.text();
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     */
+    @Override
+    public int maxTerms() {
+        return BaseOperation.UNLIMITED;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     */
+    @Override
+    public int minTerms() {
+        return 2;
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -94,7 +114,7 @@ public class Concat extends BaseOperation< String > {
     public String name() {
         return PolyglotterI18n.concatOperationName.text();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -107,13 +127,11 @@ public class Concat extends BaseOperation< String > {
                 GrammarFactory.createError( id(), PolyglotterI18n.addOperationHasNoTerms.text( id() ) );
             problems().add( problem );
         } else {
-            if ( terms().size() < 2 ) {
-                // make sure more than 1 term
+            if ( terms().size() < minTerms() ) {
                 final ValidationProblem problem =
                     GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
                 problems().add( problem );
             }
         }
     }
-    
 }

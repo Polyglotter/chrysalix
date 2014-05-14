@@ -31,13 +31,13 @@ import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Adds sums a collection of terms.
+ * Adds a collection of terms.
  */
 public class Add extends BaseOperation< Number > {
-    
+
     /**
      * @param id
-     *        the add operation unique identifier (cannot be <code>null</code>)
+     *        the add operation's unique identifier (cannot be <code>null</code>)
      * @param transformId
      *        the owning transform identifier (cannot be <code>null</code>)
      * @throws IllegalArgumentException
@@ -47,7 +47,7 @@ public class Add extends BaseOperation< Number > {
                 final QName transformId ) {
         super( id, transformId );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -56,29 +56,29 @@ public class Add extends BaseOperation< Number > {
     @Override
     protected Number calculate() {
         assert !problems().isError();
-        
+
         Number result = new Long( 0 );
-        
+
         for ( final Term< ? > term : terms() ) {
             assert ( term.value() instanceof Number ); // validate check
             Number value = ( Number ) term.value();
-            
+
             if ( ( value instanceof Integer ) || ( value instanceof Short ) || ( value instanceof Byte ) ) {
                 value = value.longValue();
             } else if ( value instanceof Float ) {
                 value = ( ( Float ) value ).doubleValue();
             }
-            
+
             if ( ( result instanceof Double ) || ( value instanceof Double ) ) {
                 result = ( result.doubleValue() + value.doubleValue() );
             } else {
                 result = ( result.longValue() + value.longValue() );
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -88,7 +88,7 @@ public class Add extends BaseOperation< Number > {
     public Category category() {
         return Category.ARITHMETIC;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -98,7 +98,27 @@ public class Add extends BaseOperation< Number > {
     public String description() {
         return PolyglotterI18n.addOperationDescription.text();
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     */
+    @Override
+    public int maxTerms() {
+        return BaseOperation.UNLIMITED;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     */
+    @Override
+    public int minTerms() {
+        return 2;
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -108,7 +128,7 @@ public class Add extends BaseOperation< Number > {
     public String name() {
         return PolyglotterI18n.addOperationName.text();
     }
-    
+
     /**
      * Validates the operation's state.
      */
@@ -120,17 +140,16 @@ public class Add extends BaseOperation< Number > {
                 GrammarFactory.createError( id(), PolyglotterI18n.addOperationHasNoTerms.text( id() ) );
             problems().add( problem );
         } else {
-            if ( terms().size() < 2 ) {
-                // make sure more than 1 term
+            if ( terms().size() < minTerms() ) {
                 final ValidationProblem problem =
                     GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
                 problems().add( problem );
             }
-            
+
             // make sure all the terms have types of Number
             for ( final Term< ? > term : terms() ) {
                 final Object value = term.value();
-                
+
                 if ( !( value instanceof Number ) ) {
                     final ValidationProblem problem =
                         GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
@@ -139,5 +158,5 @@ public class Add extends BaseOperation< Number > {
             }
         }
     }
-    
+
 }

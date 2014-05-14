@@ -52,7 +52,12 @@ import org.polyglotter.grammar.ValidationProblems;
  *        the operation result type
  */
 public abstract class BaseOperation< T > implements GrammarListener, Operation< T > {
-    
+
+    /**
+     * Indicates there is no limit.
+     */
+    public static final int UNLIMITED = -1;
+
     private final QName id;
     private List< GrammarListener > listeners;
     private final Logger logger;
@@ -60,7 +65,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     private T result;
     private final List< Term< ? > > terms;
     private final QName transformId;
-    
+
     /**
      * @param id
      *        the operation identifier (cannot be <code>null</code> or empty)
@@ -71,16 +76,16 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
                              final QName transformId ) {
         CheckArg.notNull( id, "id" );
         CheckArg.notNull( transformId, "transformId" );
-        
+
         this.id = id;
         this.logger = Logger.getLogger( getClass() );
         this.problems = GrammarFactory.createValidationProblems();
         this.transformId = transformId;
         this.terms = new ArrayList<>();
-        
+
         termChanged();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -89,16 +94,16 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     @Override
     public void add( final GrammarListener listener ) {
         CheckArg.notNull( listener, "listener" );
-        
+
         if ( this.listeners == null ) {
             this.listeners = new ArrayList<>();
         }
-        
+
         if ( !this.listeners.contains( listener ) ) {
             this.listeners.add( listener );
         }
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -107,27 +112,27 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     @Override
     public void add( final Term< ? >... terms ) throws PolyglotterException {
         CheckArg.isNotEmpty( terms, "terms" );
-        
+
         for ( final Term< ? > term : terms ) {
             if ( term == null ) {
                 throw new IllegalArgumentException( PolyglotterI18n.nullTerm.text( this.id ) );
             }
-            
+
             // check to see if already added
             if ( this.terms.contains( term ) ) {
                 throw new PolyglotterException( PolyglotterI18n.termExists, term.id(), this.id );
             }
-            
+
             this.terms.add( term );
             term.add( this ); // register to receive grammar events
-            
+
             // fire event
             notifyObservers( OperationEventType.TERM_ADDED, OperationEventType.TERM_ADDED.toString(), term.id() );
         }
-        
+
         termChanged();
     }
-    
+
     /**
      * Calculates the result. Calculation should only be done when there are no {@link ValidationProblem error validation problems}.
      * 
@@ -136,7 +141,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
      *         if there are validation problem errors
      */
     protected abstract T calculate() throws PolyglotterException;
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -145,7 +150,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     @Override
     public Term< ? > get( final QName termId ) throws PolyglotterException {
         CheckArg.notNull( termId, "termId" );
-        
+
         if ( !this.terms.isEmpty() ) {
             for ( final Term< ? > term : this.terms ) {
                 if ( termId.equals( term.id() ) ) {
@@ -153,10 +158,10 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
                 }
             }
         }
-        
+
         throw new PolyglotterException( PolyglotterI18n.termNotFound, termId, this.id );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -166,7 +171,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     public final QName id() {
         return this.id;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -176,7 +181,17 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     public Iterator< Term< ? >> iterator() {
         return Collections.unmodifiableList( this.terms ).iterator();
     }
-    
+
+    /**
+     * @return the maximum number of terms allowed or {@link #UNLIMITED unlimited}
+     */
+    public abstract int maxTerms();
+
+    /**
+     * @return the minimum number of terms allowed (never smaller than zero)
+     */
+    public abstract int minTerms();
+
     /**
      * {@inheritDoc}
      * 
@@ -185,13 +200,13 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     @Override
     public void notify( final GrammarEvent event ) {
         CheckArg.notNull( event, "event" );
-        
+
         // recalculate as a term value changed
         if ( event.type() == TermEventType.VALUE_CHANGED ) {
             termChanged();
         }
     }
-    
+
     /**
      * @param type
      *        the event type being handled (cannot be <code>null</code>)
@@ -201,7 +216,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     protected void notifyObservers( final EventType type ) {
         notifyObservers( type, null, null );
     }
-    
+
     /**
      * @param type
      *        the event type being handled (cannot be <code>null</code>)
@@ -213,11 +228,11 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     protected void notifyObservers( final EventType type,
                                     final Map< String, Object > eventData ) {
         CheckArg.notNull( type, "type" );
-        
+
         if ( this.listeners != null ) {
             final GrammarEvent event = GrammarFactory.createEvent( type, this.id, eventData );
             List< GrammarListener > remove = null;
-            
+
             for ( final GrammarListener listener : this.listeners ) {
                 try {
                     listener.notify( event );
@@ -226,12 +241,12 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
                     if ( remove == null ) {
                         remove = new ArrayList<>();
                     }
-                    
+
                     this.logger.error( e, PolyglotterI18n.listenerError, listener.getClass(), event );
                     remove.add( listener );
                 }
             }
-            
+
             if ( remove != null ) {
                 for ( final GrammarListener listener : remove ) {
                     remove( listener );
@@ -239,7 +254,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
             }
         }
     }
-    
+
     /**
      * @param type
      *        the event type being handled (cannot be <code>null</code>)
@@ -254,14 +269,14 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
                                     final String key,
                                     final Object value ) {
         Map< String, Object > map = null;
-        
+
         if ( ( key != null ) && !key.isEmpty() ) {
             map = Collections.singletonMap( key, value );
         }
-        
+
         notifyObservers( type, map );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -271,7 +286,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     public ValidationProblems problems() {
         return this.problems;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -280,12 +295,12 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     @Override
     public void remove( final GrammarListener listener ) {
         CheckArg.notNull( listener, "listener" );
-        
+
         if ( ( this.listeners == null ) || !this.listeners.remove( listener ) ) {
             throw new IllegalArgumentException( PolyglotterI18n.listenerNotFoundToUnregister.text() );
         }
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -294,23 +309,23 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     @Override
     public void remove( final QName... termIds ) throws PolyglotterException {
         CheckArg.isNotEmpty( termIds, "termIds" );
-        
+
         for ( final QName termId : termIds ) {
             if ( termId == null ) {
                 throw new IllegalArgumentException( PolyglotterI18n.nullTermId.text() );
             }
-            
+
             final Term< ? > term = get( termId );
             term.remove( this ); // unregister from receiving grammar events
             this.terms.remove( term );
-            
+
             // fire event
             notifyObservers( OperationEventType.TERM_REMOVED, OperationEventType.TERM_REMOVED.toString(), term.id() );
         }
-        
+
         termChanged();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -321,24 +336,24 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
         if ( !this.problems.isError() ) {
             return this.result;
         }
-        
+
         throw new PolyglotterException( PolyglotterI18n.operationHasErrors, this.id );
     }
-    
+
     /**
      * Called after a change to the terms.
      */
     protected void termChanged() {
         this.problems.clear();
         validate();
-        
+
         if ( !this.problems.isError() ) {
             final T oldValue = this.result;
             T newValue = null;
-            
+
             try {
                 newValue = calculate();
-                
+
                 if ( !ObjectUtil.equals( oldValue, newValue ) ) {
                     this.result = newValue;
                     notifyObservers( OperationEventType.RESULT_CHANGED );
@@ -350,7 +365,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -360,7 +375,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     public List< Term< ? >> terms() {
         return Collections.unmodifiableList( this.terms );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -370,10 +385,10 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     public final QName transformId() {
         return this.transformId;
     }
-    
+
     /**
      * Validates the state of the operation.
      */
     protected abstract void validate();
-    
+
 }

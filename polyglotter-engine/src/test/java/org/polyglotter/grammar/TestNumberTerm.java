@@ -27,16 +27,16 @@ import javax.xml.namespace.QName;
 
 @SuppressWarnings( "javadoc" )
 public abstract class TestNumberTerm< T extends Number > implements Term< T > {
-    
+
     private final QName id;
     private final QName operationId;
-    
+
     protected TestNumberTerm( final QName id,
-                        final QName operationId ) {
+                              final QName operationId ) {
         this.id = id;
         this.operationId = operationId;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -44,7 +44,7 @@ public abstract class TestNumberTerm< T extends Number > implements Term< T > {
      */
     @Override
     public void add( final GrammarListener listener ) {}
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -54,7 +54,7 @@ public abstract class TestNumberTerm< T extends Number > implements Term< T > {
     public String description() {
         return null;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -64,7 +64,7 @@ public abstract class TestNumberTerm< T extends Number > implements Term< T > {
     public QName id() {
         return this.id;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -74,7 +74,7 @@ public abstract class TestNumberTerm< T extends Number > implements Term< T > {
     public String name() {
         return null;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -84,7 +84,7 @@ public abstract class TestNumberTerm< T extends Number > implements Term< T > {
     public QName operationId() {
         return this.operationId;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -92,5 +92,5 @@ public abstract class TestNumberTerm< T extends Number > implements Term< T > {
      */
     @Override
     public void remove( final GrammarListener listener ) {}
-    
+
 }

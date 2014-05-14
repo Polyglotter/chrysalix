@@ -90,6 +90,16 @@ public class XsdDesequencer implements Desequencer {
         } );
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.extensions.Desequencer#modelType()
+     */
+    @Override
+    public String modelType() {
+        return "org.modeshape.modeler.xsd.Xsd";
+    }
+
     void print( final int indentLevel,
                 final Node node ) throws RepositoryException {
         String element = null;

@@ -38,14 +38,14 @@ import org.polyglotter.grammar.TestIntegerTerm;
 
 @SuppressWarnings( "javadoc" )
 public final class AddTest implements TestConstants {
-    
+
     private Add operation;
-    
+
     @Before
     public void beforeEach() {
         this.operation = new Add( ID, TRANSFORM_ID );
     }
-    
+
     @Test
     public void shouldAddIntegerAndDouble() throws PolyglotterException {
         this.operation.add( INT_1 );
@@ -53,7 +53,7 @@ public final class AddTest implements TestConstants {
         assertThat( this.operation.terms(), hasItems( new Term< ? >[] { INT_1, DOUBLE_1 } ) );
         assertThat( this.operation.result(), is( ( Number ) ( INT_1_VALUE + DOUBLE_1_VALUE ) ) );
     }
-    
+
     @Test
     public void shouldAddMultipleTerms() throws PolyglotterException {
         this.operation.add( INT_1, INT_2, DOUBLE_1 );
@@ -61,31 +61,31 @@ public final class AddTest implements TestConstants {
         assertThat( this.operation.terms(), hasItems( new Term< ? >[] { INT_1, INT_2, DOUBLE_1 } ) );
         assertThat( this.operation.result(), is( ( Number ) ( INT_1_VALUE + INT_2_VALUE + DOUBLE_1_VALUE ) ) );
     }
-    
+
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
         this.operation.add( INT_1 );
         assertThat( this.operation.terms().size(), is( 1 ) );
         assertThat( ( TestIntegerTerm ) this.operation.get( INT_1.id() ), is( INT_1 ) );
     }
-    
+
     @Test
     public void shouldCalculateIntegerResult() throws PolyglotterException {
         this.operation.add( INT_1 );
         this.operation.add( INT_2 );
         assertThat( this.operation.result().intValue(), is( INT_1_VALUE + INT_2_VALUE ) );
     }
-    
+
     @Test
     public void shouldHaveCorrectCategory() {
         assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
     }
-    
+
     @Test
     public void shouldHaveErrorsAfterConstruction() {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
-    
+
     @Test
     public void shouldHaveErrorWhenAddingTermWithWrongType() throws PolyglotterException {
         this.operation.add( INT_1, INT_2 ); // will get rid of current problems
@@ -93,53 +93,48 @@ public final class AddTest implements TestConstants {
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
-    
+
     @Test
     public void shouldHaveProblemsAfterConstruction() {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
-    
+
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
         this.operation.result();
     }
-    
+
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultWithOnlyOneTerm() throws PolyglotterException {
         this.operation.add( INT_1 );
         this.operation.result();
     }
-    
+
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
         this.operation.terms().add( INT_1 );
     }
-    
+
     @Test
     public void shouldNotHaveProblemsWithTwoTermsOfCorrectType() throws PolyglotterException {
         this.operation.add( INT_1, INT_2 );
         assertThat( this.operation.problems().isEmpty(), is( true ) );
         assertThat( this.operation.problems().isOk(), is( true ) );
     }
-    
+
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
         assertThat( this.operation.terms().isEmpty(), is( true ) );
     }
-    
+
     @Test
     public void shouldProvideDescription() {
         assertThat( this.operation.description(), is( PolyglotterI18n.addOperationDescription.text() ) );
     }
-    
+
     @Test
     public void shouldProvideName() {
         assertThat( this.operation.name(), is( PolyglotterI18n.addOperationName.text() ) );
     }
-    
-    @Test( expected = PolyglotterException.class )
-    public void shouldThrowErrorAfterConstructionWhenRetrievingResult() throws PolyglotterException {
-        this.operation.result();
-    }
-    
+
 }

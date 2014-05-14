@@ -94,6 +94,16 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
+     * @see org.modeshape.modeler.extensions.DependencyProcessor#modelType()
+     */
+    @Override
+    public String modelType() {
+        return "org.modeshape.modeler.xsd.Xsd";
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.modeshape.modeler.extensions.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
      *      org.modeshape.modeler.Modeler, boolean)
      */

@@ -25,34 +25,58 @@ package org.polyglotter.grammar;
 
 import javax.xml.namespace.QName;
 
+import org.polyglotter.grammar.GrammarEvent.EventType;
+
 /**
  * The base part of the Polyglotter transformation grammar.
  */
 public interface GrammarPart {
-    
+
     /**
      * The Polyglotter namespace prefix. Value is {@value} .
      */
     String NAMESPACE_PREFIX = "poly";
-    
+
     /**
      * The Polyglotter namespace. Value is {@value} .
      */
     String NAMESPACE_URI = "www.redhat.com/polyglotter/1.0";
-    
+
     /**
      * @return a localized part description (never <code>null</code>)
      */
     String description();
-    
+
     /**
      * @return the unique part identifier (never <code>null</code>)
      */
     QName id();
-    
+
     /**
      * @return a localized part name (never <code>null</code>)
      */
     String name();
-    
+
+    /**
+     * Keys used when constructing the data part of an event.
+     */
+    interface EventTag {
+
+        String OLD_DESCRIPTION = "grammarPart.oldDescription";
+        String NEW_DESCRIPTION = "grammarPart.newDescription";
+
+    }
+
+    /**
+     * The event types pertaining to grammar parts.
+     */
+    enum GrammarPartEventType implements EventType {
+
+        /**
+         * The term description has changed.
+         */
+        DESCRIPTION_CHANGED;
+
+    }
+
 }
