@@ -111,6 +111,7 @@ public class XsdDesequencer implements Desequencer {
         else if ( type.equals( XsdLexicon.IMPORT ) ) element = "import";
         else if ( type.equals( XsdLexicon.SCHEMA_DOCUMENT ) ) element = "schema";
         else if ( type.equals( XsdLexicon.SEQUENCE ) ) element = "sequence";
+        else if ( type.equals( "mm:dependencies" ) ) return;
         else throw new UnsupportedOperationException( node.toString() );
         printIndent( indentLevel );
         writer.print( '<' + xsdPrefix + element );

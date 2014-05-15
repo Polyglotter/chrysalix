@@ -39,6 +39,7 @@ import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.Dependency;
 
 @SuppressWarnings( "javadoc" )

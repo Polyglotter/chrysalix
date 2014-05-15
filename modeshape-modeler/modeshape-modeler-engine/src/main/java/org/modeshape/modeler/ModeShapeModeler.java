@@ -47,7 +47,6 @@ import org.modeshape.modeler.extensions.Desequencer;
 import org.modeshape.modeler.internal.Manager;
 import org.modeshape.modeler.internal.ModelImpl;
 import org.modeshape.modeler.internal.ModelTypeImpl;
-import org.modeshape.modeler.internal.ModelerLexicon;
 import org.modeshape.modeler.internal.Task;
 import org.polyglotter.common.Logger;
 

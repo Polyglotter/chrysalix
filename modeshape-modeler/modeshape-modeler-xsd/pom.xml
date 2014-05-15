@@ -28,6 +28,11 @@
         <!-- ================================================================== -->
         <dependency>
             <groupId>org.polyglotter</groupId>
+            <artifactId>polyglotter-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.polyglotter</groupId>
             <artifactId>modeshape-modeler-engine</artifactId>
         </dependency>
 
@@ -89,26 +94,6 @@
     <!-- ================================================================== -->
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>${maven.remote.resources.plugin.version}</version>
-                <configuration>
-                    <phase>generate-test-resources</phase>
-                    <resourceBundles>
-                        <resourceBundle>org.polyglotter:polyglotter-test:${project.version}</resourceBundle>
-                    </resourceBundles>
-                    <attachToTest>true</attachToTest>
-                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 
             <!-- Create the with dependencies jar -->
             <plugin>
@@ -127,8 +112,9 @@
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>junit:junit</exclude>
-                                        <exclude>jmock:*</exclude>
                                         <exclude>log4j:log4j:jar:</exclude>
+                                        <exclude>org.hamcrest:*</exclude>
+                                        <exclude>org.mockito:*</exclude>
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
@@ -138,6 +124,27 @@
                             <finalName>${project.artifactId}-${modeshape.version}-module-with-dependencies</finalName>
                             <minimizeJar>true</minimizeJar>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>${maven.remote.resources.plugin.version}</version>
+                <configuration>
+                    <phase>generate-test-resources</phase>
+                    <resourceBundles>
+                        <resourceBundle>org.polyglotter:polyglotter-test:${project.version}</resourceBundle>
+                    </resourceBundles>
+                    <attachToTest>true</attachToTest>
+                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

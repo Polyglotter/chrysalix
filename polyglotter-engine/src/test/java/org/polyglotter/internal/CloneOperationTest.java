@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
-import org.modeshape.modeler.internal.ModelerLexicon;
+import org.modeshape.modeler.ModelerLexicon;
 import org.polyglotter.test.BaseTest;
 
 @SuppressWarnings( "javadoc" )

@@ -42,10 +42,10 @@ import javax.jcr.Session;
 
 import org.junit.Test;
 import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.integration.BaseIntegrationTest;
 import org.modeshape.modeler.internal.ModelImpl;
-import org.modeshape.modeler.internal.ModelerLexicon;
 import org.modeshape.modeler.internal.Task;
 import org.modeshape.modeler.xsd.XsdLexicon;
 

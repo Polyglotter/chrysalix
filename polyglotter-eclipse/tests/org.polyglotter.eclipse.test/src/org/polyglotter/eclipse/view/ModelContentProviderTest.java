@@ -108,7 +108,44 @@ public final class ModelContentProviderTest extends BaseTest {
     @Test
     public void shouldProvideModelContents() throws Exception {
         final Model model = modeler().generateModel( new URL( "file:resources/Books.xsd" ), "/test", this.xsdModelType );
-        assertThat( this.provider.childCount( model ), is( 34 ) );
+        /*
+        /test/Books.xsd/xs:import
+        /test/Books.xsd/bibliography
+        /test/Books.xsd/bookListing
+        /test/Books.xsd/bookCollection
+        /test/Books.xsd/bookSetMixed
+        /test/Books.xsd/Bibliography
+        /test/Books.xsd/BilbiographyEntry
+        /test/Books.xsd/BookSetFlat
+        /test/Books.xsd/BookFlat
+        /test/Books.xsd/BookSetNested
+        /test/Books.xsd/BookNested
+        /test/Books.xsd/Authors
+        /test/Books.xsd/PublishingInformation
+        /test/Books.xsd/BookSetMixed
+        /test/Books.xsd/AudioBook
+        /test/Books.xsd/mm:dependencies
+        absolutePath
+        index
+        mixinTypes
+        modelRelativePath
+        name
+        primaryType
+        allDependenciesExist
+        dependencies
+        externalLocation
+        missingDependencies
+        modelType
+        sramp:contentEncoding
+        xmlns:BookTypesNS
+        xmlns:xsd
+        sramp:contentType
+        sramp:description
+        xmlns:BooksNS
+        sramp:contentSize
+        targetNamespace
+         */
+        assertThat( this.provider.childCount( model ), is( 35 ) );
         assertThat( this.provider.hasChildren( model ), is( true ) );
         assertThat( this.provider.hasName( model ), is( true ) );
         assertThat( this.provider.hasType( model ), is( true ) );

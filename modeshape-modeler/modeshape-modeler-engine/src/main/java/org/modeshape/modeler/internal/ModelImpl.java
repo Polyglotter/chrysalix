@@ -42,6 +42,7 @@ import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
+import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.Dependency;
 
 /**

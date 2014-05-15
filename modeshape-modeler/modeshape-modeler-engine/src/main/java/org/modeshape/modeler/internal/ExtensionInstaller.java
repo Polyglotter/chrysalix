@@ -43,6 +43,7 @@ import javax.jcr.RepositoryException;
 import org.modeshape.common.util.CheckArg;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.extensions.Desequencer;
 import org.modeshape.modeler.internal.ModelTypeManagerImpl.LibraryClassLoader;

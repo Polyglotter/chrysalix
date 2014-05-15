@@ -74,7 +74,7 @@ public class Divide extends BaseOperation< Number > {
                 if ( value instanceof Long ) {
                     result = new Long( ( Long ) value );
                 } else {
-                    assert ( result instanceof Double );
+                    assert ( value instanceof Double );
                     result = new Double( ( Double ) value );
                 }
             } else if ( result != null ) {

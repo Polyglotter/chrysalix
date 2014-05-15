@@ -42,7 +42,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.modeshape.jcr.JcrLexicon;
-import org.modeshape.modeler.internal.ModelerLexicon;
 import org.modeshape.modeler.internal.Task;
 import org.modeshape.modeler.test.BaseTest;
 
