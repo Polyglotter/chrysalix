@@ -47,6 +47,16 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
     List< Operation< ? > > NO_OPERATIONS = Collections.emptyList();
 
     /**
+     * An empty number array.
+     */
+    Number[] NO_RESULT = new Number[ 0 ];
+
+    /**
+     * Indicates there is no limit to the number of terms allowed.
+     */
+    public static final int UNLIMITED = -1;
+
+    /**
      * @param terms
      *        the terms being added (cannot be <code>null</code>)
      * @throws IllegalArgumentException

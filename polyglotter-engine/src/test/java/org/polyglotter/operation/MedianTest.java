@@ -70,6 +70,11 @@ public final class MedianTest implements TestConstants {
     }
 
     @Test
+    public void shouldHaveAbbreviation() {
+        assertThat( this.operation.abbreviation(), is( "median" ) );
+    }
+
+    @Test
     public void shouldHaveCorrectCategory() {
         assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
     }

@@ -27,35 +27,58 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.TestConstants;
 import org.polyglotter.grammar.TestIntegerTerm;
 
 @SuppressWarnings( "javadoc" )
-public final class SubtractTest implements TestConstants {
+public final class ModeTest implements TestConstants {
 
-    private Subtract operation;
+    private Mode operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Subtract( ID, TRANSFORM_ID );
+        this.operation = new Mode( ID, TRANSFORM_ID );
     }
 
     @Test
-    public void shouldCalculateIntegerResult() throws PolyglotterException {
+    public void shouldAddOneTerm() throws PolyglotterException {
         this.operation.add( INT_1 );
-        this.operation.add( INT_2 );
-        assertThat( this.operation.result().intValue(), is( INT_1_VALUE - INT_2_VALUE ) );
+        assertThat( this.operation.terms().size(), is( 1 ) );
+        assertThat( ( TestIntegerTerm ) this.operation.get( INT_1.id() ), is( INT_1 ) );
+    }
+
+    @Test( expected = PolyglotterException.class )
+    public void shouldAllowResultWithOneTerm() throws PolyglotterException {
+        this.operation.add( INT_1 );
+        this.operation.result();
+    }
+
+    @Test
+    public void shouldFindOneNumber() throws PolyglotterException {
+        this.operation.add( INT_1, INT_2, DOUBLE_1, DOUBLE_2, FLOAT_1, FLOAT_2, INT_3 );
+        final Number[] result = this.operation.result();
+        assertThat( result.length, is( 1 ) );
+        assertThat( result[ 0 ], is( ( Number ) INT_1_VALUE ) );
+    }
+
+    @Test
+    public void shouldFindTwoNumbers() throws PolyglotterException {
+        this.operation.add( INT_1, INT_2, DOUBLE_1, DOUBLE_2, FLOAT_1, FLOAT_2, INT_3, DOUBLE_3 );
+        final Number[] result = this.operation.result();
+        assertThat( result.length, is( 2 ) );
+        assertThat( Arrays.asList( result ), hasItems( ( Number ) INT_1_VALUE, ( Number ) DOUBLE_1_VALUE ) );
     }
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "-" ) );
+        assertThat( this.operation.abbreviation(), is( "mode" ) );
     }
 
     @Test
@@ -69,7 +92,7 @@ public final class SubtractTest implements TestConstants {
     }
 
     @Test
-    public void shouldHaveErrorWhenSubtractingTermWithWrongType() throws PolyglotterException {
+    public void shouldHaveErrorWhenStringTerm() throws PolyglotterException {
         this.operation.add( INT_1, INT_2 ); // will get rid of current problems
         this.operation.add( STRING_1 );
         assertThat( this.operation.problems().size(), is( 1 ) );
@@ -86,22 +109,16 @@ public final class SubtractTest implements TestConstants {
         this.operation.result();
     }
 
-    @Test( expected = PolyglotterException.class )
-    public void shouldNotBeAbleToGetResultWithOnlyOneTerm() throws PolyglotterException {
-        this.operation.add( INT_1 );
-        this.operation.result();
-    }
-
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
         this.operation.terms().add( INT_1 );
     }
 
     @Test
-    public void shouldNotHaveProblemsWithTwoTermsOfCorrectType() throws PolyglotterException {
-        this.operation.add( INT_1, INT_2 );
-        assertThat( this.operation.problems().isEmpty(), is( true ) );
-        assertThat( this.operation.problems().isOk(), is( true ) );
+    public void shouldNotFindAMode() throws PolyglotterException {
+        this.operation.add( INT_1, INT_2, DOUBLE_1, DOUBLE_2, FLOAT_1, FLOAT_2 );
+        final Number[] result = this.operation.result();
+        assertThat( result.length, is( 0 ) );
     }
 
     @Test
@@ -110,36 +127,13 @@ public final class SubtractTest implements TestConstants {
     }
 
     @Test
-    public void shouldObtainTerm() throws PolyglotterException {
-        this.operation.add( INT_1 );
-        assertThat( this.operation.terms().size(), is( 1 ) );
-        assertThat( ( TestIntegerTerm ) this.operation.get( INT_1.id() ), is( INT_1 ) );
-    }
-
-    @Test
     public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( PolyglotterI18n.subtractOperationDescription.text() ) );
+        assertThat( this.operation.description(), is( PolyglotterI18n.modeOperationDescription.text() ) );
     }
 
     @Test
     public void shouldProvideName() {
-        assertThat( this.operation.name(), is( PolyglotterI18n.subtractOperationName.text() ) );
-    }
-
-    @Test
-    public void shouldSubtractIntegerAndDouble() throws PolyglotterException {
-        this.operation.add( INT_1 );
-        this.operation.add( DOUBLE_1 );
-        assertThat( this.operation.terms(), hasItems( new Term< ? >[] { INT_1, DOUBLE_1 } ) );
-        assertThat( this.operation.result(), is( ( Number ) ( INT_1_VALUE - DOUBLE_1_VALUE ) ) );
-    }
-
-    @Test
-    public void shouldSubtractMultipleTerms() throws PolyglotterException {
-        this.operation.add( INT_1, INT_2, DOUBLE_1 );
-        assertThat( this.operation.terms().size(), is( 3 ) );
-        assertThat( this.operation.terms(), hasItems( new Term< ? >[] { INT_1, INT_2, DOUBLE_1 } ) );
-        assertThat( this.operation.result(), is( ( Number ) ( INT_1_VALUE - INT_2_VALUE - DOUBLE_1_VALUE ) ) );
+        assertThat( this.operation.name(), is( PolyglotterI18n.modeOperationName.text() ) );
     }
 
 }

@@ -53,11 +53,6 @@ import org.polyglotter.grammar.ValidationProblems;
  */
 public abstract class BaseOperation< T > implements GrammarListener, Operation< T > {
 
-    /**
-     * Indicates there is no limit.
-     */
-    public static final int UNLIMITED = -1;
-
     private final QName id;
     private List< GrammarListener > listeners;
     private final Logger logger;
@@ -85,6 +80,11 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
 
         termChanged();
     }
+
+    /**
+     * @return the abbreviated name more commonly used in math (never <code>null</code>)
+     */
+    public abstract String abbreviation();
 
     /**
      * {@inheritDoc}

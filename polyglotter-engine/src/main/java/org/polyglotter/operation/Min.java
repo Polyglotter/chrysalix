@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.grammar.GrammarFactory;
+import org.polyglotter.grammar.Operation;
 import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
@@ -46,6 +47,16 @@ public class Min extends BaseOperation< Number > {
     public Min( final QName id,
                 final QName transformId ) {
         super( id, transformId );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#abbreviation()
+     */
+    @Override
+    public String abbreviation() {
+        return "min";
     }
 
     /**
@@ -118,7 +129,7 @@ public class Min extends BaseOperation< Number > {
      */
     @Override
     public int maxTerms() {
-        return BaseOperation.UNLIMITED;
+        return Operation.UNLIMITED;
     }
 
     /**

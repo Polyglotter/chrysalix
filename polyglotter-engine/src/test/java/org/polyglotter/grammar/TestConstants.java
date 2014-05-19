@@ -44,6 +44,17 @@ public interface TestConstants {
     int INT_2_VALUE = 25;
     TestIntegerTerm INT_2 = new TestIntegerTerm( INT_2_ID, ID, INT_2_VALUE );
 
+    /**
+     * Same value as INT_1
+     */
+    QName INT_3_ID = new QName( ID.getNamespaceURI(), "Int3", ID.getPrefix() );
+    int INT_3_VALUE = INT_1_VALUE;
+    TestIntegerTerm INT_3 = new TestIntegerTerm( INT_3_ID, ID, INT_3_VALUE );
+
+    QName INT_4_ID = new QName( ID.getNamespaceURI(), "Int4", ID.getPrefix() );
+    int INT_4_VALUE = -18;
+    TestIntegerTerm INT_4 = new TestIntegerTerm( INT_4_ID, ID, INT_4_VALUE );
+
     QName DOUBLE_1_ID = new QName( ID.getNamespaceURI(), "Double1", ID.getPrefix() );
     double DOUBLE_1_VALUE = 12.34D;
     TestDoubleTerm DOUBLE_1 = new TestDoubleTerm( DOUBLE_1_ID, ID, DOUBLE_1_VALUE );
@@ -51,6 +62,33 @@ public interface TestConstants {
     QName DOUBLE_2_ID = new QName( ID.getNamespaceURI(), "Double2", ID.getPrefix() );
     double DOUBLE_2_VALUE = 56.78D;
     TestDoubleTerm DOUBLE_2 = new TestDoubleTerm( DOUBLE_2_ID, ID, DOUBLE_2_VALUE );
+
+    /**
+     * Same value as DOUBLE_1
+     */
+    QName DOUBLE_3_ID = new QName( ID.getNamespaceURI(), "Double3", ID.getPrefix() );
+    double DOUBLE_3_VALUE = DOUBLE_1_VALUE;
+    TestDoubleTerm DOUBLE_3 = new TestDoubleTerm( DOUBLE_3_ID, ID, DOUBLE_3_VALUE );
+
+    QName DOUBLE_4_ID = new QName( ID.getNamespaceURI(), "Double4", ID.getPrefix() );
+    double DOUBLE_4_VALUE = -18.9D;
+    TestDoubleTerm DOUBLE_4 = new TestDoubleTerm( DOUBLE_4_ID, ID, DOUBLE_4_VALUE );
+
+    QName FLOAT_1_ID = new QName( ID.getNamespaceURI(), "Float1", ID.getPrefix() );
+    float FLOAT_1_VALUE = -0.12F;
+    TestFloatTerm FLOAT_1 = new TestFloatTerm( FLOAT_1_ID, ID, FLOAT_1_VALUE );
+
+    QName FLOAT_2_ID = new QName( ID.getNamespaceURI(), "Float2", ID.getPrefix() );
+    float FLOAT_2_VALUE = 0.89F;
+    TestFloatTerm FLOAT_2 = new TestFloatTerm( FLOAT_2_ID, ID, FLOAT_2_VALUE );
+
+    QName LONG_1_ID = new QName( ID.getNamespaceURI(), "Long1", ID.getPrefix() );
+    long LONG_1_VALUE = -45L;
+    TestLongTerm LONG_1 = new TestLongTerm( LONG_1_ID, ID, LONG_1_VALUE );
+
+    QName LONG_2_ID = new QName( ID.getNamespaceURI(), "Long2", ID.getPrefix() );
+    long LONG_2_VALUE = 21L;
+    TestLongTerm LONG_2 = new TestLongTerm( LONG_2_ID, ID, LONG_2_VALUE );
 
     QName NULL_STRING_ID = new QName( ID.getNamespaceURI(), "NullString", ID.getPrefix() );
     String NULL_STRING_VALUE = null;
@@ -75,6 +113,16 @@ public interface TestConstants {
 
         public TestStringOperation() {
             super( ID, TRANSFORM_ID );
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.operation.BaseOperation#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return null;
         }
 
         /**
@@ -114,7 +162,7 @@ public interface TestConstants {
          */
         @Override
         public int maxTerms() {
-            return BaseOperation.UNLIMITED;
+            return Operation.UNLIMITED;
         }
 
         /**

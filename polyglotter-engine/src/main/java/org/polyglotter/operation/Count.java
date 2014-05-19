@@ -26,6 +26,7 @@ package org.polyglotter.operation;
 import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
+import org.polyglotter.grammar.Operation;
 
 /**
  * Counts the number of terms.
@@ -43,6 +44,16 @@ public class Count extends BaseOperation< Integer > {
     public Count( final QName id,
                   final QName transformId ) {
         super( id, transformId );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#abbreviation()
+     */
+    @Override
+    public String abbreviation() {
+        return "count";
     }
 
     /**
@@ -83,7 +94,7 @@ public class Count extends BaseOperation< Integer > {
      */
     @Override
     public int maxTerms() {
-        return BaseOperation.UNLIMITED;
+        return Operation.UNLIMITED;
     }
 
     /**

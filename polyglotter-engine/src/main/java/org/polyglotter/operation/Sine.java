@@ -23,33 +23,29 @@
  */
 package org.polyglotter.operation;
 
-import java.util.List;
-
 import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.common.Logger;
-import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Computes the average value of a collection of number terms.
+ * Calculates the sine of a number.
+ * 
+ * @see Math#sin(double)
  */
-public class Average extends BaseOperation< Number > {
+public class Sine extends BaseOperation< Double > {
 
     /**
      * @param id
-     *        the average operation's unique identifier (cannot be <code>null</code>)
+     *        the sine operation's unique identifier (cannot be <code>null</code>)
      * @param transformId
      *        the owning transform identifier (cannot be <code>null</code>)
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Average( final QName id,
-                    final QName transformId ) {
+    public Sine( final QName id,
+                 final QName transformId ) {
         super( id, transformId );
     }
 
@@ -60,7 +56,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public String abbreviation() {
-        return "avg";
+        return "sin";
     }
 
     /**
@@ -69,33 +65,11 @@ public class Average extends BaseOperation< Number > {
      * @see org.polyglotter.operation.BaseOperation#calculate()
      */
     @Override
-    protected Number calculate() {
+    protected Double calculate() {
         assert !problems().isError();
+        final Number value = ( Number ) terms().get( 0 ).value();
 
-        final Add addOp = new Add( Term.TEMP_ID, id() );
-        final List< Term< ? >> terms = terms();
-
-        if ( terms.size() == 1 ) {
-            return ( Number ) terms.get( 0 ).value();
-        }
-
-        try {
-            addOp.add( terms().toArray( new Term< ? >[ terms().size() ] ) );
-            final Number total = addOp.calculate();
-
-            final Divide divideOp = new Divide( id(), transformId() );
-            divideOp.add( GrammarFactory.createNumberTerm( Term.TEMP_ID, id(), total ) );
-            divideOp.add( GrammarFactory.createNumberTerm( Term.TEMP2_ID, id(), terms.size() ) );
-
-            return divideOp.calculate();
-        } catch ( final PolyglotterException e ) {
-            final ValidationProblem problem = GrammarFactory.createError( id(),
-                                                                          PolyglotterI18n.averageOperationError.text( id() ) );
-            problems().add( problem );
-            Logger.getLogger( getClass() ).error( e, PolyglotterI18n.averageOperationError, id() );
-
-            return null;
-        }
+        return Math.sin( value.doubleValue() );
     }
 
     /**
@@ -115,7 +89,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public String description() {
-        return PolyglotterI18n.averageOperationDescription.text();
+        return PolyglotterI18n.sineOperationDescription.text();
     }
 
     /**
@@ -125,7 +99,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public int maxTerms() {
-        return Operation.UNLIMITED;
+        return 1;
     }
 
     /**
@@ -145,7 +119,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.averageOperationName.text();
+        return PolyglotterI18n.sineOperationName.text();
     }
 
     /**
@@ -154,26 +128,20 @@ public class Average extends BaseOperation< Number > {
     @Override
     protected void validate() {
         // make sure there are terms
-        if ( terms().isEmpty() ) {
+        if ( terms().size() != 1 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.averageOperationHasNoTerms.text( id() ) );
+                GrammarFactory.createError( id(), PolyglotterI18n.sineOperationMustHaveOneTerm.text( id() ) );
             problems().add( problem );
         } else {
-            if ( terms().size() < minTerms() ) {
+            // make sure term is a number
+            final Object value = terms().get( 0 ).value();
+
+            if ( !( value instanceof Number ) ) {
                 final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
+                    GrammarFactory.createError( id(),
+                                                PolyglotterI18n.sineOperationInvalidTermType.text( id(),
+                                                                                                   terms().get( 0 ).id() ) );
                 problems().add( problem );
-            }
-
-            // make sure all the terms have types of Number
-            for ( final Term< ? > term : terms() ) {
-                final Object value = term.value();
-
-                if ( !( value instanceof Number ) ) {
-                    final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
-                    problems().add( problem );
-                }
             }
         }
     }

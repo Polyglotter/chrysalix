@@ -50,6 +50,16 @@ public class Decrement extends BaseOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
+     * @see org.polyglotter.operation.BaseOperation#abbreviation()
+     */
+    @Override
+    public String abbreviation() {
+        return "--";
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.polyglotter.operation.BaseOperation#calculate()
      */
     @Override
@@ -126,8 +136,8 @@ public class Decrement extends BaseOperation< Integer > {
             if ( !( value instanceof Integer ) ) {
                 final ValidationProblem problem =
                     GrammarFactory.createError( id(),
-                                                PolyglotterI18n.decrementOperationInvalidTermType.text( terms().get( 0 ).id(),
-                                                                                                        id() ) );
+                                                PolyglotterI18n.decrementOperationInvalidTermType.text( id(),
+                                                                                                        terms().get( 0 ).id() ) );
                 problems().add( problem );
             }
         }

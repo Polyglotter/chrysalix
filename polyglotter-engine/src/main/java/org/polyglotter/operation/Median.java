@@ -33,6 +33,7 @@ import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.Logger;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarFactory;
+import org.polyglotter.grammar.Operation;
 import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
@@ -52,6 +53,16 @@ public class Median extends BaseOperation< Number > {
     public Median( final QName id,
                    final QName transformId ) {
         super( id, transformId );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#abbreviation()
+     */
+    @Override
+    public String abbreviation() {
+        return "median";
     }
 
     /**
@@ -136,7 +147,7 @@ public class Median extends BaseOperation< Number > {
      */
     @Override
     public int maxTerms() {
-        return BaseOperation.UNLIMITED;
+        return Operation.UNLIMITED;
     }
 
     /**

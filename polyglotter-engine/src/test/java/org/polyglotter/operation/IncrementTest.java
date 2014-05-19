@@ -54,6 +54,11 @@ public final class IncrementTest implements TestConstants {
     }
 
     @Test
+    public void shouldHaveAbbreviation() {
+        assertThat( this.operation.abbreviation(), is( "++" ) );
+    }
+
+    @Test
     public void shouldHaveCorrectCategory() {
         assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
     }
@@ -87,7 +92,7 @@ public final class IncrementTest implements TestConstants {
     public void shouldIncrement() throws PolyglotterException {
         this.operation.add( INT_1 );
         assertThat( this.operation.terms(), hasItems( new Term< ? >[] { INT_1 } ) );
-        assertThat( this.operation.calculate(), is( INT_1_VALUE + 1 ) );
+        assertThat( this.operation.result(), is( INT_1_VALUE + 1 ) );
     }
 
     @Test( expected = PolyglotterException.class )

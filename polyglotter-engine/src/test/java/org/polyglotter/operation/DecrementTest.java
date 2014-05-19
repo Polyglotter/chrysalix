@@ -57,7 +57,12 @@ public final class DecrementTest implements TestConstants {
     public void shouldDecrement() throws PolyglotterException {
         this.operation.add( INT_1 );
         assertThat( this.operation.terms(), hasItems( new Term< ? >[] { INT_1 } ) );
-        assertThat( this.operation.calculate(), is( INT_1_VALUE - 1 ) );
+        assertThat( this.operation.result(), is( INT_1_VALUE - 1 ) );
+    }
+
+    @Test
+    public void shouldHaveAbbreviation() {
+        assertThat( this.operation.abbreviation(), is( "--" ) );
     }
 
     @Test

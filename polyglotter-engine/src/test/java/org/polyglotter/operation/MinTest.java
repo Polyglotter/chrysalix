@@ -77,6 +77,11 @@ public final class MinTest implements TestConstants {
     }
 
     @Test
+    public void shouldHaveAbbreviation() {
+        assertThat( this.operation.abbreviation(), is( "min" ) );
+    }
+
+    @Test
     public void shouldHaveCorrectCategory() {
         assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
     }

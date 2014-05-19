@@ -23,33 +23,34 @@
  */
 package org.polyglotter.operation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.common.Logger;
-import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.Operation;
 import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Computes the average value of a collection of number terms.
+ * Calculates the mode of a collection of terms.
  */
-public class Average extends BaseOperation< Number > {
+public class Mode extends BaseOperation< Number[] > {
 
     /**
      * @param id
-     *        the average operation's unique identifier (cannot be <code>null</code>)
+     *        the add operation's unique identifier (cannot be <code>null</code>)
      * @param transformId
      *        the owning transform identifier (cannot be <code>null</code>)
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Average( final QName id,
-                    final QName transformId ) {
+    public Mode( final QName id,
+                 final QName transformId ) {
         super( id, transformId );
     }
 
@@ -60,42 +61,45 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public String abbreviation() {
-        return "avg";
+        return "mode";
     }
 
     /**
      * {@inheritDoc}
+     * <p>
+     * When there is no mode an empty array will be returned.
      * 
      * @see org.polyglotter.operation.BaseOperation#calculate()
      */
     @Override
-    protected Number calculate() {
+    protected Number[] calculate() {
         assert !problems().isError();
 
-        final Add addOp = new Add( Term.TEMP_ID, id() );
-        final List< Term< ? >> terms = terms();
+        final Map< Number, Integer > result = new HashMap<>();
+        int max = 0;
+        final List< Number > maxElems = new ArrayList<>();
 
-        if ( terms.size() == 1 ) {
-            return ( Number ) terms.get( 0 ).value();
+        for ( final Term< ? > term : terms() ) {
+            assert ( term.value() instanceof Number ); // validate check
+            final Number value = ( Number ) term.value();
+
+            if ( result.containsKey( value ) ) {
+                result.put( value, ( result.get( value ) + 1 ) );
+            } else {
+                result.put( value, 1 );
+            }
+
+            if ( result.get( value ) > max ) {
+                max = result.get( value );
+                maxElems.clear();
+                maxElems.add( value );
+            } else if ( result.get( value ) == max ) {
+                maxElems.add( value );
+            }
         }
 
-        try {
-            addOp.add( terms().toArray( new Term< ? >[ terms().size() ] ) );
-            final Number total = addOp.calculate();
-
-            final Divide divideOp = new Divide( id(), transformId() );
-            divideOp.add( GrammarFactory.createNumberTerm( Term.TEMP_ID, id(), total ) );
-            divideOp.add( GrammarFactory.createNumberTerm( Term.TEMP2_ID, id(), terms.size() ) );
-
-            return divideOp.calculate();
-        } catch ( final PolyglotterException e ) {
-            final ValidationProblem problem = GrammarFactory.createError( id(),
-                                                                          PolyglotterI18n.averageOperationError.text( id() ) );
-            problems().add( problem );
-            Logger.getLogger( getClass() ).error( e, PolyglotterI18n.averageOperationError, id() );
-
-            return null;
-        }
+        if ( maxElems.size() == terms().size() ) return new Number[ 0 ];
+        return maxElems.toArray( new Number[ maxElems.size() ] );
     }
 
     /**
@@ -115,7 +119,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public String description() {
-        return PolyglotterI18n.averageOperationDescription.text();
+        return PolyglotterI18n.modeOperationDescription.text();
     }
 
     /**
@@ -135,7 +139,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public int minTerms() {
-        return 1;
+        return 2;
     }
 
     /**
@@ -145,7 +149,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.averageOperationName.text();
+        return PolyglotterI18n.modeOperationName.text();
     }
 
     /**
@@ -156,7 +160,7 @@ public class Average extends BaseOperation< Number > {
         // make sure there are terms
         if ( terms().isEmpty() ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.averageOperationHasNoTerms.text( id() ) );
+                GrammarFactory.createError( id(), PolyglotterI18n.modeOperationHasNoTerms.text( id() ) );
             problems().add( problem );
         } else {
             if ( terms().size() < minTerms() ) {

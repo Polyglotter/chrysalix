@@ -70,6 +70,11 @@ public final class DivideTest implements TestConstants {
     }
 
     @Test
+    public void shouldHaveAbbreviation() {
+        assertThat( this.operation.abbreviation(), is( "/" ) );
+    }
+
+    @Test
     public void shouldHaveCorrectCategory() {
         assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
     }
