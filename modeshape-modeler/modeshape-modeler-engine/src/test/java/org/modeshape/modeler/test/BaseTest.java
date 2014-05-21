@@ -67,7 +67,8 @@ public abstract class BaseTest {
                                                  + "<" + XML_SAME_NAME_SIBLING + "></" + XML_SAME_NAME_SIBLING + ">"
                                                  + "<" + XML_SAME_NAME_SIBLING + "></" + XML_SAME_NAME_SIBLING + ">"
                                                  + "</" + XML_ROOT + ">";
-    protected static final String XSD_ARTIFACT = XML_DECLARATION + "<schema></schema>";
+    protected static final String XSD_ARTIFACT =
+        XML_DECLARATION + "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"></xs:schema>";
 
     static {
         try {

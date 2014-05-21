@@ -34,6 +34,7 @@ import java.net.URL;
 import java.util.Calendar;
 
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Session;
 
@@ -271,6 +272,10 @@ public final class ModeShapeModeler implements Modeler {
                         modelNode.setProperty( ModelerLexicon.Model.MODEL_TYPE, modelType.id() );
                         final ModelImpl model = new ModelImpl( manager, modelNode.getPath() );
                         session.save();
+                        System.err.println( modelNode );
+                        final NodeIterator itr = modelNode.getNodes();
+                        while ( itr.hasNext() )
+                            System.err.println( itr.nextNode() );
                         processDependencies( artifactPath, modelNode, model, persistArtifact );
                         return model;
                     }

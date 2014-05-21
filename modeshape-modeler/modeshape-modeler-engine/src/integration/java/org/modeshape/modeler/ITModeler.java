@@ -25,7 +25,6 @@ package org.modeshape.modeler;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
@@ -99,32 +98,7 @@ public class ITModeler extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldGenerateModelOfSuppliedType() throws Exception {
-        modelTypeManager().install( "xml" );
-        modelTypeManager().install( "sramp" );
-        modelTypeManager().install( "xsd" );
-        final String path = importArtifact( XSD_ARTIFACT );
-        ModelType modelType = null;
-        for ( final ModelType type : modelTypeManager().modelTypesForArtifact( path ) ) {
-            if ( type.id().equals( XSD_MODEL_TYPE_ID ) ) {
-                modelType = type;
-                break;
-            }
-        }
-        final Model model = modeler().generateModel( path, ARTIFACT_NAME, modelType, true );
-        assertThat( model, notNullValue() );
-        manager().run( new Task< Void >() {
-
-            @Override
-            public Void run( final Session session ) throws Exception {
-                assertThat( session.getRootNode().hasNode( ARTIFACT_NAME ), is( true ) );
-                return null;
-            }
-        } );
-    }
-
-    @Test
-    public void shouldNotFindDependencyProcessorForXsdModelNode() throws Exception {
+    public void shouldFindDependencyProcessorForXsdModelNode() throws Exception {
         modelTypeManager().install( "sramp" );
         modelTypeManager().install( "xsd" );
 
@@ -146,7 +120,32 @@ public class ITModeler extends BaseIntegrationTest {
 
             @Override
             public Void run( final Session session ) throws Exception {
-                assertThat( model.modelType().dependencyProcessor(), nullValue() );
+                assertThat( model.modelType().dependencyProcessor(), is( notNullValue() ) );
+                return null;
+            }
+        } );
+    }
+
+    @Test
+    public void shouldGenerateModelOfSuppliedType() throws Exception {
+        modelTypeManager().install( "xml" );
+        modelTypeManager().install( "sramp" );
+        modelTypeManager().install( "xsd" );
+        final String path = importArtifact( XSD_ARTIFACT );
+        ModelType modelType = null;
+        for ( final ModelType type : modelTypeManager().modelTypesForArtifact( path ) ) {
+            if ( type.id().equals( XSD_MODEL_TYPE_ID ) ) {
+                modelType = type;
+                break;
+            }
+        }
+        final Model model = modeler().generateModel( path, ARTIFACT_NAME, modelType, true );
+        assertThat( model, notNullValue() );
+        manager().run( new Task< Void >() {
+
+            @Override
+            public Void run( final Session session ) throws Exception {
+                assertThat( session.getRootNode().hasNode( ARTIFACT_NAME ), is( true ) );
                 return null;
             }
         } );

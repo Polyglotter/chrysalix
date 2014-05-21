@@ -121,7 +121,8 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
             Node schemaNode = null;
 
             { // find schema node
-                final NodeIterator itr = modelNode.getParent().getNodes();
+                final NodeIterator itr = modelNode.getNodes();
+                // itr = modelNode.getNodes();
 
                 while ( itr.hasNext() ) {
                     final Node kid = itr.nextNode();
@@ -305,6 +306,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
             modelNode.getSession().save();
             return dependenciesNode.getPath();
         } catch ( final Exception e ) {
+            if ( e instanceof ModelerException ) throw ( ModelerException ) e;
             throw new ModelerException( e );
         }
     }

@@ -90,6 +90,8 @@
     <build>
         <plugins>
             <plugin>
+
+                <!-- Copy shared test resources -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
                 <version>${maven.remote.resources.plugin.version}</version>
