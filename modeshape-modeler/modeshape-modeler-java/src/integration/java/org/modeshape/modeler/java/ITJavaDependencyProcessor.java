@@ -23,12 +23,34 @@
  */
 package org.modeshape.modeler.java;
 
-import org.junit.Ignore;
-import org.modeshape.modeler.integration.BaseIntegrationTest;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertThat;
 
-@Ignore
+import javax.jcr.Session;
+
+import org.junit.Test;
+import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.integration.BaseIntegrationTest;
+import org.modeshape.modeler.internal.Task;
+
 @SuppressWarnings( "javadoc" )
 public class ITJavaDependencyProcessor extends BaseIntegrationTest {
+
+    @Test
+    public void shouldFindDependencyProcessor() throws Exception {
+        manager().run( new Task< Void >() {
+
+            @Override
+            public Void run( final Session session ) throws Exception {
+                modelTypeManager().install( "java" );
+                final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.java.JavaFile" );
+                assertThat( modelType, is( notNullValue() ) );
+                assertThat( modelType.dependencyProcessor(), is( notNullValue() ) );
+                return null;
+            }
+        } );
+    }
     //
     // @Test
     // public void shouldDetermineDependencies() throws Exception {

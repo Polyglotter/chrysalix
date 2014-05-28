@@ -145,7 +145,7 @@ public final class ModelContentProviderTest extends BaseTest {
         sramp:contentSize
         targetNamespace
          */
-        assertThat( this.provider.childCount( model ), is( 35 ) );
+        assertThat( this.provider.childCount( model ), is( 34 ) );
         assertThat( this.provider.hasChildren( model ), is( true ) );
         assertThat( this.provider.hasName( model ), is( true ) );
         assertThat( this.provider.hasType( model ), is( true ) );

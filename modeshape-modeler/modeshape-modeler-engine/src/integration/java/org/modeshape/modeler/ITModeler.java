@@ -98,35 +98,6 @@ public class ITModeler extends BaseIntegrationTest {
     }
 
     @Test
-    public void shouldFindDependencyProcessorForXsdModelNode() throws Exception {
-        modelTypeManager().install( "sramp" );
-        modelTypeManager().install( "xsd" );
-
-        // find XSD model type
-        ModelType xsdModelType = null;
-
-        for ( final ModelType type : modelTypeManager().modelTypes() ) {
-            if ( type.id().equals( XSD_MODEL_TYPE_ID ) ) {
-                xsdModelType = type;
-                break;
-            }
-        }
-
-        assertThat( xsdModelType, notNullValue() );
-
-        final String path = importArtifact( XSD_ARTIFACT );
-        final ModelImpl model = ( ModelImpl ) modeler().generateModel( path, ARTIFACT_NAME, xsdModelType, true );
-        modeler().manager.run( new Task< Void >() {
-
-            @Override
-            public Void run( final Session session ) throws Exception {
-                assertThat( model.modelType().dependencyProcessor(), is( notNullValue() ) );
-                return null;
-            }
-        } );
-    }
-
-    @Test
     public void shouldGenerateModelOfSuppliedType() throws Exception {
         modelTypeManager().install( "xml" );
         modelTypeManager().install( "sramp" );

@@ -92,9 +92,12 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <!-- <exclude>org/modeshape/modeler/*-module-with-dependencies.jar</exclude> -->
+                                        <!-- <exclude>org/modeshape/modeshape-*/**</exclude> -->
                                     </excludes>
                                 </filter>
                             </filters>
+                            <outputDirectory>${project.build.testOutputDirectory}/org/modeshape/modeler</outputDirectory>
                             <finalName>${project.artifactId}-${modeshape.version}-module-with-dependencies</finalName>
                             <minimizeJar>true</minimizeJar>
                         </configuration>
@@ -102,67 +105,32 @@
                 </executions>
             </plugin>
 
-            <!-- Copy shared test resources -->
+            <!-- Copy test resources -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>${maven.remote.resources.plugin.version}</version>
-                <configuration>
-                    <phase>generate-test-resources</phase>
-                    <resourceBundles>
-                        <resourceBundle>org.polyglotter:polyglotter-test:${project.version}</resourceBundle>
-                    </resourceBundles>
-                    <attachToTest>true</attachToTest>
-                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
-                </configuration>
+                <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>copy-test-resources</id>
+                        <phase>generate-test-resources</phase>
                         <goals>
-                            <goal>process</goal>
+                            <goal>copy-resources</goal>
                         </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>../../polyglotter-test/src/main/resources</directory>
+                                    <includes>
+                                        <include>**/${modeshape.version}/modeshape-sequencer*module-with-dependencies.zip</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
-
-        <!-- ================================================================== -->
-        <!-- Plugin Management -->
-        <!-- ================================================================== -->
-        <pluginManagement>
-            <plugins>
-
-                <!--This plugin's is used to store Eclipse m2e settings has no influence on the Maven build itself. -->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>${eclipse.m2e.version}</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            org.apache.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-remote-resources-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [1.0.0,)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>process</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
+
 </project>
