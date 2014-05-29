@@ -55,7 +55,7 @@ import org.polyglotter.common.Logger;
 public class ExtensionInstaller {
 
     // pass in category then version
-    private static final String ARCHIVE_NAME = "modeshape-modeler-%s-%s-module-with-dependencies.jar";
+    private static final String ARCHIVE_NAME = "modeshape-modeler-%s-%s-module-with-dependencies.zip";
 
     // pass in archive name
     private static final String ARCHIVE_PATH = "org/modeshape/modeler/%s";
@@ -187,10 +187,9 @@ public class ExtensionInstaller {
                     final ZipEntry jarEntry = jarIter.nextElement();
                     if ( jarEntry.isDirectory() ) continue;
 
-                    final String name = jarEntry.getName();
+                    String name = jarEntry.getName();
 
-                    // look for jars and possible desequencer and dependency processor class files
-                    if ( isJarFile( name ) ) {
+                    if ( isJarFile( name ) && !name.endsWith( "-tests.jar" ) && !name.endsWith( "-sources.jar" ) ) {
                         final Path jarPath = library.resolve( name.substring( name.lastIndexOf( '/' ) + 1 ) );
 
                         // see if this jar has already been installed
@@ -215,6 +214,25 @@ public class ExtensionInstaller {
                                 ( archivesNode( categoryNode ).getPath() + '/' + jarPath.getFileName().toString() );
                             new JcrTools().uploadFile( categoryNode.getSession(), nodePath, stream );
                             LOGGER.debug( "Uploaded jar '%s' to category node", nodePath );
+                        }
+
+                        // Iterate through entries looking for appropriate sequencer and extension classes
+                        try ( final ZipFile jar = new ZipFile( jarPath.toFile() ) ) {
+                            for ( final Enumeration< ? extends ZipEntry > itr = jar.entries(); itr.hasMoreElements(); ) {
+                                final ZipEntry entry = itr.nextElement();
+                                if ( entry.isDirectory() ) continue;
+
+                                name = entry.getName();
+
+                                // see if class is a possible sequencer or desequencer
+                                if ( isDesequencerName( name ) ) {
+                                    desequencerNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                                    LOGGER.debug( "Found potential desequencer '%s'", name );
+                                } else if ( isDependencyProcessorName( name ) ) {
+                                    dependencyProcessorNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                                    LOGGER.debug( "Found potential dependency processor '%s'", name );
+                                }
+                            }
                         }
                     } else if ( isDesequencerName( name ) ) {
                         desequencerNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
@@ -290,10 +308,10 @@ public class ExtensionInstaller {
     }
 
     private boolean isJarFile( final String name ) {
-        final String jarExt = ".jar";
+        final String ext = ".jar";
 
-        if ( name.length() > jarExt.length() ) {
-            return name.toLowerCase().endsWith( jarExt );
+        if ( name.length() > ext.length() ) {
+            return name.toLowerCase().endsWith( ext );
         }
 
         return false;

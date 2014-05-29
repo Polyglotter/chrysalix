@@ -256,7 +256,11 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                 if ( repositoryUrl.getProtocol().startsWith( "file" ) ) {
                     final String path = ( repositoryUrl.getFile() + File.separatorChar + MODESHAPE_GROUP );
                     final File folder = new File( path );
-                    for ( final File file : folder.listFiles() ) {
+                    final File[] files = folder.listFiles();
+
+                    if ( files == null ) continue;
+
+                    for ( final File file : files ) {
                         final String name = file.getName();
                         if ( name.contains( "sequencer-" ) )
                             categories.add( name.substring( name.indexOf( "sequencer-" ) + "sequencer-".length() ) );

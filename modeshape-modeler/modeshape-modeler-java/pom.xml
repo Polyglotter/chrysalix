@@ -71,35 +71,20 @@
 
             <!-- Create the with dependencies jar -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>${maven.shade.plugin.version}</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven.assembly.plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>single</goal>
                         </goals>
                         <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>junit:junit</exclude>
-                                        <exclude>log4j:log4j:jar:</exclude>
-                                        <exclude>org.hamcrest:*</exclude>
-                                        <exclude>org.mockito:*</exclude>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                        <!-- <exclude>org/modeshape/modeler/*-module-with-dependencies.jar</exclude> -->
-                                        <!-- <exclude>org/modeshape/modeshape-*/**</exclude> -->
-                                    </excludes>
-                                </filter>
-                            </filters>
+                            <descriptors>
+                                <descriptor>src/assembly/module-with-dependencies.xml</descriptor>
+                            </descriptors>
                             <outputDirectory>${project.build.testOutputDirectory}/org/modeshape/modeler</outputDirectory>
-                            <finalName>${project.artifactId}-${modeshape.version}-module-with-dependencies</finalName>
-                            <minimizeJar>true</minimizeJar>
+                            <finalName>modeshape-modeler-java-${modeshape.version}</finalName>
                         </configuration>
                     </execution>
                 </executions>
@@ -110,7 +95,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-test-resources</id>
+                        <id>copy-sequencers</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
