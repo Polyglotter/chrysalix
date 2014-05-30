@@ -32,7 +32,7 @@ import org.polyglotter.grammar.ValidationProblem;
 /**
  * Calculates the arc cosine of a number.
  * 
- * @see Math#cosh(double)
+ * @see Math#acos(double)
  */
 public class ArcCosine extends BaseOperation< Double > {
 

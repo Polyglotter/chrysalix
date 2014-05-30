@@ -23,11 +23,6 @@
  */
 package org.polyglotter.operation;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
 import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
@@ -35,25 +30,21 @@ import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Calculates the absolute value of a number.
- * 
- * @see Math#abs(double)
- * @see Math#abs(float)
- * @see Math#abs(int)
- * @see Math#abs(long)
+ * Provides a random number with a positive sign, greater than or equal to {@code 0.0} and less than {@code 1.0}. There is an
+ * optional term for a seed value.
  */
-public class AbsoluteValue extends BaseOperation< Number > {
+public class Random extends BaseOperation< Double > {
 
     /**
      * @param id
-     *        the absolute value operation's unique identifier (cannot be <code>null</code>)
+     *        the random number operation's unique identifier (cannot be <code>null</code>)
      * @param transformId
      *        the owning transform identifier (cannot be <code>null</code>)
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public AbsoluteValue( final QName id,
-                          final QName transformId ) {
+    public Random( final QName id,
+                   final QName transformId ) {
         super( id, transformId );
     }
 
@@ -64,7 +55,7 @@ public class AbsoluteValue extends BaseOperation< Number > {
      */
     @Override
     public String abbreviation() {
-        return "abs";
+        return "rand";
     }
 
     /**
@@ -73,21 +64,15 @@ public class AbsoluteValue extends BaseOperation< Number > {
      * @see org.polyglotter.operation.BaseOperation#calculate()
      */
     @Override
-    protected Number calculate() {
+    protected Double calculate() {
         assert !problems().isError();
+
+        if ( terms().isEmpty() ) {
+            return Math.random();
+        }
+
         final Number value = ( Number ) terms().get( 0 ).value();
-
-        if ( value instanceof Double ) return Math.abs( ( Double ) value );
-        if ( value instanceof Float ) return Math.abs( ( Float ) value );
-        if ( value instanceof Integer ) return Math.abs( ( Integer ) value );
-        if ( value instanceof Long ) return Math.abs( ( Long ) value );
-        if ( value instanceof Short ) return Math.abs( ( Short ) value );
-        if ( value instanceof BigDecimal ) return ( ( BigDecimal ) value ).abs();
-        if ( value instanceof BigInteger ) return ( ( BigInteger ) value ).abs();
-        if ( value instanceof AtomicInteger ) return ( new AtomicInteger( Math.abs( ( ( AtomicInteger ) value ).get() ) ) );
-        if ( value instanceof AtomicLong ) return ( new AtomicLong( Math.abs( ( ( AtomicLong ) value ).get() ) ) );
-
-        return Math.abs( value.doubleValue() );
+        return new java.util.Random( value.longValue() ).nextDouble();
     }
 
     /**
@@ -107,7 +92,7 @@ public class AbsoluteValue extends BaseOperation< Number > {
      */
     @Override
     public String description() {
-        return PolyglotterI18n.absoluteValueOperationDescription.text();
+        return PolyglotterI18n.randomOperationDescription.text();
     }
 
     /**
@@ -127,7 +112,7 @@ public class AbsoluteValue extends BaseOperation< Number > {
      */
     @Override
     public int minTerms() {
-        return 1;
+        return 0;
     }
 
     /**
@@ -137,7 +122,7 @@ public class AbsoluteValue extends BaseOperation< Number > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.absoluteValueOperationName.text();
+        return PolyglotterI18n.randomOperationName.text();
     }
 
     /**
@@ -145,20 +130,20 @@ public class AbsoluteValue extends BaseOperation< Number > {
      */
     @Override
     protected void validate() {
-        // make sure there are terms
-        if ( terms().size() != 1 ) {
+        // make sure there is at most one term
+        if ( terms().size() > 1 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.absoluteValueOperationMustHaveOneTerm.text( id() ) );
+                GrammarFactory.createError( id(), PolyglotterI18n.randomOperationInvalidNumberOfTerms.text( id() ) );
             problems().add( problem );
-        } else {
-            // must be a number
+        } else if ( terms().size() == 1 ) {
+            // make sure term is a number
             final Object value = terms().get( 0 ).value();
 
             if ( !( value instanceof Number ) ) {
                 final ValidationProblem problem =
                     GrammarFactory.createError( id(),
-                                                PolyglotterI18n.absoluteValueOperationInvalidTermType.text( id(),
-                                                                                                            terms().get( 0 ).id() ) );
+                                                PolyglotterI18n.randomOperationInvalidTermType.text( id(),
+                                                                                                     terms().get( 0 ).id() ) );
                 problems().add( problem );
             }
         }

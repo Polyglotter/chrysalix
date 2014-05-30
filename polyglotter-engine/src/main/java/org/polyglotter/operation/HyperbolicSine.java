@@ -30,7 +30,7 @@ import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Calculates the hyperbolic cosine of a number.
+ * Calculates the hyperbolic sine of a number.
  * 
  * @see Math#sinh(double)
  */

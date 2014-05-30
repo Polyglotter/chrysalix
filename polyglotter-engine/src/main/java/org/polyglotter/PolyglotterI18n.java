@@ -136,6 +136,16 @@ public class PolyglotterI18n {
     public static I18n listenerError = new I18n( "The listener '%s' is being unregistered. Event: '%s'" );
     public static I18n listenerNotFoundToUnregister = new I18n( "The listener being unregistered was not a registered listener" );
 
+    public static I18n logOperationDescription = new I18n( "Calculates natural logarithm of a term" );
+    public static I18n logOperationInvalidTermType = new I18n( "Log operation '%s' has term '%s' that is not a number" );
+    public static I18n logOperationMustHaveOneTerm = new I18n( "Log operation '%s' requires one and only one term" );
+    public static I18n logOperationName = new I18n( "Natural Logarithm" );
+
+    public static I18n log10OperationDescription = new I18n( "Calculates base 10 logarithm of a term" );
+    public static I18n log10OperationInvalidTermType = new I18n( "Log 10 operation '%s' has term '%s' that is not a number" );
+    public static I18n log10OperationMustHaveOneTerm = new I18n( "Log 10 operation '%s' requires one and only one term" );
+    public static I18n log10OperationName = new I18n( "Logarithm Base 10" );
+
     public static I18n maxOperationDescription = new I18n( "Finds the maximum value of two or more numbers" );
     public static I18n maxOperationHasNoTerms = new I18n( "Max operation '%s' has no terms" );
     public static I18n maxOperationName = new I18n( "Max" );
@@ -152,6 +162,15 @@ public class PolyglotterI18n {
     public static I18n modeOperationDescription = new I18n( "Finds the mode of two or more numbers" );
     public static I18n modeOperationHasNoTerms = new I18n( "Mode operation '%s' has no terms" );
     public static I18n modeOperationName = new I18n( "Mode" );
+
+    public static I18n modulusOperationDescription =
+        new I18n( "Calculates the remainder of the first term divided by the second term" );
+    public static I18n modulusOperationInvalidDividendTermType =
+        new I18n( "The dividend term '%s' of modulus operation '%s' must be a number" );
+    public static I18n modulusOperationInvalidDivisorTermType =
+        new I18n( "The divisor term '%s' of modulus operation '%s' must be a number" );
+    public static I18n modulusOperationInvalidTermCount = new I18n( "Modulus operation '%s' must have 2 terms" );
+    public static I18n modulusOperationName = new I18n( "Modulus" );
 
     public static I18n multiplyOperationDescription = new I18n( "Multiplies two or more numbers together" );
     public static I18n multiplyOperationHasNoTerms = new I18n( "Multiply operation '%s' has no terms" );
@@ -179,6 +198,40 @@ public class PolyglotterI18n {
 
     public static I18n operationHasErrors = new I18n( "The operation '%s' has errors and a result cannot be calculated" );
 
+    public static I18n parseDoubleOperationDescription = new I18n( "Parses the string term into a double value" );
+    public static I18n parseDoubleOperationInvalidTermType =
+        new I18n( "Parse Double operation '%s' has term '%s' that is not a number" );
+    public static I18n parseDoubleOperationMustHaveOneTerm =
+        new I18n( "Parse Double operation '%s' requires one and only one term" );
+    public static I18n parseDoubleOperationName = new I18n( "Parse Double" );
+
+    public static I18n powerOfEOperationDescription = new I18n( "Calculates Euler's number raised to a power" );
+    public static I18n powerOfEOperationInvalidTermType = new I18n( "Power of E operation '%s' has term '%s' that is not a number" );
+    public static I18n powerOfEOperationMustHaveOneTerm = new I18n( "Power of E operation '%s' requires one and only one term" );
+    public static I18n powerOfEOperationName = new I18n( "Power Of E" );
+
+    public static I18n powerOfEMinus1OperationDescription =
+        new I18n( "Calculates Euler's number raised to a power and then minus one" );
+    public static I18n powerOfEMinus1OperationInvalidTermType =
+        new I18n( "Power of E minus 1 operation '%s' has term '%s' that is not a number" );
+    public static I18n powerOfEMinus1OperationMustHaveOneTerm =
+        new I18n( "Power of E minus 1 operation '%s' requires one and only one term" );
+    public static I18n powerOfEMinus1OperationName = new I18n( "Power Of E Minus 1" );
+
+    public static I18n powerOperationDescription =
+        new I18n( "Calculates the value of the first term raised to the power of the second term" );
+    public static I18n powerOperationInvalidBaseTermType = new I18n( "The base term '%s' of power operation '%s' must be a number" );
+    public static I18n powerOperationInvalidExponentTermType =
+        new I18n( "The exponent term '%s' of power operation '%s' must be a number" );
+    public static I18n powerOperationInvalidTermCount = new I18n( "Power operation '%s' must have 2 terms" );
+    public static I18n powerOperationName = new I18n( "Power" );
+
+    public static I18n randomOperationDescription =
+        new I18n( "Provides a random number with a positive sign, greater than or equal to 0.0 and less than 1.0." );
+    public static I18n randomOperationInvalidNumberOfTerms = new I18n( "Random operation '%s' cannot have more than 1 term" );
+    public static I18n randomOperationInvalidTermType = new I18n( "Random operation '%s' seed term must be a number" );
+    public static I18n randomOperationName = new I18n( "Random" );
+
     public static I18n sineOperationDescription = new I18n( "Calculates the sine of a numeric term" );
     public static I18n sineOperationInvalidTermType = new I18n( "Sine operation '%s' has term '%s' that is not a number" );
     public static I18n sineOperationMustHaveOneTerm = new I18n( "Sine operation '%s' requires one and only one term" );
@@ -198,6 +251,20 @@ public class PolyglotterI18n {
     public static I18n tangentOperationInvalidTermType = new I18n( "Tangent operation '%s' has term '%s' that is not a number" );
     public static I18n tangentOperationMustHaveOneTerm = new I18n( "Tangent operation '%s' requires one and only one term" );
     public static I18n tangentOperationName = new I18n( "Tangent" );
+
+    public static I18n toDegreesOperationDescription =
+        new I18n( "Converts an angle measured in radians to an approximately equivalent angle measured in degrees" );
+    public static I18n toDegreesOperationInvalidTermType =
+        new I18n( "To Degrees operation '%s' has term '%s' that is not a number" );
+    public static I18n toDegreesOperationMustHaveOneTerm = new I18n( "To Degrees operation '%s' requires one and only one term" );
+    public static I18n toDegreesOperationName = new I18n( "To Degrees" );
+
+    public static I18n toRadiansOperationDescription =
+        new I18n( "Converts an angle measured in degrees to an approximately equivalent angle measured in radians" );
+    public static I18n toRadiansOperationInvalidTermType =
+        new I18n( "To Radians operation '%s' has term '%s' that is not a number" );
+    public static I18n toRadiansOperationMustHaveOneTerm = new I18n( "To Radians operation '%s' requires one and only one term" );
+    public static I18n toRadiansOperationName = new I18n( "To Radians" );
 
     public static I18n termNotFound = new I18n( "The term '%s' in operation '%s' could not be found" );
     public static I18n termExists = new I18n( "The term '%s' in operation '%s' already exists" );

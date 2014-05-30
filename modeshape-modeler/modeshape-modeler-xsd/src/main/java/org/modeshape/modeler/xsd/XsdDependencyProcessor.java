@@ -21,7 +21,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.xsd.dependency;
+package org.modeshape.modeler.xsd;
 
 import java.net.URI;
 import java.net.URL;
@@ -38,7 +38,6 @@ import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
-import org.modeshape.modeler.xsd.XsdModelerI18n;
 import org.modeshape.sequencer.xsd.XsdLexicon;
 import org.polyglotter.common.Logger;
 

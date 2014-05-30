@@ -21,7 +21,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.xsd.dependency;
+package org.modeshape.modeler.xsd;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -46,6 +46,7 @@ import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.integration.BaseIntegrationTest;
 import org.modeshape.modeler.internal.ModelImpl;
 import org.modeshape.modeler.internal.Task;
+import org.modeshape.modeler.xsd.XsdDependencyProcessor;
 import org.modeshape.modeler.xsd.XsdLexicon;
 
 /**

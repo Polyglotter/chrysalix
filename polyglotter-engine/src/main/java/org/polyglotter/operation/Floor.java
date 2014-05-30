@@ -30,7 +30,7 @@ import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Calculates the floor of a number.
+ * Calculates the floor of a number. The floor is the largest integer value less than or equal to the term.
  * 
  * @see Math#floor(double)
  */

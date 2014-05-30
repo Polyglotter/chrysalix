@@ -37,7 +37,7 @@ import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Calculates the mode of a collection of terms.
+ * Calculates the mode, or most common term, of a collection of terms.
  */
 public class Mode extends BaseOperation< Number[] > {
 

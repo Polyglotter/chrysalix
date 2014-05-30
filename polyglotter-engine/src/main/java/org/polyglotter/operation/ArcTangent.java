@@ -32,7 +32,7 @@ import org.polyglotter.grammar.ValidationProblem;
 /**
  * Calculates the arc tangent of a number.
  * 
- * @see Math#tanh(double)
+ * @see Math#atan(double)
  */
 public class ArcTangent extends BaseOperation< Double > {
 

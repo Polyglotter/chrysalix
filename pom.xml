@@ -73,7 +73,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 
         <!-- Only unit tests are run by default. -->
-        <skip.integration.tests>true</skip.integration.tests>
+        <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
 
         <!-- Distribution URLs -->

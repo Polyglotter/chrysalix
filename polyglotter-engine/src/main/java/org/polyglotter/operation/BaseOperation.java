@@ -379,6 +379,28 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     /**
      * {@inheritDoc}
      * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder( abbreviation() );
+        builder.append( '(' );
+
+        int i = 0;
+
+        for ( final Term< ? > term : terms() ) {
+            if ( i != 0 ) builder.append( ", " );
+            builder.append( term );
+            ++i;
+        }
+
+        builder.append( ')' );
+        return builder.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.polyglotter.grammar.Operation#transformId()
      */
     @Override

@@ -30,9 +30,9 @@ import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Calculates the arc cosine of a number.
+ * Calculates the arc sine of a number.
  * 
- * @see Math#sinh(double)
+ * @see Math#asin(double)
  */
 public class ArcSine extends BaseOperation< Double > {
 
