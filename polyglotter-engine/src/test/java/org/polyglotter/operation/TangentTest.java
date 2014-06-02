@@ -77,12 +77,12 @@ public final class TangentTest implements TestConstants {
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "tan" ) );
+        assertThat( this.operation.descriptor().abbreviation(), is( "tan" ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
     }
 
     @Test

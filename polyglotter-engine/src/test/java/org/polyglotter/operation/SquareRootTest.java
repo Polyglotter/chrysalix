@@ -77,12 +77,12 @@ public final class SquareRootTest implements TestConstants {
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "sqrt" ) );
+        assertThat( this.operation.descriptor().abbreviation(), is( "sqrt" ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
     }
 
     @Test

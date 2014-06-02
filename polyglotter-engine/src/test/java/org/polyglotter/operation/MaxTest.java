@@ -78,12 +78,12 @@ public final class MaxTest implements TestConstants {
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "max" ) );
+        assertThat( this.operation.descriptor().abbreviation(), is( "max" ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
     }
 
     @Test

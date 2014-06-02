@@ -24,6 +24,7 @@
 package org.polyglotter.grammar;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -40,6 +41,64 @@ import org.polyglotter.grammar.GrammarEvent.EventType;
  *        the operation result term type
  */
 public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterable< Term< ? > > {
+
+    /**
+     * Sorts operations by their category and then their name.
+     */
+    Comparator< Descriptor > DESCRIPTOR_CATEGORY_SORTER = new Comparator< Descriptor >() {
+
+        @Override
+        public int compare( final Descriptor thisDescriptor,
+                            final Descriptor thatDescriptor ) {
+            final int result = thisDescriptor.category().compareTo( thatDescriptor.category() );
+
+            if ( result == 0 ) {
+                return DESCRIPTOR_NAME_SORTER.compare( thisDescriptor, thatDescriptor );
+            }
+
+            return result;
+        }
+
+    };
+
+    /**
+     * Sorts operations by their name.
+     */
+    Comparator< Descriptor > DESCRIPTOR_NAME_SORTER = new Comparator< Descriptor >() {
+
+        @Override
+        public int compare( final Descriptor thisDescriptor,
+                            final Descriptor thatDescriptor ) {
+            return thisDescriptor.name().compareTo( thisDescriptor.name() );
+        }
+
+    };
+
+    /**
+     * Sorts operations by their name.
+     */
+    Comparator< Operation< ? > > NAME_SORTER = new Comparator< Operation< ? >>() {
+
+        @Override
+        public int compare( final Operation< ? > thisOp,
+                            final Operation< ? > thatOp ) {
+            return DESCRIPTOR_NAME_SORTER.compare( thisOp.descriptor(), thatOp.descriptor() );
+        }
+
+    };
+
+    /**
+     * Sorts operations by their category and then their name.
+     */
+    Comparator< Operation< ? > > CATEGORY_SORTER = new Comparator< Operation< ? >>() {
+
+        @Override
+        public int compare( final Operation< ? > thisOp,
+                            final Operation< ? > thatOp ) {
+            return DESCRIPTOR_CATEGORY_SORTER.compare( thisOp.descriptor(), thatOp.descriptor() );
+        }
+
+    };
 
     /**
      * An empty list of operations.
@@ -67,9 +126,9 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
     void add( Term< ? >... terms ) throws PolyglotterException;
 
     /**
-     * @return the operation's category (never <code>null</code>)
+     * @return the operation's descriptor (never <code>null</code>)
      */
-    Category category();
+    Descriptor descriptor();
 
     /**
      * @param termId
@@ -177,6 +236,33 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
         public String label() {
             return this.label.text();
         }
+
+    }
+
+    /**
+     * An operation descriptor.
+     */
+    interface Descriptor {
+
+        /**
+         * @return the abbreviation of an operation (never <code>null</code> or empty)
+         */
+        String abbreviation();
+
+        /**
+         * @return the category of an operation (never <code>null</code>)
+         */
+        Category category();
+
+        /**
+         * @return the localized description of an operation (never <code>null</code> or empty)
+         */
+        String description();
+
+        /**
+         * @return the localized name of an operation (never <code>null</code> or empty)
+         */
+        String name();
 
     }
 

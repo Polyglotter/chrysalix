@@ -279,6 +279,8 @@ public class PolyglotterI18n {
     public static I18n termNotFound = new I18n( "The term '%s' in operation '%s' could not be found" );
     public static I18n termExists = new I18n( "The term '%s' in operation '%s' already exists" );
 
+    public static I18n unhandledOperationDescriptor = new I18n( "Descriptor '%s' was not handled by the operation factory" );
+
     public static I18n voidTermDescription = new I18n( "A term with a void or null value" );
     public static I18n voidTermName = new I18n( "Void" );
 

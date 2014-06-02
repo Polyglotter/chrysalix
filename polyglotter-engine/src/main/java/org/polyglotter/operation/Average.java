@@ -38,7 +38,54 @@ import org.polyglotter.grammar.ValidationProblem;
 /**
  * Computes the average value of a collection of number terms.
  */
-public class Average extends BaseOperation< Number > {
+public final class Average extends BaseOperation< Number > {
+
+    /**
+     * The operation descriptor.
+     */
+    public static final Descriptor DESCRIPTOR = new Descriptor() {
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return "avg";
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#category()
+         */
+        @Override
+        public Category category() {
+            return Category.ARITHMETIC;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#description()
+         */
+        @Override
+        public String description() {
+            return PolyglotterI18n.averageOperationDescription.text();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#name()
+         */
+        @Override
+        public String name() {
+            return PolyglotterI18n.averageOperationName.text();
+        }
+
+    };
 
     /**
      * @param id
@@ -48,19 +95,9 @@ public class Average extends BaseOperation< Number > {
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Average( final QName id,
-                    final QName transformId ) {
+    Average( final QName id,
+             final QName transformId ) {
         super( id, transformId );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#abbreviation()
-     */
-    @Override
-    public String abbreviation() {
-        return "avg";
     }
 
     /**
@@ -101,21 +138,21 @@ public class Average extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#category()
+     * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override
-    public Category category() {
-        return Category.ARITHMETIC;
+    public String description() {
+        return DESCRIPTOR.description();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
+     * @see org.polyglotter.grammar.Operation#descriptor()
      */
     @Override
-    public String description() {
-        return PolyglotterI18n.averageOperationDescription.text();
+    public Descriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     /**
@@ -145,7 +182,7 @@ public class Average extends BaseOperation< Number > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.averageOperationName.text();
+        return DESCRIPTOR.name();
     }
 
     /**

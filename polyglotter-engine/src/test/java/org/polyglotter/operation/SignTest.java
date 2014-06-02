@@ -89,12 +89,12 @@ public final class SignTest implements TestConstants {
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "signum" ) );
+        assertThat( this.operation.descriptor().abbreviation(), is( "signum" ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
     }
 
     @Test

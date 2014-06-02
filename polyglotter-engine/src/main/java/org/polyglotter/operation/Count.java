@@ -31,7 +31,54 @@ import org.polyglotter.grammar.Operation;
 /**
  * Counts the number of terms.
  */
-public class Count extends BaseOperation< Integer > {
+public final class Count extends BaseOperation< Integer > {
+
+    /**
+     * The operation descriptor.
+     */
+    public static final Descriptor DESCRIPTOR = new Descriptor() {
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return "count";
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#category()
+         */
+        @Override
+        public Category category() {
+            return Category.ARITHMETIC;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#description()
+         */
+        @Override
+        public String description() {
+            return PolyglotterI18n.countOperationDescription.text();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#name()
+         */
+        @Override
+        public String name() {
+            return PolyglotterI18n.countOperationName.text();
+        }
+
+    };
 
     /**
      * @param id
@@ -41,19 +88,9 @@ public class Count extends BaseOperation< Integer > {
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Count( final QName id,
-                  final QName transformId ) {
+    Count( final QName id,
+           final QName transformId ) {
         super( id, transformId );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#abbreviation()
-     */
-    @Override
-    public String abbreviation() {
-        return "count";
     }
 
     /**
@@ -70,21 +107,21 @@ public class Count extends BaseOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#category()
+     * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override
-    public Category category() {
-        return Category.ARITHMETIC;
+    public String description() {
+        return DESCRIPTOR.description();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
+     * @see org.polyglotter.grammar.Operation#descriptor()
      */
     @Override
-    public String description() {
-        return PolyglotterI18n.countOperationDescription.text();
+    public Descriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     /**
@@ -114,7 +151,7 @@ public class Count extends BaseOperation< Integer > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.countOperationName.text();
+        return DESCRIPTOR.name();
     }
 
     /**

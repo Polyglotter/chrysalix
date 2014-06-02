@@ -34,7 +34,54 @@ import org.polyglotter.grammar.ValidationProblem;
 /**
  * A string concatenation operation.
  */
-public class Concat extends BaseOperation< String > {
+public final class Concat extends BaseOperation< String > {
+
+    /**
+     * The operation descriptor.
+     */
+    public static final Descriptor DESCRIPTOR = new Descriptor() {
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return "+";
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#category()
+         */
+        @Override
+        public Category category() {
+            return Category.STRING;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#description()
+         */
+        @Override
+        public String description() {
+            return PolyglotterI18n.concatOperationDescription.text();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#name()
+         */
+        @Override
+        public String name() {
+            return PolyglotterI18n.concatOperationName.text();
+        }
+
+    };
 
     /**
      * @param id
@@ -42,19 +89,9 @@ public class Concat extends BaseOperation< String > {
      * @param transformId
      *        the transform identifier containing this operation (cannot be <code>null</code>)
      */
-    public Concat( final QName id,
-                   final QName transformId ) {
+    Concat( final QName id,
+            final QName transformId ) {
         super( id, transformId );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#abbreviation()
-     */
-    @Override
-    public String abbreviation() {
-        return "+";
     }
 
     /**
@@ -79,21 +116,21 @@ public class Concat extends BaseOperation< String > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#category()
+     * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override
-    public Category category() {
-        return Category.STRING;
+    public String description() {
+        return DESCRIPTOR.description();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
+     * @see org.polyglotter.grammar.Operation#descriptor()
      */
     @Override
-    public String description() {
-        return PolyglotterI18n.concatOperationDescription.text();
+    public Descriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     /**
@@ -123,7 +160,7 @@ public class Concat extends BaseOperation< String > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.concatOperationName.text();
+        return DESCRIPTOR.name();
     }
 
     /**
@@ -145,4 +182,5 @@ public class Concat extends BaseOperation< String > {
             }
         }
     }
+
 }

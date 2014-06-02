@@ -77,12 +77,12 @@ public final class PowerOfEMinus1Test implements TestConstants {
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "expm1" ) );
+        assertThat( this.operation.descriptor().abbreviation(), is( "expm1" ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
     }
 
     @Test

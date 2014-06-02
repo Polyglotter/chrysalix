@@ -82,11 +82,6 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
     }
 
     /**
-     * @return the abbreviated name more commonly used in math (never <code>null</code>)
-     */
-    public abstract String abbreviation();
-
-    /**
      * {@inheritDoc}
      * 
      * @see org.polyglotter.grammar.GrammarEventSource#add(org.polyglotter.grammar.GrammarListener)
@@ -383,7 +378,7 @@ public abstract class BaseOperation< T > implements GrammarListener, Operation< 
      */
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder( abbreviation() );
+        final StringBuilder builder = new StringBuilder( descriptor().abbreviation() );
         builder.append( '(' );
 
         int i = 0;

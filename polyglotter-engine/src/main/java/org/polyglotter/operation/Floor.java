@@ -34,7 +34,54 @@ import org.polyglotter.grammar.ValidationProblem;
  * 
  * @see Math#floor(double)
  */
-public class Floor extends BaseOperation< Integer > {
+public final class Floor extends BaseOperation< Integer > {
+
+    /**
+     * The operation descriptor.
+     */
+    public static final Descriptor DESCRIPTOR = new Descriptor() {
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return "floor";
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#category()
+         */
+        @Override
+        public Category category() {
+            return Category.ARITHMETIC;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#description()
+         */
+        @Override
+        public String description() {
+            return PolyglotterI18n.floorOperationDescription.text();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#name()
+         */
+        @Override
+        public String name() {
+            return PolyglotterI18n.floorOperationName.text();
+        }
+
+    };
 
     /**
      * @param id
@@ -44,19 +91,9 @@ public class Floor extends BaseOperation< Integer > {
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Floor( final QName id,
-                  final QName transformId ) {
+    Floor( final QName id,
+           final QName transformId ) {
         super( id, transformId );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#abbreviation()
-     */
-    @Override
-    public String abbreviation() {
-        return "floor";
     }
 
     /**
@@ -76,21 +113,21 @@ public class Floor extends BaseOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#category()
+     * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override
-    public Category category() {
-        return Category.ARITHMETIC;
+    public String description() {
+        return DESCRIPTOR.description();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
+     * @see org.polyglotter.grammar.Operation#descriptor()
      */
     @Override
-    public String description() {
-        return PolyglotterI18n.floorOperationDescription.text();
+    public Descriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     /**
@@ -120,7 +157,7 @@ public class Floor extends BaseOperation< Integer > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.floorOperationName.text();
+        return DESCRIPTOR.name();
     }
 
     /**

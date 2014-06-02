@@ -34,7 +34,54 @@ import org.polyglotter.grammar.ValidationProblem;
  * 
  * @see Math#cos(double)
  */
-public class Cosine extends BaseOperation< Double > {
+public final class Cosine extends BaseOperation< Double > {
+
+    /**
+     * The operation descriptor.
+     */
+    public static final Descriptor DESCRIPTOR = new Descriptor() {
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return "cos";
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#category()
+         */
+        @Override
+        public Category category() {
+            return Category.ARITHMETIC;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#description()
+         */
+        @Override
+        public String description() {
+            return PolyglotterI18n.cosineOperationDescription.text();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#name()
+         */
+        @Override
+        public String name() {
+            return PolyglotterI18n.cosineOperationName.text();
+        }
+
+    };
 
     /**
      * @param id
@@ -44,19 +91,9 @@ public class Cosine extends BaseOperation< Double > {
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Cosine( final QName id,
-                   final QName transformId ) {
+    Cosine( final QName id,
+            final QName transformId ) {
         super( id, transformId );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#abbreviation()
-     */
-    @Override
-    public String abbreviation() {
-        return "cos";
     }
 
     /**
@@ -75,21 +112,21 @@ public class Cosine extends BaseOperation< Double > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#category()
+     * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override
-    public Category category() {
-        return Category.ARITHMETIC;
+    public String description() {
+        return DESCRIPTOR.description();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
+     * @see org.polyglotter.grammar.Operation#descriptor()
      */
     @Override
-    public String description() {
-        return PolyglotterI18n.cosineOperationDescription.text();
+    public Descriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     /**
@@ -119,7 +156,7 @@ public class Cosine extends BaseOperation< Double > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.cosineOperationName.text();
+        return DESCRIPTOR.name();
     }
 
     /**

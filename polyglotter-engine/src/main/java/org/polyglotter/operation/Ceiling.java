@@ -34,7 +34,54 @@ import org.polyglotter.grammar.ValidationProblem;
  * 
  * @see Math#ceil(double)
  */
-public class Ceiling extends BaseOperation< Integer > {
+public final class Ceiling extends BaseOperation< Integer > {
+
+    /**
+     * The operation descriptor.
+     */
+    public static final Descriptor DESCRIPTOR = new Descriptor() {
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return "ceil";
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#category()
+         */
+        @Override
+        public Category category() {
+            return Category.ARITHMETIC;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#description()
+         */
+        @Override
+        public String description() {
+            return PolyglotterI18n.ceilingOperationDescription.text();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#name()
+         */
+        @Override
+        public String name() {
+            return PolyglotterI18n.ceilingOperationName.text();
+        }
+
+    };
 
     /**
      * @param id
@@ -44,19 +91,9 @@ public class Ceiling extends BaseOperation< Integer > {
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Ceiling( final QName id,
-                    final QName transformId ) {
+    Ceiling( final QName id,
+             final QName transformId ) {
         super( id, transformId );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#abbreviation()
-     */
-    @Override
-    public String abbreviation() {
-        return "ceil";
     }
 
     /**
@@ -76,21 +113,21 @@ public class Ceiling extends BaseOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#category()
+     * @see org.polyglotter.grammar.GrammarPart#description()
      */
     @Override
-    public Category category() {
-        return Category.ARITHMETIC;
+    public String description() {
+        return DESCRIPTOR.description();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
+     * @see org.polyglotter.grammar.Operation#descriptor()
      */
     @Override
-    public String description() {
-        return PolyglotterI18n.ceilingOperationDescription.text();
+    public Descriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     /**
@@ -120,7 +157,7 @@ public class Ceiling extends BaseOperation< Integer > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.ceilingOperationName.text();
+        return DESCRIPTOR.name();
     }
 
     /**

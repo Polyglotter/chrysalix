@@ -28,6 +28,7 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.grammar.Operation.Category;
 import org.polyglotter.grammar.TestConstants;
 
@@ -67,12 +68,22 @@ public final class ConcatTest implements TestConstants {
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "+" ) );
+        assertThat( this.operation.descriptor().abbreviation(), is( "+" ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.category(), is( Category.STRING ) );
+        assertThat( this.operation.descriptor().category(), is( Category.STRING ) );
+    }
+
+    @Test
+    public void shouldProvideDescription() {
+        assertThat( this.operation.description(), is( PolyglotterI18n.concatOperationDescription.text() ) );
+    }
+
+    @Test
+    public void shouldProvideName() {
+        assertThat( this.operation.name(), is( PolyglotterI18n.concatOperationName.text() ) );
     }
 
 }

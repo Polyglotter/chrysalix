@@ -77,12 +77,12 @@ public final class CountTest implements TestConstants {
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "count" ) );
+        assertThat( this.operation.descriptor().abbreviation(), is( "count" ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )

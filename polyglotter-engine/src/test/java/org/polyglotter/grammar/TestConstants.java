@@ -126,16 +126,6 @@ public interface TestConstants {
         /**
          * {@inheritDoc}
          * 
-         * @see org.polyglotter.operation.BaseOperation#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
          * @see org.polyglotter.operation.BaseOperation#calculate()
          */
         @Override
@@ -146,20 +136,20 @@ public interface TestConstants {
         /**
          * {@inheritDoc}
          * 
-         * @see org.polyglotter.grammar.Operation#category()
+         * @see org.polyglotter.grammar.GrammarPart#description()
          */
         @Override
-        public Category category() {
+        public String description() {
             return null;
         }
 
         /**
          * {@inheritDoc}
          * 
-         * @see org.polyglotter.grammar.GrammarPart#description()
+         * @see org.polyglotter.grammar.Operation#descriptor()
          */
         @Override
-        public String description() {
+        public Descriptor descriptor() {
             return null;
         }
 
