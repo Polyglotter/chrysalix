@@ -25,6 +25,9 @@ package org.polyglotter.operation;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.namespace.QName;
 
@@ -33,21 +36,21 @@ import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Calculates the value of the first term raised to the power of the second term.
+ * Calculates the closest long to the specified numeric term.
  * 
- * @see Math#pow(double, double)
+ * @see Math#round(double)
  */
-public class Power extends BaseOperation< Number > {
+public class Round extends BaseOperation< Number > {
 
     /**
      * @param id
-     *        the power operation's unique identifier (cannot be <code>null</code>)
+     *        the round operation's unique identifier (cannot be <code>null</code>)
      * @param transformId
      *        the owning transform identifier (cannot be <code>null</code>)
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Power( final QName id,
+    public Round( final QName id,
                   final QName transformId ) {
         super( id, transformId );
     }
@@ -59,7 +62,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public String abbreviation() {
-        return "pow";
+        return "round";
     }
 
     /**
@@ -70,14 +73,22 @@ public class Power extends BaseOperation< Number > {
     @Override
     protected Number calculate() {
         assert !problems().isError();
+        final Number value = ( Number ) terms().get( 0 ).value();
 
-        final Number base = ( Number ) terms().get( 0 ).value();
-        final Number exponent = ( Number ) terms().get( 1 ).value();
+        if ( value instanceof Integer ) return value;
+        if ( value instanceof Long ) return value;
+        if ( value instanceof Short ) return value;
 
-        if ( base instanceof BigInteger ) return ( ( BigInteger ) base ).pow( exponent.intValue() );
-        if ( base instanceof BigDecimal ) return ( ( BigDecimal ) base ).pow( exponent.intValue() );
+        if ( value instanceof Double ) return Math.round( ( Double ) value );
+        if ( value instanceof Float ) return Math.round( ( Float ) value );
 
-        return Math.pow( base.doubleValue(), exponent.doubleValue() );
+        if ( value instanceof BigDecimal ) return ( ( BigDecimal ) value ).setScale( 0, RoundingMode.HALF_UP );
+        if ( value instanceof BigInteger ) return value;
+
+        if ( value instanceof AtomicInteger ) return value;
+        if ( value instanceof AtomicLong ) return value;
+
+        return Math.round( value.doubleValue() );
     }
 
     /**
@@ -97,7 +108,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public String description() {
-        return PolyglotterI18n.powerOperationDescription.text();
+        return PolyglotterI18n.roundOperationDescription.text();
     }
 
     /**
@@ -107,7 +118,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public int maxTerms() {
-        return 2;
+        return 1;
     }
 
     /**
@@ -117,7 +128,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public int minTerms() {
-        return 2;
+        return 1;
     }
 
     /**
@@ -127,7 +138,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.powerOperationName.text();
+        return PolyglotterI18n.roundOperationName.text();
     }
 
     /**
@@ -135,34 +146,21 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     protected void validate() {
-        // make sure there are terms
-        if ( terms().size() != 2 ) {
+        // make sure there is one term
+        if ( terms().size() != 1 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.powerOperationInvalidTermCount.text( id() ) );
+                GrammarFactory.createError( id(), PolyglotterI18n.roundOperationMustHaveOneTerm.text( id() ) );
             problems().add( problem );
         } else {
-            { // make sure first term is a number
-                final Object x = terms().get( 0 ).value();
+            // must be a number
+            final Object value = terms().get( 0 ).value();
 
-                if ( !( x instanceof Number ) ) {
-                    final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.powerOperationInvalidBaseTermType.text( terms().get( 0 ).id(),
-                                                                                                            id() ) );
-                    problems().add( problem );
-                }
-            }
-
-            { // make sure second term is an integer
-                final Object y = terms().get( 1 ).value();
-
-                if ( !( y instanceof Number ) ) {
-                    final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.powerOperationInvalidExponentTermType.text( terms().get( 1 ).id(),
-                                                                                                                id() ) );
-                    problems().add( problem );
-                }
+            if ( !( value instanceof Number ) ) {
+                final ValidationProblem problem =
+                    GrammarFactory.createError( id(),
+                                                PolyglotterI18n.roundOperationInvalidTermType.text( id(),
+                                                                                                    terms().get( 0 ).id() ) );
+                problems().add( problem );
             }
         }
     }

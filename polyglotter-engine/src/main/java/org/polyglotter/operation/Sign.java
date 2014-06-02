@@ -33,22 +33,25 @@ import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
- * Calculates the value of the first term raised to the power of the second term.
+ * Calculates the sign (0, 1, or -1) of a number.
  * 
- * @see Math#pow(double, double)
+ * @see Math#signum(double)
+ * @see Math#signum(float)
+ * @see BigInteger#signum()
+ * @see BigDecimal#signum()
  */
-public class Power extends BaseOperation< Number > {
+public class Sign extends BaseOperation< Integer > {
 
     /**
      * @param id
-     *        the power operation's unique identifier (cannot be <code>null</code>)
+     *        the sign operation's unique identifier (cannot be <code>null</code>)
      * @param transformId
      *        the owning transform identifier (cannot be <code>null</code>)
      * @throws IllegalArgumentException
      *         if any inputs are <code>null</code>
      */
-    public Power( final QName id,
-                  final QName transformId ) {
+    public Sign( final QName id,
+                 final QName transformId ) {
         super( id, transformId );
     }
 
@@ -59,7 +62,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public String abbreviation() {
-        return "pow";
+        return "signum";
     }
 
     /**
@@ -68,16 +71,15 @@ public class Power extends BaseOperation< Number > {
      * @see org.polyglotter.operation.BaseOperation#calculate()
      */
     @Override
-    protected Number calculate() {
+    protected Integer calculate() {
         assert !problems().isError();
+        final Number value = ( Number ) terms().get( 0 ).value();
 
-        final Number base = ( Number ) terms().get( 0 ).value();
-        final Number exponent = ( Number ) terms().get( 1 ).value();
+        if ( value instanceof BigDecimal ) return ( ( BigDecimal ) value ).signum();
+        if ( value instanceof BigInteger ) return ( ( BigInteger ) value ).signum();
+        if ( value instanceof Float ) return Double.valueOf( Math.signum( ( Float ) value ) ).intValue();
 
-        if ( base instanceof BigInteger ) return ( ( BigInteger ) base ).pow( exponent.intValue() );
-        if ( base instanceof BigDecimal ) return ( ( BigDecimal ) base ).pow( exponent.intValue() );
-
-        return Math.pow( base.doubleValue(), exponent.doubleValue() );
+        return Double.valueOf( Math.signum( value.doubleValue() ) ).intValue();
     }
 
     /**
@@ -97,7 +99,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public String description() {
-        return PolyglotterI18n.powerOperationDescription.text();
+        return PolyglotterI18n.signOperationDescription.text();
     }
 
     /**
@@ -107,7 +109,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public int maxTerms() {
-        return 2;
+        return 1;
     }
 
     /**
@@ -117,7 +119,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public int minTerms() {
-        return 2;
+        return 1;
     }
 
     /**
@@ -127,7 +129,7 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.powerOperationName.text();
+        return PolyglotterI18n.signOperationName.text();
     }
 
     /**
@@ -135,34 +137,21 @@ public class Power extends BaseOperation< Number > {
      */
     @Override
     protected void validate() {
-        // make sure there are terms
-        if ( terms().size() != 2 ) {
+        // make sure there is one term
+        if ( terms().size() != 1 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.powerOperationInvalidTermCount.text( id() ) );
+                GrammarFactory.createError( id(), PolyglotterI18n.signOperationMustHaveOneTerm.text( id() ) );
             problems().add( problem );
         } else {
-            { // make sure first term is a number
-                final Object x = terms().get( 0 ).value();
+            // must be a number
+            final Object value = terms().get( 0 ).value();
 
-                if ( !( x instanceof Number ) ) {
-                    final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.powerOperationInvalidBaseTermType.text( terms().get( 0 ).id(),
-                                                                                                            id() ) );
-                    problems().add( problem );
-                }
-            }
-
-            { // make sure second term is an integer
-                final Object y = terms().get( 1 ).value();
-
-                if ( !( y instanceof Number ) ) {
-                    final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.powerOperationInvalidExponentTermType.text( terms().get( 1 ).id(),
-                                                                                                                id() ) );
-                    problems().add( problem );
-                }
+            if ( !( value instanceof Number ) ) {
+                final ValidationProblem problem =
+                    GrammarFactory.createError( id(),
+                                                PolyglotterI18n.signOperationInvalidTermType.text( id(),
+                                                                                                   terms().get( 0 ).id() ) );
+                problems().add( problem );
             }
         }
     }

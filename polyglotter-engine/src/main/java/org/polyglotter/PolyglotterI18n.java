@@ -232,6 +232,16 @@ public class PolyglotterI18n {
     public static I18n randomOperationInvalidTermType = new I18n( "Random operation '%s' seed term must be a number" );
     public static I18n randomOperationName = new I18n( "Random" );
 
+    public static I18n roundOperationDescription = new I18n( "Calculates the nearest number" );
+    public static I18n roundOperationInvalidTermType = new I18n( "Round operation '%s' has term '%s' that is not a number" );
+    public static I18n roundOperationMustHaveOneTerm = new I18n( "Round operation '%s' requires one and only one term" );
+    public static I18n roundOperationName = new I18n( "Round" );
+
+    public static I18n signOperationDescription = new I18n( "Determines the sign (0, 1, -1) of a number" );
+    public static I18n signOperationInvalidTermType = new I18n( "Sign operation '%s' has term '%s' that is not a number" );
+    public static I18n signOperationMustHaveOneTerm = new I18n( "Sign operation '%s' requires one and only one term" );
+    public static I18n signOperationName = new I18n( "Sign" );
+
     public static I18n sineOperationDescription = new I18n( "Calculates the sine of a numeric term" );
     public static I18n sineOperationInvalidTermType = new I18n( "Sine operation '%s' has term '%s' that is not a number" );
     public static I18n sineOperationMustHaveOneTerm = new I18n( "Sine operation '%s' requires one and only one term" );

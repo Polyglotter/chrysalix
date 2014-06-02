@@ -145,7 +145,7 @@ public class AbsoluteValue extends BaseOperation< Number > {
      */
     @Override
     protected void validate() {
-        // make sure there are terms
+        // make sure there is one term
         if ( terms().size() != 1 ) {
             final ValidationProblem problem =
                 GrammarFactory.createError( id(), PolyglotterI18n.absoluteValueOperationMustHaveOneTerm.text( id() ) );

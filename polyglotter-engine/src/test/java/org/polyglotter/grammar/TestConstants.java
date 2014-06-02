@@ -36,6 +36,10 @@ public interface TestConstants {
     String EMPTY_STRING_VALUE = "";
     TestStringTerm EMPTY_STRING = new TestStringTerm( EMPTY_STRING_ID, ID, EMPTY_STRING_VALUE );
 
+    QName INT_ZERO_ID = new QName( ID.getNamespaceURI(), "IntZero", ID.getPrefix() );
+    int INT_ZERO_VALUE = 0;
+    TestIntegerTerm INT_ZERO = new TestIntegerTerm( INT_ZERO_ID, ID, INT_ZERO_VALUE );
+
     QName INT_1_ID = new QName( ID.getNamespaceURI(), "Int1", ID.getPrefix() );
     int INT_1_VALUE = 10;
     TestIntegerTerm INT_1 = new TestIntegerTerm( INT_1_ID, ID, INT_1_VALUE );
@@ -54,6 +58,10 @@ public interface TestConstants {
     QName INT_4_ID = new QName( ID.getNamespaceURI(), "Int4", ID.getPrefix() );
     int INT_4_VALUE = -18;
     TestIntegerTerm INT_4 = new TestIntegerTerm( INT_4_ID, ID, INT_4_VALUE );
+
+    QName DOUBLE_ZERO_ID = new QName( ID.getNamespaceURI(), "DoubleZero", ID.getPrefix() );
+    double DOUBLE_ZERO_VALUE = 0;
+    TestDoubleTerm DOUBLE_ZERO = new TestDoubleTerm( DOUBLE_ZERO_ID, ID, DOUBLE_ZERO_VALUE );
 
     QName DOUBLE_1_ID = new QName( ID.getNamespaceURI(), "Double1", ID.getPrefix() );
     double DOUBLE_1_VALUE = 12.34D;

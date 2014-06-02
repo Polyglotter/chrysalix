@@ -35,41 +35,61 @@ import org.polyglotter.grammar.TestConstants;
 import org.polyglotter.grammar.TestIntegerTerm;
 
 @SuppressWarnings( "javadoc" )
-public final class PowerTest implements TestConstants {
+public final class SignTest implements TestConstants {
 
-    private Power operation;
+    private Sign operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Power( ID, TRANSFORM_ID );
+        this.operation = new Sign( ID, TRANSFORM_ID );
     }
 
     @Test
-    public void shouldAddTwoTerms() throws PolyglotterException {
+    public void shouldAddOneTerm() throws PolyglotterException {
         this.operation.add( INT_1 );
-        this.operation.add( INT_2 );
-        assertThat( this.operation.terms().size(), is( 2 ) );
+        assertThat( this.operation.terms().size(), is( 1 ) );
         assertThat( ( TestIntegerTerm ) this.operation.get( INT_1.id() ), is( INT_1 ) );
-        assertThat( ( TestIntegerTerm ) this.operation.get( INT_2.id() ), is( INT_2 ) );
     }
 
     @Test
-    public void shouldCalculateDoubleTerms() throws PolyglotterException {
+    public void shouldCalculateDoubleTerm() throws PolyglotterException {
         this.operation.add( DOUBLE_1 );
-        this.operation.add( DOUBLE_2 );
-        assertThat( this.operation.result(), is( ( Number ) Math.pow( DOUBLE_1_VALUE, DOUBLE_2_VALUE ) ) );
+        assertThat( this.operation.result(), is( 1 ) );
     }
 
     @Test
-    public void shouldCalculateFloatTerms() throws PolyglotterException {
+    public void shouldCalculateDoubleZeroTerm() throws PolyglotterException {
+        this.operation.add( DOUBLE_ZERO );
+        assertThat( this.operation.result(), is( 0 ) );
+    }
+
+    @Test
+    public void shouldCalculateFloatTerm() throws PolyglotterException {
         this.operation.add( FLOAT_1 );
-        this.operation.add( FLOAT_2 );
-        assertThat( this.operation.result(), is( ( Number ) Math.pow( FLOAT_1_VALUE, FLOAT_2_VALUE ) ) );
+        assertThat( this.operation.result(), is( -1 ) );
+    }
+
+    @Test
+    public void shouldCalculateIntegerTerm() throws PolyglotterException {
+        this.operation.add( INT_1 );
+        assertThat( this.operation.result(), is( 1 ) );
+    }
+
+    @Test
+    public void shouldCalculateIntegerZeroTerm() throws PolyglotterException {
+        this.operation.add( INT_ZERO );
+        assertThat( this.operation.result(), is( 0 ) );
+    }
+
+    @Test
+    public void shouldCalculateLongTerm() throws PolyglotterException {
+        this.operation.add( LONG_1 );
+        assertThat( this.operation.result(), is( -1 ) );
     }
 
     @Test
     public void shouldHaveAbbreviation() {
-        assertThat( this.operation.abbreviation(), is( "pow" ) );
+        assertThat( this.operation.abbreviation(), is( "signum" ) );
     }
 
     @Test
@@ -83,17 +103,15 @@ public final class PowerTest implements TestConstants {
     }
 
     @Test
-    public void shouldHaveErrorWhenMoreThanTwoTerms() throws PolyglotterException {
+    public void shouldHaveErrorWhenMoreThanOneTerm() throws PolyglotterException {
         this.operation.add( INT_1 );
         this.operation.add( INT_2 );
-        this.operation.add( DOUBLE_1 );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotANumber() throws PolyglotterException {
-        this.operation.add( INT_1 );
         this.operation.add( STRING_1 );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
@@ -121,12 +139,12 @@ public final class PowerTest implements TestConstants {
 
     @Test
     public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( PolyglotterI18n.powerOperationDescription.text() ) );
+        assertThat( this.operation.description(), is( PolyglotterI18n.signOperationDescription.text() ) );
     }
 
     @Test
     public void shouldProvideName() {
-        assertThat( this.operation.name(), is( PolyglotterI18n.powerOperationName.text() ) );
+        assertThat( this.operation.name(), is( PolyglotterI18n.signOperationName.text() ) );
     }
 
 }
