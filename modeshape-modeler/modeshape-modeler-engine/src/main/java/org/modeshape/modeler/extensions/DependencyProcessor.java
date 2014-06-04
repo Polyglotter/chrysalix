@@ -44,6 +44,11 @@ public interface DependencyProcessor {
     String SELF_PATH = ".";
 
     /**
+     * @return the model type name (cannot be <code>null</code> or empty)
+     */
+    String modelType();
+
+    /**
      * @param artifactPath
      *        the workspace path of the artifact whose dependencies are being processed
      * @param modelNode

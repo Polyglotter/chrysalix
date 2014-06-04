@@ -39,6 +39,16 @@ public class JavaDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
+     * @see org.modeshape.modeler.extensions.DependencyProcessor#modelType()
+     */
+    @Override
+    public String modelType() {
+        return "org.modeshape.modeler.java.JavaFile";
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.modeshape.modeler.extensions.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
      *      org.modeshape.modeler.Modeler, boolean)
      */

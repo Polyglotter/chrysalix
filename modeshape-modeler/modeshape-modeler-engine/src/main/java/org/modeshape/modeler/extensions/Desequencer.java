@@ -35,12 +35,18 @@ public interface Desequencer {
 
     /**
      * @param model
-     *        a model
+     *        a model (cannot be <code>null</code>)
      * @param stream
-     *        the output stream to which the model will be desequenced
+     *        the output stream to which the model will be desequenced (cannot be <code>null</code>)
      * @throws ModelerException
      *         if any error occurs
      */
     void execute( Model model,
                   OutputStream stream ) throws ModelerException;
+
+    /**
+     * @return the model type name (cannot be <code>null</code> or empty)
+     */
+    String modelType();
+
 }

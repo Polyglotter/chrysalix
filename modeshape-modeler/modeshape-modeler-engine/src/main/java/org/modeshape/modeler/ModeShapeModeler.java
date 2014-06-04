@@ -47,7 +47,6 @@ import org.modeshape.modeler.extensions.Desequencer;
 import org.modeshape.modeler.internal.Manager;
 import org.modeshape.modeler.internal.ModelImpl;
 import org.modeshape.modeler.internal.ModelTypeImpl;
-import org.modeshape.modeler.internal.ModelerLexicon;
 import org.modeshape.modeler.internal.Task;
 import org.polyglotter.common.Logger;
 
@@ -268,6 +267,7 @@ public final class ModeShapeModeler implements Modeler {
                                                                                 return valueFactory;
                                                                             }
                                                                         } );
+
                     if ( save ) {
                         modelNode.setProperty( ModelerLexicon.Model.MODEL_TYPE, modelType.id() );
                         final ModelImpl model = new ModelImpl( manager, modelNode.getPath() );
@@ -275,6 +275,7 @@ public final class ModeShapeModeler implements Modeler {
                         processDependencies( artifactPath, modelNode, model, persistArtifact );
                         return model;
                     }
+
                     throw new ModelerException( ModelerI18n.sessionNotSavedWhenCreatingModel, artifactPath );
                 }
             } );

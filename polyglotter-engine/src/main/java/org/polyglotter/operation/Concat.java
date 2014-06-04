@@ -27,25 +27,73 @@ import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.grammar.GrammarFactory;
+import org.polyglotter.grammar.Operation;
 import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
  * A string concatenation operation.
  */
-public class Concat extends BaseOperation< String > {
-    
+public final class Concat extends BaseOperation< String > {
+
+    /**
+     * The operation descriptor.
+     */
+    public static final Descriptor DESCRIPTOR = new Descriptor() {
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
+         */
+        @Override
+        public String abbreviation() {
+            return "+";
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#category()
+         */
+        @Override
+        public Category category() {
+            return Category.STRING;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#description()
+         */
+        @Override
+        public String description() {
+            return PolyglotterI18n.concatOperationDescription.text();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.grammar.Operation.Descriptor#name()
+         */
+        @Override
+        public String name() {
+            return PolyglotterI18n.concatOperationName.text();
+        }
+
+    };
+
     /**
      * @param id
      *        the add operation unique identifier (cannot be <code>null</code>)
      * @param transformId
      *        the transform identifier containing this operation (cannot be <code>null</code>)
      */
-    public Concat( final QName id,
-                   final QName transformId ) {
+    Concat( final QName id,
+            final QName transformId ) {
         super( id, transformId );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -54,27 +102,17 @@ public class Concat extends BaseOperation< String > {
     @Override
     protected String calculate() {
         assert !problems().isError();
-        
+
         final StringBuilder result = new StringBuilder();
-        
+
         for ( final Term< ? > term : terms() ) {
             final Object value = term.value();
             result.append( ( value == null ) ? "null" : value.toString() );
         }
-        
+
         return result.toString();
     }
-    
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#category()
-     */
-    @Override
-    public Category category() {
-        return Category.STRING;
-    }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -82,9 +120,39 @@ public class Concat extends BaseOperation< String > {
      */
     @Override
     public String description() {
-        return PolyglotterI18n.concatOperationDescription.text();
+        return DESCRIPTOR.description();
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.grammar.Operation#descriptor()
+     */
+    @Override
+    public Descriptor descriptor() {
+        return DESCRIPTOR;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     */
+    @Override
+    public int maxTerms() {
+        return Operation.UNLIMITED;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     */
+    @Override
+    public int minTerms() {
+        return 2;
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -92,9 +160,9 @@ public class Concat extends BaseOperation< String > {
      */
     @Override
     public String name() {
-        return PolyglotterI18n.concatOperationName.text();
+        return DESCRIPTOR.name();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -107,13 +175,12 @@ public class Concat extends BaseOperation< String > {
                 GrammarFactory.createError( id(), PolyglotterI18n.addOperationHasNoTerms.text( id() ) );
             problems().add( problem );
         } else {
-            if ( terms().size() < 2 ) {
-                // make sure more than 1 term
+            if ( terms().size() < minTerms() ) {
                 final ValidationProblem problem =
                     GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
                 problems().add( problem );
             }
         }
     }
-    
+
 }

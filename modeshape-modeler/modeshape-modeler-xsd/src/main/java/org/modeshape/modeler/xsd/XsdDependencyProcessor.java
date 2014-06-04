@@ -21,7 +21,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.xsd.dependency;
+package org.modeshape.modeler.xsd;
 
 import java.net.URI;
 import java.net.URL;
@@ -36,9 +36,8 @@ import org.modeshape.common.util.StringUtil;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
+import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
-import org.modeshape.modeler.internal.ModelerLexicon;
-import org.modeshape.modeler.xsd.XsdModelerI18n;
 import org.modeshape.sequencer.xsd.XsdLexicon;
 import org.polyglotter.common.Logger;
 
@@ -94,6 +93,16 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
+     * @see org.modeshape.modeler.extensions.DependencyProcessor#modelType()
+     */
+    @Override
+    public String modelType() {
+        return "org.modeshape.modeler.xsd.Xsd";
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.modeshape.modeler.extensions.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
      *      org.modeshape.modeler.Modeler, boolean)
      */
@@ -102,37 +111,35 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
                            final Node modelNode,
                            final Modeler modeler,
                            final boolean persistArtifacts ) throws ModelerException {
-        Node dependenciesNode = null;
         List< MissingDependency > pathsToMissingDependencies = null;
 
         try {
             final String modelName = modelNode.getName();
             LOGGER.debug( "Processing model node '%s'", modelName );
-            Node schemaNode = null;
 
-            { // find schema node
-                final NodeIterator itr = modelNode.getParent().getNodes();
+            // may or may not have a schema node. if there is one iterate over it to find dependencies.
+            NodeIterator itr = modelNode.getNodes();
+            boolean hasSchemaNode = false;
 
-                while ( itr.hasNext() ) {
-                    final Node kid = itr.nextNode();
+            while ( itr.hasNext() ) {
+                final Node kid = itr.nextNode();
 
-                    if ( XsdLexicon.SCHEMA_DOCUMENT.equals( kid.getPrimaryNodeType().getName() ) ) {
-                        schemaNode = kid;
-                        break;
-                    }
+                if ( XsdLexicon.SCHEMA_DOCUMENT.equals( kid.getPrimaryNodeType().getName() ) ) {
+                    itr = kid.getNodes();
+                    hasSchemaNode = true;
+                    break;
                 }
             }
 
-            // should always have a schema node
-            if ( schemaNode == null ) {
-                throw new ModelerException( XsdModelerI18n.schemaNodeNotFound, modelName );
+            // no schema node so construct iterator using model node again
+            if ( !hasSchemaNode ) {
+                itr = modelNode.getNodes();
             }
 
-            // iterate over schema node's children to find dependencies
-            final NodeIterator itr = schemaNode.getNodes();
+            Node dependenciesNode = null;
 
             if ( !itr.hasNext() ) {
-                return null; // no children of schema node so dependencies node not created
+                return null; // no children so dependencies
             }
 
             pathsToMissingDependencies = new ArrayList<>();
@@ -150,13 +157,17 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
 
                 // create dependencies folder node if not already created
                 if ( dependenciesNode == null ) {
-                    dependenciesNode = modelNode.addNode( ModelerLexicon.Model.DEPENDENCIES,
-                                                          ModelerLexicon.Model.DEPENDENCIES );
-                    LOGGER.debug( "Created dependencies folder node '%s'", dependenciesNode.getPath() );
+                    if ( modelNode.hasNode( ModelerLexicon.Model.DEPENDENCIES ) ) {
+                        dependenciesNode = modelNode.getNode( ModelerLexicon.Model.DEPENDENCIES );
+                    } else {
+                        dependenciesNode = modelNode.addNode( ModelerLexicon.Model.DEPENDENCIES,
+                                                              ModelerLexicon.Model.DEPENDENCIES );
+                        LOGGER.debug( "Created dependencies folder node '%s'", dependenciesNode.getPath() );
+                    }
                 }
 
                 // create dependency node
-                final Node dependencyNode =
+                @SuppressWarnings( "null" ) final Node dependencyNode =
                     dependenciesNode.addNode( ModelerLexicon.Dependency.DEPENDENCY, ModelerLexicon.Dependency.DEPENDENCY );
 
                 // set input property
@@ -295,6 +306,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
             modelNode.getSession().save();
             return dependenciesNode.getPath();
         } catch ( final Exception e ) {
+            if ( e instanceof ModelerException ) throw ( ModelerException ) e;
             throw new ModelerException( e );
         }
     }

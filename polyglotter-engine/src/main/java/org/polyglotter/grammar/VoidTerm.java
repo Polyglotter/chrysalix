@@ -31,9 +31,9 @@ import org.polyglotter.PolyglotterI18n;
  * A term for the {@link Void} type.
  */
 public final class VoidTerm implements Term< Void > {
-    
+
     private final QName operationId;
-    
+
     /**
      * @param operationId
      *        the identifier of the owning {@link Operation operation}.
@@ -41,19 +41,27 @@ public final class VoidTerm implements Term< Void > {
     public VoidTerm( final QName operationId ) {
         this.operationId = operationId;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
      * @see org.polyglotter.grammar.GrammarEventSource#add(org.polyglotter.grammar.GrammarListener)
-     * @throws UnsupportedOperationException
-     *         if method is called
      */
     @Override
     public void add( final GrammarListener listener ) {
-        throw new UnsupportedOperationException();
+        // nothing to do
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo( final Term< Void > that ) {
+        return 0;
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -63,7 +71,7 @@ public final class VoidTerm implements Term< Void > {
     public String description() {
         return PolyglotterI18n.voidTermDescription.text();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -73,7 +81,7 @@ public final class VoidTerm implements Term< Void > {
     public QName id() {
         return new QName( GrammarPart.NAMESPACE_URI, "VoidTerm", GrammarPart.NAMESPACE_PREFIX );
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -83,7 +91,7 @@ public final class VoidTerm implements Term< Void > {
     public String name() {
         return PolyglotterI18n.voidTermName.text();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -93,19 +101,17 @@ public final class VoidTerm implements Term< Void > {
     public QName operationId() {
         return this.operationId;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
      * @see org.polyglotter.grammar.GrammarEventSource#remove(org.polyglotter.grammar.GrammarListener)
-     * @throws UnsupportedOperationException
-     *         if method is called
      */
     @Override
     public void remove( final GrammarListener listener ) {
-        throw new UnsupportedOperationException();
+        // nothing to do
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -114,18 +120,18 @@ public final class VoidTerm implements Term< Void > {
      *         if method is called
      */
     @Override
-    public void setValue( final Void newValue ) {
+    public final void setValue( final Void newValue ) {
         throw new UnsupportedOperationException();
     }
-    
+
     /**
      * {@inheritDoc}
      * 
      * @see org.polyglotter.grammar.Term#value()
      */
     @Override
-    public Void value() {
+    public final Void value() {
         return null;
     }
-    
+
 }

@@ -27,16 +27,26 @@ import javax.xml.namespace.QName;
 
 @SuppressWarnings( "javadoc" )
 public class TestIntegerTerm extends TestNumberTerm< Integer > {
-    
+
     private int value;
-    
+
     public TestIntegerTerm( final QName id,
                             final QName operationId,
                             final int value ) {
         super( id, operationId );
         this.value = value;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo( final Term< Integer > that ) {
+        return Integer.compare( this.value, that.value() );
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -46,7 +56,7 @@ public class TestIntegerTerm extends TestNumberTerm< Integer > {
     public void setValue( final Integer newValue ) {
         this.value = newValue;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -56,5 +66,5 @@ public class TestIntegerTerm extends TestNumberTerm< Integer > {
     public Integer value() {
         return this.value;
     }
-    
+
 }

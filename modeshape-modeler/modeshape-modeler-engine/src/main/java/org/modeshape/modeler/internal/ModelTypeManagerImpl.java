@@ -60,6 +60,7 @@ import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
+import org.modeshape.modeler.ModelerLexicon;
 import org.polyglotter.common.Logger;
 
 /**
@@ -77,16 +78,16 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     // pass in category, version
     private static final String SEQUENCER_ZIP_PATTERN = "modeshape-sequencer-%s-%s-module-with-dependencies.zip";
 
+    private final ExtensionInstaller extensionInstaller;
     final Manager manager;
-
     final LinkedList< URL > modelTypeRepositories = new LinkedList<>();
-
     final Set< ModelType > modelTypes = new HashSet<>();
     final LibraryClassLoader libraryClassLoader = new LibraryClassLoader();
     final Path library;
 
     ModelTypeManagerImpl( final Manager manager ) throws ModelerException {
         this.manager = manager;
+        this.extensionInstaller = new ExtensionInstaller();
 
         // setup classpath area for model type archives
         try {
@@ -200,8 +201,12 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                 @Override
                 public Void run( final Session session,
                                  final Node systemNode ) throws Exception {
+                    LOGGER.debug( "Installing sequencer for category '%s'", category );
                     installSequencer( category, session, systemNode );
+
+                    LOGGER.debug( "Installing extensions for category '%s'", category );
                     installExtensions( category, session, systemNode );
+
                     session.save();
                     LOGGER.debug( "Session saved" );
 
@@ -251,7 +256,11 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                 if ( repositoryUrl.getProtocol().startsWith( "file" ) ) {
                     final String path = ( repositoryUrl.getFile() + File.separatorChar + MODESHAPE_GROUP );
                     final File folder = new File( path );
-                    for ( final File file : folder.listFiles() ) {
+                    final File[] files = folder.listFiles();
+
+                    if ( files == null ) continue;
+
+                    for ( final File file : files ) {
                         final String name = file.getName();
                         if ( name.contains( "sequencer-" ) )
                             categories.add( name.substring( name.indexOf( "sequencer-" ) + "sequencer-".length() ) );
@@ -273,8 +282,19 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
 
     void installExtensions( final String category,
                             final Session session,
-                            final Node systemNode ) {
-        // TODO implement installExtensions
+                            final Node systemNode ) throws Exception {
+        final Node categoryNode = categoryNode( category, systemNode, false );
+
+        if ( extensionInstaller.install( categoryNode,
+                                         libraryClassLoader,
+                                         library,
+                                         modelTypeRepositories,
+                                         version(),
+                                         modelTypes ) ) {
+            LOGGER.debug( "Installed extensions for category '%s'", category );
+        } else {
+            LOGGER.debug( "No extensions installed for category '%s'", category );
+        }
     }
 
     void installSequencer( final String category,

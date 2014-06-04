@@ -43,6 +43,7 @@ import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.Modeler;
+import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.TestUtil;
 import org.modeshape.modeler.test.BaseTest;
 
@@ -219,6 +220,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
                 modelTypeManager.unregisterModelTypeRepository( url );
             modelTypeManager.registerModelTypeRepository( modelTypeRepository() );
             modelTypeManager.install( "java" );
+            modelTypeManager.install( "sramp" );
             modelTypeManager.install( "xsd" );
         }
         try ( ModeShapeModeler modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH ) ) {
@@ -231,7 +233,7 @@ public class ModelTypeManagerImplTest extends BaseTest {
                 @Override
                 public Void run( final Session session,
                                  final Node systemNode ) throws Exception {
-                    assertThat( systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ).getNodes().getSize(), is( 2L ) );
+                    assertThat( systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ).getNodes().getSize(), is( 3L ) );
                     return null;
                 }
             } );

@@ -73,7 +73,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 
         <!-- Only unit tests are run by default. -->
-        <skip.integration.tests>true</skip.integration.tests>
+        <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
 
         <!-- Distribution URLs -->
@@ -81,8 +81,8 @@
         <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
 
         <!-- Maven plugin versions -->
-        <maven.assembly.plugin.version>2.2</maven.assembly.plugin.version>
-        <maven.bundle.plugin.version>2.1.0</maven.bundle.plugin.version>
+        <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
+        <maven.bundle.plugin.version>2.4.0</maven.bundle.plugin.version>
         <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
         <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
         <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
@@ -93,7 +93,6 @@
         <maven.jar.plugin.version>2.3.1</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>2.7</maven.javadoc.plugin.version>
         <maven.jxr.plugin.version>2.1</maven.jxr.plugin.version>
-        <maven.remote.resources.plugin.version>1.5</maven.remote.resources.plugin.version>
         <maven.surefire.report.plugin.version>2.4.3</maven.surefire.report.plugin.version>
         <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
         <maven.war.plugin.version>2.1.1</maven.war.plugin.version>
@@ -326,6 +325,15 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                        <supportedProjectType>bundle</supportedProjectType>
+                        <supportedProjectType>pom</supportedProjectType>
+                        <supportedProjectType>eclipse-plugin</supportedProjectType>
+                        <supportedProjectType>eclipse-test-plugin</supportedProjectType>
+                    </supportedProjectTypes>
+                </configuration>
             </plugin>
         </plugins>
 
@@ -468,13 +476,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>${maven.dependency.plugin.version}</version>
-                <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>${maven.remote.resources.plugin.version}</version>
                 <scope>compile</scope>
             </dependency>
 

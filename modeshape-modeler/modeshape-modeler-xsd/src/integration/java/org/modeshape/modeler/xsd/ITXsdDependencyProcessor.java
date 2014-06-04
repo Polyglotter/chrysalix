@@ -21,11 +21,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.xsd.dependency;
+package org.modeshape.modeler.xsd;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -42,11 +41,12 @@ import javax.jcr.Session;
 
 import org.junit.Test;
 import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.integration.BaseIntegrationTest;
 import org.modeshape.modeler.internal.ModelImpl;
-import org.modeshape.modeler.internal.ModelerLexicon;
 import org.modeshape.modeler.internal.Task;
+import org.modeshape.modeler.xsd.XsdDependencyProcessor;
 import org.modeshape.modeler.xsd.XsdLexicon;
 
 /**
@@ -54,6 +54,8 @@ import org.modeshape.modeler.xsd.XsdLexicon;
  */
 @SuppressWarnings( "javadoc" )
 public class ITXsdDependencyProcessor extends BaseIntegrationTest {
+
+    private static final String XSD_MODEL_TYPE_ID = "org.modeshape.modeler.xsd.Xsd";
 
     DependencyProcessor processor;
 
@@ -68,6 +70,32 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
         this.processor = new XsdDependencyProcessor();
         modelTypeManager().install( "sramp" );
         modelTypeManager().install( "xsd" );
+    }
+
+    @Test
+    public void shouldFindDependencyProcessorForXsdModelNode() throws Exception {
+        // find XSD model type
+        ModelType xsdModelType = null;
+
+        for ( final ModelType type : modelTypeManager().modelTypes() ) {
+            if ( type.id().equals( XSD_MODEL_TYPE_ID ) ) {
+                xsdModelType = type;
+                break;
+            }
+        }
+
+        assertThat( xsdModelType, notNullValue() );
+
+        final String path = importArtifact( XSD_ARTIFACT );
+        final ModelImpl model = ( ModelImpl ) modeler().generateModel( path, ARTIFACT_NAME, xsdModelType, true );
+        manager().run( new Task< Void >() {
+
+            @Override
+            public Void run( final Session session ) throws Exception {
+                assertThat( model.modelType().dependencyProcessor(), is( notNullValue() ) );
+                return null;
+            }
+        } );
     }
 
     @Test
@@ -101,17 +129,15 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
 
         // create model
         final ModelType xsdModelType = xsdModelType();
-        final ModelImpl model = ( ModelImpl ) modeler().generateModel( workspacePath, "model/dependentXsd", xsdModelType, true );
+        final String modelPath = "model/dependentXsd";
+        final ModelImpl model = ( ModelImpl ) modeler().generateModel( workspacePath, modelPath, xsdModelType, true );
 
         // check dependencies
         manager().run( new Task< Node >() {
 
             @Override
             public Node run( final Session session ) throws Exception {
-                final Node modelNode = session.getNode( model.absolutePath() );
-                final String dependenciesPath = processor.process( workspacePath, modelNode, modeler(), true );
-                assertThat( dependenciesPath, notNullValue() );
-
+                final String dependenciesPath = ( '/' + modelPath + '/' + ModelerLexicon.Model.DEPENDENCIES );
                 final Node dependenciesNode = session.getNode( dependenciesPath );
                 assertThat( dependenciesNode.getNodes().getSize(), is( 1L ) );
 
@@ -140,9 +166,9 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
 
             @Override
             public Node run( final Session session ) throws Exception {
+                final String dependenciesPath = ( '/' + MODEL_NAME + '/' + ModelerLexicon.Model.DEPENDENCIES );
                 final Node modelNode = session.getNode( model.absolutePath() );
-                final String dependenciesPath = processor.process( path, modelNode, modeler(), true );
-                assertThat( dependenciesPath, nullValue() );
+                assertThat( session.itemExists( dependenciesPath ), is( false ) );
 
                 return null;
             }
@@ -163,10 +189,7 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
 
             @Override
             public Node run( final Session session ) throws Exception {
-                final Node modelNode = session.getNode( model.absolutePath() );
-                final String dependenciesPath = processor.process( artifactPath, modelNode, modeler(), true );
-                assertThat( dependenciesPath, notNullValue() );
-
+                final String dependenciesPath = ( '/' + modelPath + '/' + ModelerLexicon.Model.DEPENDENCIES );
                 final Node dependenciesNode = session.getNode( dependenciesPath );
                 assertThat( dependenciesNode.getNodes().getSize(), is( 2L ) );
 
@@ -242,16 +265,14 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
         assertThat( artifactPath, is( "/Artifact/Books/Books.xsd" ) );
 
         final ModelType xsdModelType = xsdModelType();
-        final ModelImpl model = ( ModelImpl ) modeler().generateModel( artifactPath, "Model/Books/Books.xsd", xsdModelType, true );
+        final String modelPath = "Model/Books/Books.xsd";
+        final ModelImpl model = ( ModelImpl ) modeler().generateModel( artifactPath, modelPath, xsdModelType, true );
 
         manager().run( new Task< Node >() {
 
             @Override
             public Node run( final Session session ) throws Exception {
-                final Node modelNode = session.getNode( model.absolutePath() );
-                final String dependenciesPath = processor.process( artifactPath, modelNode, modeler(), true );
-                assertThat( dependenciesPath, notNullValue() );
-
+                final String dependenciesPath = ( '/' + modelPath + '/' + ModelerLexicon.Model.DEPENDENCIES );
                 final Node dependenciesNode = session.getNode( dependenciesPath );
                 assertThat( dependenciesNode.getNodes().getSize(), is( 1L ) );
 
@@ -282,16 +303,14 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
         final ModelType xsdModelType = xsdModelType();
 
         // relative path of ../data/types/BookDatatypes.xsd dependency is not valid since there is no parent folder
-        final ModelImpl model = ( ModelImpl ) modeler().generateModel( artifactPath, "Books.xsd", xsdModelType, true );
+        final String modelPath = "Books.xsd";
+        final ModelImpl model = ( ModelImpl ) modeler().generateModel( artifactPath, modelPath, xsdModelType, true );
 
         manager().run( new Task< Node >() {
 
             @Override
             public Node run( final Session session ) throws Exception {
-                final Node modelNode = session.getNode( model.absolutePath() );
-                final String dependenciesPath = processor.process( artifactPath, modelNode, modeler(), true );
-                assertThat( dependenciesPath, notNullValue() );
-
+                final String dependenciesPath = ( '/' + modelPath + '/' + ModelerLexicon.Model.DEPENDENCIES );
                 final Node dependenciesNode = session.getNode( dependenciesPath );
                 assertThat( dependenciesNode.getNodes().getSize(), is( 2L ) );
 
@@ -314,16 +333,14 @@ public class ITXsdDependencyProcessor extends BaseIntegrationTest {
         assertThat( artifactPath, is( "/Movies.xsd" ) );
 
         final ModelType xsdModelType = xsdModelType();
-        final ModelImpl model = ( ModelImpl ) modeler().generateModel( artifactPath, "Model/Movies.xsd", xsdModelType, true );
+        final String modelPath = "Model/Movies.xsd";
+        final ModelImpl model = ( ModelImpl ) modeler().generateModel( artifactPath, modelPath, xsdModelType, true );
 
         manager().run( new Task< Node >() {
 
             @Override
             public Node run( final Session session ) throws Exception {
-                final Node modelNode = session.getNode( model.absolutePath() );
-                final String dependenciesPath = processor.process( artifactPath, modelNode, modeler(), true );
-                assertThat( dependenciesPath, notNullValue() );
-
+                final String dependenciesPath = ( '/' + modelPath + '/' + ModelerLexicon.Model.DEPENDENCIES );
                 final Node dependenciesNode = session.getNode( dependenciesPath );
                 assertThat( dependenciesNode.getNodes().getSize(), is( 1L ) );
 

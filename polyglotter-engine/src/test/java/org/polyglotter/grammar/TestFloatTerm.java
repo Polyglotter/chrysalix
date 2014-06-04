@@ -21,31 +21,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.xsd;
+package org.polyglotter.grammar;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-
-import org.junit.Test;
-import org.modeshape.modeler.Model;
-import org.modeshape.modeler.xsd.test.XsdBaseTest;
+import javax.xml.namespace.QName;
 
 @SuppressWarnings( "javadoc" )
-public class XsdDesquencerTest extends XsdBaseTest {
+public class TestFloatTerm extends TestNumberTerm< Float > {
 
-    @Test
-    public void shouldDesequence() throws Exception {
-        modelTypeManager().install( SRAMP_MODEL_TYPE_CATEGORY );
-        modelTypeManager().install( XSD_MODEL_TYPE_CATEGORY );
-        final Model model = modeler().generateModel( new File( "src/test/resources/Books/Books.xsd" ),
-                                                     null,
-                                                     modelTypeManager().modelType( XSD_MODEL_TYPE_ID ) );
-        try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {
-            new XsdDesequencer().execute( model, stream );
-            assertThat( stream.toString().startsWith( XML_DECLARATION + "\n<xsd:schema " ), is( true ) );
-        }
+    private float value;
+
+    public TestFloatTerm( final QName id,
+                          final QName operationId,
+                          final float value ) {
+        super( id, operationId );
+        this.value = value;
     }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo( final Term< Float > that ) {
+        return Float.compare( this.value, that.value() );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.grammar.Term#setValue(java.lang.Object)
+     */
+    @Override
+    public void setValue( final Float newValue ) {
+        this.value = newValue;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.grammar.Term#value()
+     */
+    @Override
+    public Float value() {
+        return this.value;
+    }
+
 }

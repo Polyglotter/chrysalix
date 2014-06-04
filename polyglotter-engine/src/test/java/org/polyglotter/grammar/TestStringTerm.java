@@ -27,11 +27,11 @@ import javax.xml.namespace.QName;
 
 @SuppressWarnings( "javadoc" )
 public class TestStringTerm implements Term< String > {
-    
+
     private final QName id;
     private final QName operationId;
     private String value;
-    
+
     public TestStringTerm( final QName id,
                            final QName operationId,
                            final String testValue ) {
@@ -39,7 +39,7 @@ public class TestStringTerm implements Term< String > {
         this.operationId = operationId;
         this.value = testValue;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -47,7 +47,25 @@ public class TestStringTerm implements Term< String > {
      */
     @Override
     public void add( final GrammarListener listener ) {}
-    
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo( final Term< String > that ) {
+        if ( this.value == null ) {
+            return ( ( that.value() == null ) ? 0 : -1 );
+        }
+
+        if ( that.value() == null ) {
+            return 1;
+        }
+
+        return this.value.compareTo( that.value() );
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -57,7 +75,7 @@ public class TestStringTerm implements Term< String > {
     public String description() {
         return null;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -67,7 +85,7 @@ public class TestStringTerm implements Term< String > {
     public QName id() {
         return this.id;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -77,7 +95,7 @@ public class TestStringTerm implements Term< String > {
     public String name() {
         return null;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -87,7 +105,7 @@ public class TestStringTerm implements Term< String > {
     public QName operationId() {
         return this.operationId;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -95,7 +113,7 @@ public class TestStringTerm implements Term< String > {
      */
     @Override
     public void remove( final GrammarListener listener ) {}
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -105,7 +123,7 @@ public class TestStringTerm implements Term< String > {
     public void setValue( final String newValue ) {
         this.value = newValue;
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -115,5 +133,5 @@ public class TestStringTerm implements Term< String > {
     public String value() {
         return this.value;
     }
-    
+
 }

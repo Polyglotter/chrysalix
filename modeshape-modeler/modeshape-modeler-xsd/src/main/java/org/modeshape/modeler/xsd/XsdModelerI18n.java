@@ -32,7 +32,5 @@ import org.polyglotter.common.I18n;
 public class XsdModelerI18n {
 
     public static I18n errorImportingXsdDependencyArtifact = new I18n( "Error uploading XSD dependency from '%s' for node '%s'" );
-    public static I18n schemaNodeNotFound =
-        new I18n( "The sequencer produced XSD schema node under the file node was not found for model node '%s'" );
 
 }

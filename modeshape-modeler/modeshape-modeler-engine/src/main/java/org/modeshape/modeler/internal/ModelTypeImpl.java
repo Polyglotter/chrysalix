@@ -29,8 +29,8 @@ import java.util.Set;
 import javax.jcr.Session;
 
 import org.infinispan.util.ReflectionUtil;
-import org.jsoup.helper.StringUtil;
 import org.modeshape.common.util.CheckArg;
+import org.modeshape.common.util.StringUtil;
 import org.modeshape.jcr.ExtensionLogger;
 import org.modeshape.jcr.api.Repository;
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
@@ -207,7 +207,7 @@ public final class ModelTypeImpl implements ModelType {
      */
     @Override
     public String name() {
-        return name;
+        return ( StringUtil.isBlank( name ) ? id : name );
     }
 
     /**
@@ -241,6 +241,14 @@ public final class ModelTypeImpl implements ModelType {
                 return sequencer;
             }
         } );
+    }
+
+    void setDependencyProcessor( final DependencyProcessor dependencyProcessor ) {
+        this.dependencyProcessor = dependencyProcessor;
+    }
+
+    void setDesequencer( final Desequencer desequencer ) {
+        this.desequencer = desequencer;
     }
 
     /**
@@ -284,6 +292,6 @@ public final class ModelTypeImpl implements ModelType {
      */
     @Override
     public String toString() {
-        return name + " [ category = " + category + ']';
+        return ( name() + " [ category = " + category + ']' );
     }
 }
