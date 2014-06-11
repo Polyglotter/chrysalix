@@ -35,6 +35,7 @@ import org.modeshape.modeler.ModelerException;
 import org.polyglotter.common.Logger;
 import org.polyglotter.common.Logger.Level;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.eclipse.EclipseI18n;
 import org.polyglotter.eclipse.Util;
 import org.polyglotter.eclipse.focustree.FocusTree;
 
@@ -46,6 +47,8 @@ public final class ModelContentProvider extends FocusTree.Model {
     private static final boolean DEBUG = false;
 
     private static Logger _logger;
+
+    private static final String JAVA_PKG = "java.lang.";
 
     /**
      * No arg methods from {@link ModelObject} that will be added as properties
@@ -70,6 +73,30 @@ public final class ModelContentProvider extends FocusTree.Model {
                         "modelType"
         };
 
+    /**
+     * Obtains an element count suffix.
+     * 
+     * @param item
+     *        the item whose collection type suffix is being requested (cannot be <code>null</code>)
+     * @param value
+     *        the item value (can be <code>null</code>)
+     * @return the suffix or empty string
+     */
+    public static String collectionTypeSuffix( final Object item,
+                                               final Object value ) {
+        if ( item.getClass().isArray() ) {
+            if ( value != null ) {
+                return EclipseI18n.modelCollectionTypeSuffix.text( ( ( Object[] ) item ).length );
+            }
+        } else if ( Collection.class.isAssignableFrom( item.getClass() ) ) {
+            if ( value != null ) {
+                return EclipseI18n.modelCollectionTypeSuffix.text( ( ( Collection< ? > ) item ).size() );
+            }
+        }
+
+        return Util.EMPTY_STRING;
+    }
+
     private static void debug( final String message,
                                final Object... args ) {
         if ( DEBUG ) {
@@ -80,6 +107,49 @@ public final class ModelContentProvider extends FocusTree.Model {
 
             _logger.debug( message, args );
         }
+    }
+
+    /**
+     * @param typeToFormat
+     *        the type being formatted (cannot be <code>null</code>)
+     * @return the formatted type (never <code>null</code>)
+     */
+    public static String formatType( final String typeToFormat ) {
+        String type = typeToFormat;
+
+        // see if an array
+        if ( type.startsWith( "[" ) ) {
+            String temp = type.substring( 1 );
+            int count = 1;
+
+            while ( temp.startsWith( "[" ) ) {
+                ++count;
+                temp = temp.substring( count );
+            }
+
+            // strip off single letter representing JNI type
+            type = temp.substring( 1 );
+
+            // array class name will have a semicolon at the end so strip it off
+            if ( type.endsWith( ";" ) ) {
+                type = type.substring( 0, ( type.length() - 1 ) );
+            }
+
+            // add array brackets at the end
+            for ( int i = 0; i < count; ++i ) {
+                type += '[';
+            }
+
+            for ( int i = 0; i < count; ++i ) {
+                type += ']';
+            }
+        }
+
+        if ( type.indexOf( JAVA_PKG ) == 0 ) {
+            return type.substring( JAVA_PKG.length() );
+        }
+
+        return type;
     }
 
     private Collection< PropertyModel > addPropertiesFromMethods( final ModelObject modelObj,
@@ -294,13 +364,13 @@ public final class ModelContentProvider extends FocusTree.Model {
     public Object type( final Object item ) throws PolyglotterException {
         if ( item instanceof ModelObject ) {
             try {
-                return FocusTree.Model.formatType( ( ( ModelObject ) item ).primaryType() );
+                return formatType( ( ( ModelObject ) item ).primaryType() );
             } catch ( final Exception e ) {
                 throw new PolyglotterException( e );
             }
         }
 
-        if ( item instanceof ModelContent ) return FocusTree.Model.formatType( ( ( ModelContent ) item ).type() );
+        if ( item instanceof ModelContent ) return formatType( ( ( ModelContent ) item ).type() );
         return super.type( item );
     }
 
@@ -443,8 +513,7 @@ public final class ModelContentProvider extends FocusTree.Model {
 
         @Override
         public String type() {
-            return ( FocusTree.Model.formatType( this.type.getName() )
-            + FocusTree.Model.collectionTypeSuffix( this.type, value() ) );
+            return ( formatType( this.type.getName() ) + collectionTypeSuffix( this.type, value() ) );
         }
 
         @Override
@@ -519,8 +588,7 @@ public final class ModelContentProvider extends FocusTree.Model {
 
         @Override
         public String type() {
-            return ( FocusTree.Model.formatType( this.type.getName() )
-            + FocusTree.Model.collectionTypeSuffix( this.type, this.value ) );
+            return ( formatType( this.type.getName() ) + collectionTypeSuffix( this.type, this.value ) );
         }
 
         @Override

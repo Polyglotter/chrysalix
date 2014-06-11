@@ -56,6 +56,18 @@ public class GuiTestFocusTree {
         final FocusTree focusTree = new FocusTree( GuiTestUtil.shell(), new File( System.getProperty( "user.home" ) ), new Model() {
 
             @Override
+            public Object add( final Object folder,
+                               final int index ) throws PolyglotterException {
+                try {
+                    final File file = new File( ( ( File ) folder ), "Unnamed" );
+                    if ( !file.createNewFile() ) throw new PolyglotterException( TestEclipseI18n.unableToCreateFile, folder, index );
+                    return file;
+                } catch ( final IOException e ) {
+                    throw new PolyglotterException( e );
+                }
+            }
+
+            @Override
             public int childCount( final Object file ) {
                 return children( file ).length;
             }
@@ -70,18 +82,6 @@ public class GuiTestFocusTree {
             public boolean childrenAddable( final Object item ) {
                 final File file = ( File ) item;
                 return file.isDirectory() && file.canWrite();
-            }
-
-            @Override
-            public Object add( final Object folder,
-                                  final int index ) throws PolyglotterException {
-                try {
-                    final File file = new File( ( ( File ) folder ), "Unnamed" );
-                    if ( !file.createNewFile() ) throw new PolyglotterException( TestEclipseI18n.unableToCreateFile, folder, index );
-                    return file;
-                } catch ( final IOException e ) {
-                    throw new PolyglotterException( e );
-                }
             }
 
             @Override
@@ -109,6 +109,11 @@ public class GuiTestFocusTree {
                         System.out.println( "transformation for " + name( item ) );
                     }
                 } };
+            }
+
+            @Override
+            public boolean movable( final Object item ) {
+                return true;
             }
 
             @Override
@@ -172,7 +177,7 @@ public class GuiTestFocusTree {
 
             @Override
             public int initialCellWidth() {
-                return 100;
+                return 120;
             }
 
             @Override

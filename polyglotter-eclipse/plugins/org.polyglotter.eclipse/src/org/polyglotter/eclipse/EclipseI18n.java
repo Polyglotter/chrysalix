@@ -98,17 +98,18 @@ public final class EclipseI18n {
     public static final I18n focusTreeNullReturnedFromSetName = new I18n( "FocusTreeModel.setName(<%s>) illegally returned null" );
     public static final I18n focusTreeNullReturnedFromSetType = new I18n( "FocusTreeModel.setType(<%s>) illegally returned null" );
     public static final I18n focusTreeNullReturnedFromSetValue = new I18n( "FocusTreeModel.setValue(<%s>) illegally returned null" );
+    public static final I18n focusTreeUnableToCommitChanges = new I18n( "Unable to commit changes to item \"%s\"" );
+    public static final I18n focusTreeUnableToCreateItem = new I18n( "Unable to create item in column \"%s\"" );
     public static final I18n focusTreeUnableToDetermineIfChildrenAddableOrExist =
         new I18n( "Unable to determine if children or addable or already exist for item \"%s\"" );
     public static final I18n focusTreeUnableToDetermineIfChildrenExist =
         new I18n( "Unable to determine if children exist for item \"%s\"" );
+    public static final I18n focusTreeUnableToDetermineIfItemHasName = new I18n( "Unable to determine if item \"%s\" has a name" );
     public static final I18n focusTreeUnableToGetChildren = new I18n( "Unable to get children from item \"%s\"" );
     public static final I18n focusTreeUnableToGetQualifiedName = new I18n( "Unable to get qualified name from item \"%s\"" );
     public static final I18n focusTreeUnableToGetName = new I18n( "Unable to get name from item \"%s\"" );
     public static final I18n focusTreeUnableToGetType = new I18n( "Unable to get type from item \"%s\"" );
     public static final I18n focusTreeUnableToGetValue = new I18n( "Unable to get value from item \"%s\"" );
-    public static final I18n focusTreeUnableToCommitChanges = new I18n( "Unable to commit changes to item \"%s\"" );
-    public static final I18n focusTreeUnableToCreateItem = new I18n( "Unable to create item in column \"%s\"" );
 
     public static final I18n confirmDialogTitle = new I18n( "Confirm" );
     public static final I18n deleteConfirmationMessage = new I18n( "Delete \"%s\"?" );

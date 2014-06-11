@@ -27,11 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.draw2d.Border;
-import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.ImageFigure;
-import org.eclipse.draw2d.LayoutManager;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -88,13 +84,9 @@ import org.polyglotter.common.I18n;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.eclipse.EclipseI18n;
 import org.polyglotter.eclipse.Util;
+import org.polyglotter.eclipse.focustree.FocusTreeCanvas.Cell;
 import org.polyglotter.eclipse.focustree.FocusTreeCanvas.CellColumn;
-import org.polyglotter.eclipse.focustree.FocusTreeCanvas.DeleteButton;
-import org.polyglotter.eclipse.focustree.FocusTreeCanvas.IndexField;
-import org.polyglotter.eclipse.focustree.FocusTreeCanvas.NameField;
-import org.polyglotter.eclipse.focustree.FocusTreeCanvas.ValueField;
 
-//TODO edit index via double-click
 //TODO move position of cells
 //TODO zoom, search
 //TODO separate view from controller
@@ -122,7 +114,6 @@ public class FocusTree extends Composite {
 
     private static final String HIDE_BUTTON_PROPERTY = "org.polyglotter.hideButton";
     private static final String COLUMN_PROPERTY = "org.polyglotter.column";
-    private static final String JAVA_PKG = "java.lang.";
 
     Object root;
     Model model;
@@ -211,13 +202,12 @@ public class FocusTree extends Composite {
                 iconViewMenuItem.setText( EclipseI18n.focusTreeShowIconViewMenuItem.text() );
                 final Control control = getDisplay().getCursorControl();
                 Column column = null;
-                if ( control instanceof FocusTreeCanvas )
-                    for ( final Column col : columns ) {
-                        if ( col.bounds.contains( event.x, event.y ) ) {
-                            column = col;
-                            break;
-                        }
+                if ( control instanceof FocusTreeCanvas ) for ( final Column col : columns ) {
+                    if ( col.bounds.contains( event.x, event.y ) ) {
+                        column = col;
+                        break;
                     }
+                }
                 else column = ( Column ) control.getData( COLUMN_PROPERTY );
                 iconViewMenuItem.setEnabled( column != null );
                 iconViewMenuItem.setData( COLUMN_PROPERTY, column );
@@ -227,9 +217,7 @@ public class FocusTree extends Composite {
 
             @Override
             public void widgetSelected( final SelectionEvent event ) {
-                final Column column = ( Column ) iconViewMenuItem.getData( COLUMN_PROPERTY );
-                focusColumn( column );
-                toggleIconView( column );
+                toggleIconView( ( Column ) iconViewMenuItem.getData( COLUMN_PROPERTY ) );
             }
         } );
         new MenuItem( popup, SWT.SEPARATOR );
@@ -367,8 +355,7 @@ public class FocusTree extends Composite {
 
             @Override
             public void handleEvent( final Event event ) {
-                if ( focusTreeCanvas.iconViewShown() )
-                    focusTreeCanvas.updateIconViewBounds();
+                if ( focusTreeCanvas.iconViewShown() ) focusTreeCanvas.updateIconViewBounds();
                 else focusTreeCanvas.updateBounds();
             }
         } );
@@ -441,8 +428,8 @@ public class FocusTree extends Composite {
         GridDataFactory.swtDefaults().applyTo( childCount );
         try {
             childCount.setText( String.valueOf( model.childCount( column.item ) ) );
-        } catch ( final PolyglotterException e1 ) {
-            childCount.setText( EclipseI18n.focusTreeChildCountError.text() );
+        } catch ( final PolyglotterException e ) {
+            childCount.setText( "?" );
         }
         childCount.setToolTipText( EclipseI18n.focusTreeChildCountToolTip.text() );
         childCount.setVisible( false );
@@ -521,7 +508,7 @@ public class FocusTree extends Composite {
 
             @Override
             public void mouseUp( final MouseEvent event ) {
-                if ( leftMouseButtonClicked( event ) ) focusColumn( column );
+                if ( leftMouseButtonClicked( event ) ) focusTreeCanvas.scrollToFocusLine();
             }
         };
         column.header.addMouseListener( headerMouseListener );
@@ -574,7 +561,14 @@ public class FocusTree extends Composite {
 
             @Override
             public void mouseUp( final MouseEvent event ) {
-                if ( leftMouseButtonClicked( event ) ) scrollToColumn( column );
+                if ( leftMouseButtonClicked( event ) ) {
+                    if ( focusTreeCanvas.iconViewShown() ) {
+                        hideIconView( column );
+                        focusTreeCanvas.hideIconView( column );
+                    }
+                    scroller.setOrigin( column.bounds.x, column.bounds.y );
+                    focusTreeCanvas.scrollToFocusLine();
+                }
             }
         } );
         try {
@@ -592,11 +586,6 @@ public class FocusTree extends Composite {
         tree.setRoot( root );
         tree.moveBelow( this );
         getParent().layout();
-    }
-
-    void focusColumn( final Column column ) {
-        scrollToColumn( column );
-        focusTreeCanvas.scrollToFocusLine();
     }
 
     void hideColumn( final Column column,
@@ -662,6 +651,7 @@ public class FocusTree extends Composite {
             control.dispose();
         for ( final Control control : headerBar.getChildren() )
             control.dispose();
+        columns.clear();
 
         focusTreeCanvas.modelChanged();
 
@@ -686,9 +676,8 @@ public class FocusTree extends Composite {
         final GC gc = new GC( image );
         gc.setAntialias( SWT.ON );
         gc.setForeground( getDisplay().getSystemColor( SWT.COLOR_BLACK ) );
-        if ( leftArrow )
-            for ( int x = 0, y = size / 2; y >= 0; x++, y-- )
-                gc.drawLine( x, y, x, y + x * 2 );
+        if ( leftArrow ) for ( int x = 0, y = size / 2; y >= 0; x++, y-- )
+            gc.drawLine( x, y, x, y + x * 2 );
         else for ( int y = 0, x = 0; y <= size / 2; x++, y++ )
             gc.drawLine( x, y, x, y + size - 1 - x * 2 );
         gc.dispose();
@@ -706,21 +695,20 @@ public class FocusTree extends Composite {
         final ToolItem item = new ToolItem( toolBar, style );
         item.setImage( Util.image( iconName ) );
         item.setToolTipText( toolTip.text() );
-        if ( selectionListener == null )
-            item.addSelectionListener( new SelectionAdapter() {
+        if ( selectionListener == null ) item.addSelectionListener( new SelectionAdapter() {
 
-                @Override
-                public void widgetSelected( final SelectionEvent event ) {
-                    final Shell dialog = new Shell( getShell(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL );
-                    dialog.setLayout( new RowLayout() );
-                    final Label label = new Label( dialog, SWT.NONE );
-                    label.setText( "Not yet implemented" );
-                    dialog.pack();
-                    final Rectangle itemBounds = getDisplay().map( toolBar, null, item.getBounds() );
-                    dialog.setLocation( itemBounds.x, itemBounds.y );
-                    dialog.open();
-                }
-            } );
+            @Override
+            public void widgetSelected( final SelectionEvent event ) {
+                final Shell dialog = new Shell( getShell(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL );
+                dialog.setLayout( new RowLayout() );
+                final Label label = new Label( dialog, SWT.NONE );
+                label.setText( "Not yet implemented" );
+                dialog.pack();
+                final Rectangle itemBounds = getDisplay().map( toolBar, null, item.getBounds() );
+                dialog.setLocation( itemBounds.x, itemBounds.y );
+                dialog.open();
+            }
+        } );
         else item.addSelectionListener( selectionListener );
         return item;
     }
@@ -790,31 +778,6 @@ public class FocusTree extends Composite {
         hideExcessiveLeftMostPathButtons();
     }
 
-    void scrollToColumn( final Column column ) {
-        if ( focusTreeCanvas.iconViewShown() ) {
-            hideIconView( column );
-            focusTreeCanvas.hideIconView( column );
-        }
-        // focusColumn( column );
-    }
-
-    private void setColors() {
-        for ( final Column column : columns ) {
-            focusTreeCanvas.setCellColors( column );
-        }
-    }
-
-    private void setInitialCellWidth( final int initialCellWidth ) {
-        if ( initialCellWidth == focusTreeCanvas.initialCellWidth ) return;
-        int xDelta = 0;
-        for ( final Column column : columns ) {
-            xDelta = focusTreeCanvas.setInitialCellWidth( column, initialCellWidth, xDelta );
-            GridDataFactory.swtDefaults().hint( column.bounds.width, SWT.DEFAULT ).applyTo( column.header );
-        }
-        headerBar.layout();
-        focusTreeCanvas.initialCellWidth = initialCellWidth;
-    }
-
     /**
      * @param model
      *        the model for this tree
@@ -838,16 +801,9 @@ public class FocusTree extends Composite {
      *        the view model for this tree
      */
     public void setViewModel( final ViewModel viewModel ) {
-        this.viewModel = viewModel;
-        focusTreeCanvas.setBackground( viewModel.treeBackgroundColor() );
-        focusTreeCanvas.focusBorder.setColor( viewModel.focusCellBorderColor() );
-        focusTreeCanvas.focusLine.setBackgroundColor( viewModel.focusLineColor() );
-        focusTreeCanvas.setFocusLineHeight( viewModel.focusLineHeight() );
-        focusTreeCanvas.focusLineOffset = viewModel.focusLineOffset();
-        focusTreeCanvas.iconViewCellWidth = viewModel.iconViewCellWidth();
-        setInitialCellWidth( viewModel.initialCellWidth() );
-        focusTreeCanvas.setInitialIndexIsOne( viewModel.initialIndexIsOne() );
-        setColors();
+        this.viewModel = viewModel == null ? new ViewModel() : viewModel;
+        focusTreeCanvas.setViewModel();
+        initialize();
     }
 
     void showColumn( final Column column,
@@ -906,98 +862,6 @@ public class FocusTree extends Composite {
         return viewModel;
     }
 
-    /**
-     * 
-     */
-    public static class Cell extends Figure {
-
-        IFigure delegate;
-        Object item;
-        int index;
-        IndexField indexField;
-        ImageFigure icon;
-        NameField nameField;
-        ValueField valueField;
-        DeleteButton deleteButton;
-
-        /**
-         * @param delegate
-         *        the delegate that determines this cell's shape
-         */
-        public Cell( final IFigure delegate ) {
-            CheckArg.notNull( delegate, "delegate" );
-            this.delegate = delegate;
-            final org.eclipse.draw2d.GridLayout layout = new org.eclipse.draw2d.GridLayout();
-            layout.marginHeight = layout.marginWidth = 0;
-            super.setLayoutManager( layout );
-            super.add( delegate, null, 0 );
-            super.setConstraint( delegate, new org.eclipse.draw2d.GridData( SWT.FILL, SWT.FILL, true, true ) );
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.eclipse.draw2d.Figure#add(org.eclipse.draw2d.IFigure, java.lang.Object, int)
-         */
-        @Override
-        public void add( final IFigure figure,
-                         final Object constraint,
-                         final int index ) {
-            delegate.add( figure, constraint, index );
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.eclipse.draw2d.Figure#setBackgroundColor(org.eclipse.swt.graphics.Color)
-         */
-        @Override
-        public void setBackgroundColor( final Color bg ) {
-            delegate.setBackgroundColor( bg );
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.eclipse.draw2d.Figure#setBorder(org.eclipse.draw2d.Border)
-         */
-        @Override
-        public void setBorder( final Border border ) {
-            delegate.setBorder( border );
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.eclipse.draw2d.Figure#setConstraint(org.eclipse.draw2d.IFigure, java.lang.Object)
-         */
-        @Override
-        public void setConstraint( final IFigure child,
-                                   final Object constraint ) {
-            delegate.setConstraint( child, constraint );
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.eclipse.draw2d.Figure#setLayoutManager(org.eclipse.draw2d.LayoutManager)
-         */
-        @Override
-        public void setLayoutManager( final LayoutManager manager ) {
-            delegate.setLayoutManager( manager );
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.eclipse.draw2d.Figure#setToolTip(org.eclipse.draw2d.IFigure)
-         */
-        @Override
-        public void setToolTip( final IFigure f ) {
-            delegate.setToolTip( f );
-        }
-    }
-
     class Column {
 
         Object item;
@@ -1032,8 +896,7 @@ public class FocusTree extends Composite {
         @Override
         public void dragDetected( final DragDetectEvent event ) {
             if ( targetColumn == null ) return;
-            if ( targetColumn == column )
-                offset = column.header.getSize().x - event.x;
+            if ( targetColumn == column ) offset = column.header.getSize().x - event.x;
             else offset = -event.x;
             dragging = true;
         }
@@ -1050,8 +913,7 @@ public class FocusTree extends Composite {
         @Override
         public void mouseEnter( final MouseEvent event ) {
             if ( focusTreeCanvas.iconViewShown() ) return;
-            if ( event.x >= column.header.getSize().x - 1 - HEADER_MARGIN )
-                setTargetColumn( column );
+            if ( event.x >= column.header.getSize().x - 1 - HEADER_MARGIN ) setTargetColumn( column );
             else if ( event.x <= HEADER_MARGIN && previousColumn != null )
                 setTargetColumn( previousColumn );
         }
@@ -1088,7 +950,7 @@ public class FocusTree extends Composite {
             if ( dragging ) {
                 dragging = false;
                 if ( getDisplay().getCursorControl() != column.header ) targetColumn = null;
-            } else focusColumn( column );
+            } else focusTreeCanvas.scrollToFocusLine();
         }
 
         private void setTargetColumn( final Column targetColumn ) {
@@ -1140,73 +1002,6 @@ public class FocusTree extends Composite {
         public static final Indicator[] NO_INDICATORS = new Indicator[ 0 ];
 
         /**
-         * Obtains an element count suffix.
-         * 
-         * @param item
-         *        the item whose collection type suffix is being requested (cannot be <code>null</code>)
-         * @param value
-         *        the item value (can be <code>null</code>)
-         * @return the suffix or empty string
-         */
-        public static String collectionTypeSuffix( final Object item,
-                                                   final Object value ) {
-            if ( item.getClass().isArray() ) {
-                if ( value != null ) {
-                    return EclipseI18n.modelCollectionTypeSuffix.text( ( ( Object[] ) item ).length );
-                }
-            } else if ( Collection.class.isAssignableFrom( item.getClass() ) ) {
-                if ( value != null ) {
-                    return EclipseI18n.modelCollectionTypeSuffix.text( ( ( Collection< ? > ) item ).size() );
-                }
-            }
-
-            return Util.EMPTY_STRING;
-        }
-
-        /**
-         * @param typeToFormat
-         *        the type being formatted (cannot be <code>null</code>)
-         * @return the formatted type (never <code>null</code>)
-         */
-        public static String formatType( final String typeToFormat ) {
-            String type = typeToFormat;
-
-            // see if an array
-            if ( type.startsWith( "[" ) ) {
-                String temp = type.substring( 1 );
-                int count = 1;
-
-                while ( temp.startsWith( "[" ) ) {
-                    ++count;
-                    temp = temp.substring( count );
-                }
-
-                // strip off single letter representing JNI type
-                type = temp.substring( 1 );
-
-                // array class name will have a semicolon at the end so strip it off
-                if ( type.endsWith( ";" ) ) {
-                    type = type.substring( 0, ( type.length() - 1 ) );
-                }
-
-                // add array brackets at the end
-                for ( int i = 0; i < count; ++i ) {
-                    type += '[';
-                }
-
-                for ( int i = 0; i < count; ++i ) {
-                    type += ']';
-                }
-            }
-
-            if ( type.indexOf( JAVA_PKG ) == 0 ) {
-                return type.substring( JAVA_PKG.length() );
-            }
-
-            return type;
-        }
-
-        /**
          * @param parent
          *        a parent item in the tree
          * @param index
@@ -1216,10 +1011,9 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object add( final Object parent,
                            final int index ) throws PolyglotterException {
-            return null;
+            return true;
         }
 
         /**
@@ -1229,7 +1023,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public int childCount( final Object item ) throws PolyglotterException {
             return 0;
         }
@@ -1241,7 +1034,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object[] children( final Object item ) throws PolyglotterException {
             return Util.EMPTY_ARRAY;
         }
@@ -1267,10 +1059,10 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
-         * @return <code>true</code> if the supplied item was successfully deleted
+         * @return <code>true</code> if the supplied item was successfully deleted. Default is <code>true</code>
          */
         public boolean delete( final Object item ) {
-            return deletable( item );
+            return true;
         }
 
         /**
@@ -1280,7 +1072,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public boolean hasChildren( final Object item ) throws PolyglotterException {
             return false;
         }
@@ -1292,7 +1083,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public boolean hasName( final Object item ) throws PolyglotterException {
             return true;
         }
@@ -1313,9 +1103,28 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public boolean hasValue( final Object item ) throws PolyglotterException {
             return false;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @param parent
+         *        the parent of the supplied item
+         * @return the supplied item's index, or <code>-1</code> if not found. Default is the item's index within
+         *         {@link #children(Object)}.
+         * @throws PolyglotterException
+         *         if an error occurs
+         */
+        public int indexOf( final Object item,
+                            final Object parent ) throws PolyglotterException {
+            int ndx = 0;
+            for ( final Object child : children( parent ) ) {
+                if ( child.equals( item ) ) return ndx;
+                ndx++;
+            }
+            return -1;
         }
 
         /**
@@ -1330,12 +1139,21 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
+         * @return <code>true</code> if the supplied item can be moved to a different index within its parent. Default is
+         *         <code>false</code>
+         */
+        public boolean movable( final Object item ) {
+            return false;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
          * @return the name of the supplied item's cell. Must not be <code>null</code>. Default is the item's
          *         {@link Object#toString()}.
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object name( final Object item ) throws PolyglotterException {
             return item.toString();
         }
@@ -1375,6 +1193,26 @@ public class FocusTree extends Composite {
         }
 
         /**
+         * If an item is {@link #movable(Object) movable}, called after a user changes the supplied item's index to the supplied
+         * index. Does nothing by default.
+         * 
+         * @param item
+         *        an item in the tree
+         * @param parent
+         *        the parent of the supplied item
+         * @param index
+         *        an index for the supplied item
+         * @return an item with the supplied index. Default is the supplied item.
+         * @throws PolyglotterException
+         *         if an error occurs
+         */
+        public Object setIndex( final Object item,
+                                final Object parent,
+                                final int index ) throws PolyglotterException {
+            return item;
+        }
+
+        /**
          * Called after a user changes the supplied item's name to the supplied name. Does nothing by default.
          * 
          * @param item
@@ -1385,7 +1223,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object setName( final Object item,
                                final Object name ) throws PolyglotterException {
             return item;
@@ -1402,7 +1239,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object setType( final Object item,
                                final Object type ) throws PolyglotterException {
             return item;
@@ -1419,7 +1255,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object setValue( final Object item,
                                 final Object value ) throws PolyglotterException {
             return item;
@@ -1433,7 +1268,7 @@ public class FocusTree extends Composite {
          *         if an error occurs
          */
         public Object type( final Object item ) throws PolyglotterException {
-            return ( formatType( item.getClass().getSimpleName() ) + collectionTypeSuffix( item, value( item ) ) );
+            return item.getClass().getSimpleName();
         }
 
         /**
@@ -1465,7 +1300,6 @@ public class FocusTree extends Composite {
          * @throws PolyglotterException
          *         if an error occurs
          */
-        @SuppressWarnings( "unused" )
         public Object value( final Object item ) throws PolyglotterException {
             return null;
         }
@@ -1583,11 +1417,10 @@ public class FocusTree extends Composite {
         /**
          * @param item
          *        an item in the tree
-         * @return Creates a cell for the supplied item. Must not be <code>null</code>. Default is a cell that delegates to create a
-         *         {@link RoundedRectangle}.
+         * @return Creates a cell for the supplied item. Must not be <code>null</code>. Default is a {@link RoundedRectangle}.
          */
-        public Cell createCell( final Object item ) {
-            return new Cell( new RoundedRectangle() );
+        public IFigure createCell( final Object item ) {
+            return new RoundedRectangle();
         }
 
         /**
@@ -1642,6 +1475,16 @@ public class FocusTree extends Composite {
          */
         public Image iconViewIcon( final Object item ) {
             return null;
+        }
+
+        /**
+         * @param item
+         *        an item in the tree
+         * @return the cell editor used to edit the supplied item's index. Must not be <code>null</code>. Default is {link
+         *         {@link TextCellEditor} .
+         */
+        public CellEditor indexEditor( final Object item ) {
+            return DEFAULT_EDITOR;
         }
 
         /**
