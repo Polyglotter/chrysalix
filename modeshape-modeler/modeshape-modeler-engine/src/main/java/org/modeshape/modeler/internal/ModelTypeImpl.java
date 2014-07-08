@@ -28,7 +28,7 @@ import java.util.Set;
 
 import javax.jcr.Session;
 
-import org.infinispan.util.ReflectionUtil;
+import org.infinispan.commons.util.ReflectionUtil;
 import org.modeshape.common.util.CheckArg;
 import org.modeshape.common.util.StringUtil;
 import org.modeshape.jcr.ExtensionLogger;

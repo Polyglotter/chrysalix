@@ -119,6 +119,7 @@
             <!-- Copy test resources -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>copy-sequencers</id>
