@@ -1,26 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:5.2 http://www.infinispan.org/schemas/infinispan-config-5.2.xsd"
-        xmlns="urn:infinispan:config:5.2">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
+    xmlns="urn:infinispan:config:6.0">
 
     <namedCache name="ModeShapeModelerRepository">
         <transaction
-                transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup"
-                transactionMode="TRANSACTIONAL"
-                lockingMode="PESSIMISTIC"/>
-        <loaders
-                passivation="false"
+            transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup"
+            transactionMode="TRANSACTIONAL"
+            lockingMode="PESSIMISTIC" />
+        <persistence passivation="false">
+            <singleFile
+                preload="false"
                 shared="false"
-                preload="false">
-            <loader
-                    class="org.infinispan.loaders.file.FileCacheStore"
-                    fetchPersistentState="false"
-                    purgeOnStartup="false">
-                <properties>
-                    <property name="location" value="${org.modeshape.modeler.repositoryStoreParentPath}/modelerRepository/infinispanStore"/>
-                </properties>
-            </loader>
-        </loaders>
+                fetchPersistentState="false"
+                purgeOnStartup="false"
+                location="${org.modeshape.modeler.repositoryStoreParentPath}/modelerRepository/infinispanStore">
+            </singleFile>
+        </persistence>
     </namedCache>
 </infinispan>

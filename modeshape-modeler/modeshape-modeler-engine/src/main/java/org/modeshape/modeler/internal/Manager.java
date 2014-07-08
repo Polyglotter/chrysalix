@@ -125,7 +125,7 @@ public class Manager {
                 final Problems problems = config.validate();
                 if ( problems.hasProblems() ) {
                     for ( final Problem problem : problems )
-                        Logger.getLogger( getClass() ).error( problem.getThrowable(), CommonI18n.text, problem.getMessage().text() );
+                        Logger.getLogger( getClass() ).error( problem.getThrowable(), CommonI18n.text, problem.getMessageString() );
                     throw problems.iterator().next().getThrowable();
                 }
                 JcrRepository repository;
@@ -159,8 +159,7 @@ public class Manager {
             final Session session = repository().login( "modeler" );
             final String path = '/' + systemObject.getClass().getSimpleName();
             final Node node;
-            if ( session.nodeExists( path ) )
-                node = session.getNode( path );
+            if ( session.nodeExists( path ) ) node = session.getNode( path );
             else {
                 node = session.getRootNode().addNode( path );
                 session.save();

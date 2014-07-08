@@ -12,12 +12,5 @@
             "directory" : "${org.modeshape.modeler.repositoryStoreParentPath}/modelerRepository/binaries"
         }
     },
-    "query" : {
-        "indexStorage" : {
-            "type" : "filesystem",
-            "location" : "${org.modeshape.modeler.repositoryStoreParentPath}/modelerRepository/indexes",
-            "lockingStrategy" : "simple"
-        }
-    },
     "node-types" : ["jcr/metamodel.cnd"]
 }
