@@ -58,7 +58,7 @@ public final class GuiTestModelContentProvider {
 
     static {
         try {
-            MODEL_TYPE_REPOSITORY = new URL( "file:resources/" );
+            MODEL_TYPE_REPOSITORY = new URL( "file:target/test-classes" );
             final Path path = Files.createTempDirectory( null );
             path.toFile().deleteOnExit();
             TEST_REPOSITORY_STORE_PARENT_PATH = path.toString();
@@ -77,11 +77,9 @@ public final class GuiTestModelContentProvider {
                     modelTypeManager.install( "sramp" );
                     modelTypeManager.install( "xsd" );
 
+                    final File file = new File( "resources/Books.xsd" );
                     final ModelType xsdModelType = modelTypeManager.modelType( "org.modeshape.modeler.xsd.Xsd" );
-                    return modeler().generateModel( new File( GuiTestModelContentProvider.class.getClassLoader().getResource( "Books.xsd"
-                                                                                               ).toURI() ),
-                                                    "/test",
-                                                    xsdModelType );
+                    return modeler().generateModel( file, "/test", xsdModelType );
                 }
             } );
 
