@@ -40,13 +40,18 @@ import org.polyglotter.grammar.GrammarEvent.EventType;
  * @param <T>
  *        the operation result term type
  */
-public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterable< Term< ? > > {
+public interface Operation< T > extends Term< T >, Iterable< Term< ? > > {
 
     /**
      * Sorts operations by their category and then their name.
      */
     Comparator< Descriptor > DESCRIPTOR_CATEGORY_SORTER = new Comparator< Descriptor >() {
 
+        /**
+         * {@inheritDoc}
+         * 
+         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+         */
         @Override
         public int compare( final Descriptor thisDescriptor,
                             final Descriptor thatDescriptor ) {
@@ -66,6 +71,11 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      */
     Comparator< Descriptor > DESCRIPTOR_NAME_SORTER = new Comparator< Descriptor >() {
 
+        /**
+         * {@inheritDoc}
+         * 
+         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+         */
         @Override
         public int compare( final Descriptor thisDescriptor,
                             final Descriptor thatDescriptor ) {
@@ -79,6 +89,11 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      */
     Comparator< Operation< ? > > NAME_SORTER = new Comparator< Operation< ? >>() {
 
+        /**
+         * {@inheritDoc}
+         * 
+         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+         */
         @Override
         public int compare( final Operation< ? > thisOp,
                             final Operation< ? > thatOp ) {
@@ -92,6 +107,11 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      */
     Comparator< Operation< ? > > CATEGORY_SORTER = new Comparator< Operation< ? >>() {
 
+        /**
+         * {@inheritDoc}
+         * 
+         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+         */
         @Override
         public int compare( final Operation< ? > thisOp,
                             final Operation< ? > thatOp ) {
@@ -104,11 +124,6 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
      * An empty list of operations.
      */
     List< Operation< ? > > NO_OPERATIONS = Collections.emptyList();
-
-    /**
-     * An empty number array.
-     */
-    Number[] NO_RESULT = new Number[ 0 ];
 
     /**
      * Indicates there is no limit to the number of terms allowed.
@@ -176,47 +191,54 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
     QName transformId();
 
     /**
+     * Validates the state of the operation.
+     * 
+     * @see #problems()
+     */
+    void validate();
+
+    /**
      * Categories of an operation.
      */
     enum Category {
 
         /**
-         *
+         * A category for operations that act on and/or have a numeric result.
          */
         ARITHMETIC( PolyglotterI18n.opCatArithmeticLabel, PolyglotterI18n.opCatArithmeticDescription ),
 
         /**
-         *
+         * A category for operations that assign a term a value.
          */
         ASSIGNMENT( PolyglotterI18n.opCatAssignmentLabel, PolyglotterI18n.opCatAssignmentDescription ),
 
         /**
-         *
+         * A category for operations who perform on the bit level.
          */
         BITWISE( PolyglotterI18n.opCatBitwiseLabel, PolyglotterI18n.opCatBitwiseDescription ),
 
         /**
-         *
+         * A category for operations that act on and/or have a date or time result.
          */
         DATE_TIME( PolyglotterI18n.opCatDateTimeLabel, PolyglotterI18n.opCatDateTimeDescription ),
 
         /**
-         *
+         * A category for operations that compare two expressions.
          */
         LOGICAL( PolyglotterI18n.opCatLogicalLabel, PolyglotterI18n.opCatLogicalDescription ),
 
         /**
-         *
+         * A category for miscellaneous operations.
          */
         OTHER( PolyglotterI18n.opCatOtherLabel, PolyglotterI18n.opCatOtherDescription ),
 
         /**
-         *
+         * A category for operations that compare one operand to another.
          */
         RELATIONAL( PolyglotterI18n.opCatRelationalLabel, PolyglotterI18n.opCatRelationalDescription ),
 
         /**
-         *
+         * A category for operations that act on and/or have a string result.
          */
         STRING( PolyglotterI18n.opCatStringLabel, PolyglotterI18n.opCatStringDescription );
 
@@ -229,10 +251,16 @@ public interface Operation< T > extends GrammarPart, GrammarEventSource, Iterabl
             this.description = categoryDescription;
         }
 
+        /**
+         * @return a localized category description (never <code>null</code> or empty)
+         */
         public String description() {
             return this.description.text();
         }
 
+        /**
+         * @return a localized short description (never <code>null</code> or empty)
+         */
         public String label() {
             return this.label.text();
         }

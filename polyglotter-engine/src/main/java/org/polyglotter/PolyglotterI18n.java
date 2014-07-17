@@ -95,6 +95,8 @@ public class PolyglotterI18n {
     public static I18n divideOperationHasNoTerms = new I18n( "Divide operation '%s' has no terms" );
     public static I18n divideOperationName = new I18n( "Divide" );
 
+    public static I18n errorComparingTerms =
+        new I18n( "Comparator could not finish as an error obtaining the value for either term '%s' or term '%s' occurred" );
     public static I18n errorOnTermChanged = new I18n( "Error setting term to '%s' in operation '%s'" );
 
     public static I18n floorOperationDescription = new I18n( "Find the closest integer less than or equal to the term" );
@@ -155,6 +157,8 @@ public class PolyglotterI18n {
     public static I18n medianOperationHasNoTerms = new I18n( "Median operation '%s' has no terms" );
     public static I18n medianOperationName = new I18n( "Median" );
 
+    public static I18n message = new I18n( "%s" );
+
     public static I18n minOperationDescription = new I18n( "Finds the minimum value of two or more numbers" );
     public static I18n minOperationHasNoTerms = new I18n( "Min operation '%s' has no terms" );
     public static I18n minOperationName = new I18n( "Min" );
@@ -197,6 +201,10 @@ public class PolyglotterI18n {
     public static I18n opCatStringDescription = new I18n( "Perform their operation on strings" );
 
     public static I18n operationHasErrors = new I18n( "The operation '%s' has errors and a result cannot be calculated" );
+    public static I18n operationResultNotModifiable = new I18n( "The '%s' operation's result is not directly modifiable" );
+    public static I18n operationTermNotAdded = new I18n( "The term '%s' was not added to operation '%s'" );
+    public static I18n operationTermNotRemoved = new I18n( "The term '%s' was not removed from operation '%s'" );
+    public static I18n operationValidationError = new I18n( "An exception occurred when validating term '%s' of operation '%s'" );
 
     public static I18n parseDoubleOperationDescription = new I18n( "Parses the string term into a double value" );
     public static I18n parseDoubleOperationInvalidTermType =
@@ -276,8 +284,9 @@ public class PolyglotterI18n {
     public static I18n toRadiansOperationMustHaveOneTerm = new I18n( "To Radians operation '%s' requires one and only one term" );
     public static I18n toRadiansOperationName = new I18n( "To Radians" );
 
-    public static I18n termNotFound = new I18n( "The term '%s' in operation '%s' could not be found" );
     public static I18n termExists = new I18n( "The term '%s' in operation '%s' already exists" );
+    public static I18n termNotFound = new I18n( "The term '%s' in operation '%s' could not be found" );
+    public static I18n termNotModifiable = new I18n( "The term '%s' is not modifiable" );
 
     public static I18n unhandledOperationDescriptor = new I18n( "Descriptor '%s' was not handled by the operation factory" );
 

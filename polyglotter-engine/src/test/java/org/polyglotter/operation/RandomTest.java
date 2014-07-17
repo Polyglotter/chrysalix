@@ -29,26 +29,26 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
+import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.TestConstants;
-import org.polyglotter.grammar.TestIntegerTerm;
+import org.polyglotter.grammar.Term;
 
-@SuppressWarnings( "javadoc" )
-public final class RandomTest implements TestConstants {
+@SuppressWarnings( { "javadoc", "unchecked" } )
+public final class RandomTest {
 
     private Random operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Random( ID, TRANSFORM_ID );
+        this.operation = new Random( TestConstants.ID, TestConstants.TRANSFORM_ID );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( INT_1 );
+        this.operation.add( TestConstants.INT_1_TERM );
         assertThat( this.operation.terms().size(), is( 1 ) );
-        assertThat( ( TestIntegerTerm ) this.operation.get( INT_1.id() ), is( INT_1 ) );
+        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
     }
 
     @Test
@@ -68,22 +68,22 @@ public final class RandomTest implements TestConstants {
 
     @Test
     public void shouldHaveErrorWhenMoreThanOneTerm() throws PolyglotterException {
-        this.operation.add( INT_1 );
-        this.operation.add( INT_2 );
+        this.operation.add( TestConstants.INT_1_TERM );
+        this.operation.add( TestConstants.INT_2_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotANumber() throws PolyglotterException {
-        this.operation.add( STRING_1 );
+        this.operation.add( TestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( INT_1 );
+        this.operation.terms().add( TestConstants.INT_1_TERM );
     }
 
     @Test

@@ -29,7 +29,9 @@ import java.math.BigInteger;
 import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
+import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarFactory;
+import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
 
 /**
@@ -37,7 +39,7 @@ import org.polyglotter.grammar.ValidationProblem;
  * 
  * @see Math#pow(double, double)
  */
-public final class Power extends BaseOperation< Number > {
+public final class Power extends AbstractOperation< Number > {
 
     /**
      * The operation descriptor.
@@ -96,16 +98,16 @@ public final class Power extends BaseOperation< Number > {
      */
     Power( final QName id,
            final QName transformId ) {
-        super( id, transformId );
+        super( id, transformId, DESCRIPTOR );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#calculate()
+     * @see org.polyglotter.operation.AbstractOperation#calculate()
      */
     @Override
-    protected Number calculate() {
+    protected Number calculate() throws PolyglotterException {
         assert !problems().isError();
 
         final Number base = ( Number ) terms().get( 0 ).value();
@@ -120,27 +122,7 @@ public final class Power extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
-     */
-    @Override
-    public String description() {
-        return DESCRIPTOR.description();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#descriptor()
-     */
-    @Override
-    public Descriptor descriptor() {
-        return DESCRIPTOR;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
      */
     @Override
     public int maxTerms() {
@@ -150,7 +132,7 @@ public final class Power extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#minTerms()
      */
     @Override
     public int minTerms() {
@@ -160,18 +142,10 @@ public final class Power extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#name()
+     * @see org.polyglotter.grammar.Operation#validate()
      */
     @Override
-    public String name() {
-        return DESCRIPTOR.name();
-    }
-
-    /**
-     * Validates the operation's state.
-     */
-    @Override
-    protected void validate() {
+    public void validate() {
         // make sure there are terms
         if ( terms().size() != 2 ) {
             final ValidationProblem problem =
@@ -179,26 +153,46 @@ public final class Power extends BaseOperation< Number > {
             problems().add( problem );
         } else {
             { // make sure first term is a number
-                final Object x = terms().get( 0 ).value();
+                final Term< ? > term = terms().get( 0 );
+                Object x;
 
-                if ( !( x instanceof Number ) ) {
+                try {
+                    x = term.value();
+
+                    if ( !( x instanceof Number ) ) {
+                        final ValidationProblem problem =
+                            GrammarFactory.createError( id(),
+                                                        PolyglotterI18n.powerOperationInvalidBaseTermType.text( term.id(),
+                                                                                                                id() ) );
+                        problems().add( problem );
+                    }
+                } catch ( final PolyglotterException e ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.powerOperationInvalidBaseTermType.text( terms().get( 0 ).id(),
-                                                                                                            id() ) );
+                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
                     problems().add( problem );
+                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
                 }
             }
 
             { // make sure second term is an integer
-                final Object y = terms().get( 1 ).value();
+                final Term< ? > term = terms().get( 1 );
+                Object y;
 
-                if ( !( y instanceof Number ) ) {
+                try {
+                    y = term.value();
+
+                    if ( !( y instanceof Number ) ) {
+                        final ValidationProblem problem =
+                            GrammarFactory.createError( id(),
+                                                        PolyglotterI18n.powerOperationInvalidExponentTermType.text( term.id(),
+                                                                                                                    id() ) );
+                        problems().add( problem );
+                    }
+                } catch ( final PolyglotterException e ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.powerOperationInvalidExponentTermType.text( terms().get( 1 ).id(),
-                                                                                                                id() ) );
+                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
                     problems().add( problem );
+                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
                 }
             }
         }

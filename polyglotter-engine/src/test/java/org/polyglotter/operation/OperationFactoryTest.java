@@ -29,14 +29,21 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.polyglotter.TestConstants;
 import org.polyglotter.grammar.Operation;
 import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.TestConstants;
 
 @SuppressWarnings( "javadoc" )
-public final class OperationFactoryTest implements TestConstants {
+public final class OperationFactoryTest {
 
     private OperationFactory factory;
+
+    private void assertOperation( final Operation< ? > operation,
+                                  final Class< ? extends Operation< ? >> operationClass ) {
+        assertThat( operation, is( instanceOf( operationClass ) ) );
+        assertThat( operation.id(), is( TestConstants.ID ) );
+        assertThat( operation.transformId(), is( TestConstants.TRANSFORM_ID ) );
+    }
 
     @Before
     public void beforeEach() {
@@ -45,197 +52,236 @@ public final class OperationFactoryTest implements TestConstants {
 
     @Test
     public void shouldCreateAbsoluteValueOperation() {
-        assertThat( this.factory.create( AbsoluteValue.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( AbsoluteValue.class ) ) );
+        assertOperation( this.factory.create( AbsoluteValue.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         AbsoluteValue.class );
     }
 
     @Test
     public void shouldCreateAddOperation() {
-        assertThat( this.factory.create( Add.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Add.class ) ) );
+        assertOperation( this.factory.create( Add.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Add.class );
     }
 
     @Test
     public void shouldCreateArcCosineOperation() {
-        assertThat( this.factory.create( ArcCosine.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( ArcCosine.class ) ) );
+        assertOperation( this.factory.create( ArcCosine.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         ArcCosine.class );
     }
 
     @Test
     public void shouldCreateArcSineOperation() {
-        assertThat( this.factory.create( ArcSine.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( ArcSine.class ) ) );
+        assertOperation( this.factory.create( ArcSine.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         ArcSine.class );
     }
 
     @Test
     public void shouldCreateArcTangentOperation() {
-        assertThat( this.factory.create( ArcTangent.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( ArcTangent.class ) ) );
+        assertOperation( this.factory.create( ArcTangent.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         ArcTangent.class );
     }
 
     @Test
     public void shouldCreateAverageOperation() {
-        assertThat( this.factory.create( Average.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Average.class ) ) );
+        assertOperation( this.factory.create( Average.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Average.class );
     }
 
     @Test
     public void shouldCreateCeilingOperation() {
-        assertThat( this.factory.create( Ceiling.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Ceiling.class ) ) );
+        assertOperation( this.factory.create( Ceiling.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Ceiling.class );
     }
 
     @Test
     public void shouldCreateConcatOperation() {
-        assertThat( this.factory.create( Concat.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Concat.class ) ) );
+        assertOperation( this.factory.create( Concat.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Concat.class );
     }
 
     @Test
     public void shouldCreateCosineOperation() {
-        assertThat( this.factory.create( Cosine.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Cosine.class ) ) );
+        assertOperation( this.factory.create( Cosine.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Cosine.class );
     }
 
     @Test
     public void shouldCreateCountOperation() {
-        assertThat( this.factory.create( Count.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Count.class ) ) );
+        assertOperation( this.factory.create( Count.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Count.class );
     }
 
     @Test
     public void shouldCreateCubeRootOperation() {
-        assertThat( this.factory.create( CubeRoot.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( CubeRoot.class ) ) );
+        assertOperation( this.factory.create( CubeRoot.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         CubeRoot.class );
     }
 
     @Test
     public void shouldCreateDecrementOperation() {
-        assertThat( this.factory.create( Decrement.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Decrement.class ) ) );
+        assertOperation( this.factory.create( Decrement.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Decrement.class );
     }
 
     @Test
     public void shouldCreateDivideOperation() {
-        assertThat( this.factory.create( Divide.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Divide.class ) ) );
+        assertOperation( this.factory.create( Divide.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Divide.class );
     }
 
     @Test
     public void shouldCreateFloorOperation() {
-        assertThat( this.factory.create( Floor.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Floor.class ) ) );
+        assertOperation( this.factory.create( Floor.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Floor.class );
     }
 
     @Test
     public void shouldCreateHyperbolicCosineOperation() {
-        assertThat( this.factory.create( HyperbolicCosine.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( HyperbolicCosine.class ) ) );
+        assertOperation( this.factory.create( HyperbolicCosine.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         HyperbolicCosine.class );
     }
 
     @Test
     public void shouldCreateHyperbolicSineOperation() {
-        assertThat( this.factory.create( HyperbolicSine.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( HyperbolicSine.class ) ) );
+        assertOperation( this.factory.create( HyperbolicSine.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         HyperbolicSine.class );
     }
 
     @Test
     public void shouldCreateHyperbolicTangentOperation() {
-        assertThat( this.factory.create( HyperbolicTangent.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( HyperbolicTangent.class ) ) );
+        assertOperation( this.factory.create( HyperbolicTangent.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         HyperbolicTangent.class );
     }
 
     @Test
     public void shouldCreateIncrementOperation() {
-        assertThat( this.factory.create( Increment.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Increment.class ) ) );
+        assertOperation( this.factory.create( Increment.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Increment.class );
     }
 
     @Test
     public void shouldCreateLog10Operation() {
-        assertThat( this.factory.create( Log10.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Log10.class ) ) );
+        assertOperation( this.factory.create( Log10.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Log10.class );
     }
 
     @Test
     public void shouldCreateLogOperation() {
-        assertThat( this.factory.create( Log.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Log.class ) ) );
+        assertOperation( this.factory.create( Log.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Log.class );
     }
 
     @Test
     public void shouldCreateMaxOperation() {
-        assertThat( this.factory.create( Max.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Max.class ) ) );
+        assertOperation( this.factory.create( Max.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Max.class );
     }
 
     @Test
     public void shouldCreateMedianOperation() {
-        assertThat( this.factory.create( Median.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Median.class ) ) );
+        assertOperation( this.factory.create( Median.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Median.class );
     }
 
     @Test
     public void shouldCreateMinOperation() {
-        assertThat( this.factory.create( Min.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Min.class ) ) );
+        assertOperation( this.factory.create( Min.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Min.class );
     }
 
     @Test
     public void shouldCreateModeOperation() {
-        assertThat( this.factory.create( Mode.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Mode.class ) ) );
+        assertOperation( this.factory.create( Mode.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Mode.class );
     }
 
     @Test
     public void shouldCreateModulusOperation() {
-        assertThat( this.factory.create( Modulus.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Modulus.class ) ) );
+        assertOperation( this.factory.create( Modulus.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Modulus.class );
     }
 
     @Test
     public void shouldCreateMultiplyOperation() {
-        assertThat( this.factory.create( Multiply.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Multiply.class ) ) );
+        assertOperation( this.factory.create( Multiply.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Multiply.class );
     }
 
     @Test
     public void shouldCreateParseDoubleOperation() {
-        assertThat( this.factory.create( ParseDouble.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( ParseDouble.class ) ) );
+        assertOperation( this.factory.create( ParseDouble.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         ParseDouble.class );
     }
 
     @Test
     public void shouldCreatePowerOfEMinus1Operation() {
-        assertThat( this.factory.create( PowerOfEMinus1.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( PowerOfEMinus1.class ) ) );
+        assertOperation( this.factory.create( PowerOfEMinus1.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         PowerOfEMinus1.class );
     }
 
     @Test
     public void shouldCreatePowerOfEOperation() {
-        assertThat( this.factory.create( PowerOfE.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( PowerOfE.class ) ) );
+        assertOperation( this.factory.create( PowerOfE.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         PowerOfE.class );
     }
 
     @Test
     public void shouldCreatePowerOperation() {
-        assertThat( this.factory.create( Power.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Power.class ) ) );
+        assertOperation( this.factory.create( Power.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Power.class );
     }
 
     @Test
     public void shouldCreateRandomOperation() {
-        assertThat( this.factory.create( Random.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Random.class ) ) );
+        assertOperation( this.factory.create( Random.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Random.class );
     }
 
     @Test
     public void shouldCreateRoundOperation() {
-        assertThat( this.factory.create( Round.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Round.class ) ) );
+        assertOperation( this.factory.create( Round.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Round.class );
     }
 
     @Test
     public void shouldCreateSignOperation() {
-        assertThat( this.factory.create( Sign.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Sign.class ) ) );
+        assertOperation( this.factory.create( Sign.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Sign.class );
     }
 
     @Test
     public void shouldCreateSineOperation() {
-        assertThat( this.factory.create( Sine.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Sine.class ) ) );
+        assertOperation( this.factory.create( Sine.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Sine.class );
     }
 
     @Test
     public void shouldCreateSquareRootOperation() {
-        assertThat( this.factory.create( SquareRoot.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( SquareRoot.class ) ) );
+        assertOperation( this.factory.create( SquareRoot.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         SquareRoot.class );
     }
 
     @Test
     public void shouldCreateSubtractOperation() {
-        assertThat( this.factory.create( Subtract.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Subtract.class ) ) );
+        assertOperation( this.factory.create( Subtract.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Subtract.class );
     }
 
     @Test
     public void shouldCreateTangentOperation() {
-        assertThat( this.factory.create( Tangent.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( Tangent.class ) ) );
+        assertOperation( this.factory.create( Tangent.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         Tangent.class );
     }
 
     @Test
     public void shouldCreateToDegreesOperation() {
-        assertThat( this.factory.create( ToDegrees.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( ToDegrees.class ) ) );
+        assertOperation( this.factory.create( ToDegrees.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         ToDegrees.class );
     }
 
     @Test
     public void shouldCreateToRadiansOperation() {
-        assertThat( this.factory.create( ToRadians.DESCRIPTOR, ID, TRANSFORM_ID ), is( instanceOf( ToRadians.class ) ) );
+        assertOperation( this.factory.create( ToRadians.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+                         ToRadians.class );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -245,17 +291,17 @@ public final class OperationFactoryTest implements TestConstants {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullDescriptor() {
-        this.factory.create( null, ID, TRANSFORM_ID );
+        this.factory.create( null, TestConstants.ID, TestConstants.TRANSFORM_ID );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullId() {
-        this.factory.create( AbsoluteValue.DESCRIPTOR, null, TRANSFORM_ID );
+        this.factory.create( AbsoluteValue.DESCRIPTOR, null, TestConstants.TRANSFORM_ID );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullTransformId() {
-        this.factory.create( AbsoluteValue.DESCRIPTOR, ID, null );
+        this.factory.create( AbsoluteValue.DESCRIPTOR, TestConstants.ID, null );
     }
 
     @Test( expected = IllegalStateException.class )
@@ -284,7 +330,7 @@ public final class OperationFactoryTest implements TestConstants {
 
         };
 
-        this.factory.create( bogus, ID, TRANSFORM_ID );
+        this.factory.create( bogus, TestConstants.ID, TestConstants.TRANSFORM_ID );
     }
 
 }

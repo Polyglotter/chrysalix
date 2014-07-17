@@ -43,7 +43,7 @@ public interface GrammarPart {
     String NAMESPACE_URI = "www.redhat.com/polyglotter/1.0";
 
     /**
-     * @return a localized part description (never <code>null</code>)
+     * @return a localized part description (can be <code>null</code> or empty)
      */
     String description();
 
@@ -53,7 +53,7 @@ public interface GrammarPart {
     QName id();
 
     /**
-     * @return a localized part name (never <code>null</code>)
+     * @return a part name (never <code>null</code> or empty)
      */
     String name();
 
@@ -65,6 +65,9 @@ public interface GrammarPart {
         String OLD_DESCRIPTION = "grammarPart.oldDescription";
         String NEW_DESCRIPTION = "grammarPart.newDescription";
 
+        String OLD_NAME = "grammarPart.oldName";
+        String NEW_NAME = "grammarPart.newName";
+
     }
 
     /**
@@ -75,7 +78,12 @@ public interface GrammarPart {
         /**
          * The term description has changed.
          */
-        DESCRIPTION_CHANGED;
+        DESCRIPTION_CHANGED,
+
+        /**
+         * The term name has changed.
+         */
+        NAME_CHANGED;
 
     }
 

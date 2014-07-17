@@ -24,68 +24,18 @@
 package org.polyglotter.grammar;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-
-import javax.xml.namespace.QName;
 
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarEvent.EventType;
 
 /**
- * A class used used as an input to, or output of, an {@link Operation operation}.
+ * A value used as an input to, or output of, an {@link Operation operation}.
  * 
  * @param <T>
  *        the type of term
  */
-public interface Term< T > extends Comparable< Term< T > >, GrammarPart, GrammarEventSource {
-
-    /**
-     * A term identifier that can be used for terms that are short-lived.
-     */
-    QName TEMP_ID = new QName( "temp" );
-
-    /**
-     * A term identifier that can be used for terms that are short-lived.
-     */
-    QName TEMP2_ID = new QName( "temp2" );
-
-    /**
-     * A {@link Number number} term sorter that sorts the term values in ascending order.
-     */
-    Comparator< Term< Number > > ASCENDING_NUMBER_SORTER = new Comparator< Term< Number > >() {
-
-        @Override
-        public int compare( final Term< Number > thisNumber,
-                            final Term< Number > thatNumber ) {
-            final Number thisValue = thisNumber.value();
-            final Number thatValue = thatNumber.value();
-
-            if ( thisValue == null ) {
-                return ( ( thatValue == null ) ? 0 : -1 );
-            }
-
-            if ( thatValue == null ) {
-                return 1;
-            }
-
-            return Double.compare( thisValue.doubleValue(), thatValue.doubleValue() );
-        }
-
-    };
-
-    /**
-     * A {@link Number number} term sorter that sorts the term values in descending order.
-     */
-    Comparator< Term< Number > > DESCENDING_NUMBER_SORTER = new Comparator< Term< Number > >() {
-
-        @Override
-        public int compare( final Term< Number > thisNumber,
-                            final Term< Number > thatNumber ) {
-            return ASCENDING_NUMBER_SORTER.compare( thatNumber, thisNumber );
-        }
-
-    };
+public interface Term< T > extends GrammarPart, GrammarEventSource {
 
     /**
      * An empty list of terms.
@@ -93,9 +43,9 @@ public interface Term< T > extends Comparable< Term< T > >, GrammarPart, Grammar
     List< Term< ? > > NO_TERMS = Collections.emptyList();
 
     /**
-     * @return the identifier of the owning {@link Operation operation} (never <code>null</code>).
+     * @return <code>true</code> if the term's value is modifiable
      */
-    QName operationId();
+    boolean modifiable();
 
     /**
      * Modifies the term value with the specified new value.
@@ -104,15 +54,20 @@ public interface Term< T > extends Comparable< Term< T > >, GrammarPart, Grammar
      *        the new term value (can be <code>null</code>)
      * @throws PolyglotterException
      *         if there is a problem setting the new value
+     * @throws UnsupportedOperationException
+     *         if called when the term is not modifiable
+     * @see #modifiable()
      */
-    void setValue( final T newValue ) throws PolyglotterException;
+    void setValue( final T newValue ) throws PolyglotterException, UnsupportedOperationException;
 
     /**
      * Obtains the current term value.
      * 
      * @return the current value (can be <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem obtaining the value
      */
-    T value();
+    T value() throws PolyglotterException;
 
     /**
      * Keys used when constructing the data part of an event.
