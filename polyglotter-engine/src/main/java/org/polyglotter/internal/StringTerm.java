@@ -21,50 +21,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.polyglotter.internal;
 
 import javax.xml.namespace.QName;
 
-@SuppressWarnings( "javadoc" )
-public class TestFloatTerm extends TestNumberTerm< Float > {
+import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.operation.AbstractTerm;
 
-    private float value;
+/**
+ * A term with a text value.
+ */
+public class StringTerm extends AbstractTerm< String > {
 
-    public TestFloatTerm( final QName id,
-                          final QName operationId,
-                          final float value ) {
-        super( id, operationId );
-        this.value = value;
+    /**
+     * @param id
+     *        the term identifier (cannot be <code>null</code>)
+     */
+    public StringTerm( final QName id ) {
+        super( id );
     }
 
     /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     * @param id
+     *        the term identifier (cannot be <code>null</code>)
+     * @param initialValue
+     *        the initial value (can be <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
      */
-    @Override
-    public int compareTo( final Term< Float > that ) {
-        return Float.compare( this.value, that.value() );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Term#setValue(java.lang.Object)
-     */
-    @Override
-    public void setValue( final Float newValue ) {
-        this.value = newValue;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Term#value()
-     */
-    @Override
-    public Float value() {
-        return this.value;
+    public StringTerm( final QName id,
+                       final String initialValue ) throws PolyglotterException {
+        this( id );
+        setValue( initialValue );
     }
 
 }

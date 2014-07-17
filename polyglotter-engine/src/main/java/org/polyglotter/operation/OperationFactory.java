@@ -167,6 +167,7 @@ public final class OperationFactory {
             if ( descriptor.category() == category ) result.add( descriptor );
         }
 
+        Collections.sort( result, Operation.DESCRIPTOR_NAME_SORTER );
         return result;
     }
 

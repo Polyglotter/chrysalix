@@ -23,217 +23,85 @@
  */
 package org.polyglotter.internal;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.Comparator;
 
 import javax.xml.namespace.QName;
 
-import org.polyglotter.common.CheckArg;
-import org.polyglotter.grammar.GrammarEvent;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.GrammarListener;
-import org.polyglotter.grammar.GrammarPart;
+import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.Term;
+import org.polyglotter.operation.AbstractTerm;
 
 /**
- * A number term.
- * 
+ * A term with a number value.
  */
-public class NumberTerm implements Term< Number > {
+public class NumberTerm extends AbstractTerm< Number > {
 
-    private String description;
-    private final QName id;
-    private final QName operationId;
-    private final Set< GrammarListener > listeners;
-    private Number value;
+    /**
+     * A {@link Number number} term sorter that sorts the term values in ascending order. If there is an error accessing either
+     * term's value a zero is returned.
+     */
+    public static final Comparator< Term< Number > > ASCENDING_SORTER = new Comparator< Term< Number > >() {
+
+        @Override
+        public int compare( final Term< Number > thisNumber,
+                            final Term< Number > thatNumber ) {
+            Number thisValue = null;
+            Number thatValue = null;
+
+            try {
+                thisValue = thisNumber.value();
+                thatValue = thatNumber.value();
+            } catch ( final PolyglotterException e ) {
+                return 0;
+            }
+
+            if ( thisValue == null ) {
+                return ( ( thatValue == null ) ? 0 : -1 );
+            }
+
+            if ( thatValue == null ) {
+                return 1;
+            }
+
+            return Double.compare( thisValue.doubleValue(), thatValue.doubleValue() );
+        }
+
+    };
+
+    /**
+     * A {@link Number number} term sorter that sorts the term values in descending order. If there is an error accessing either
+     * term's value a zero is returned.
+     */
+    public static final Comparator< Term< Number > > DESCENDING_SORTER = new Comparator< Term< Number > >() {
+
+        @Override
+        public int compare( final Term< Number > thisNumber,
+                            final Term< Number > thatNumber ) {
+            return ASCENDING_SORTER.compare( thatNumber, thisNumber );
+        }
+
+    };
 
     /**
      * @param id
      *        the term identifier (cannot be <code>null</code>)
-     * @param operationId
-     *        the operation identifier that owns this term (cannot be <code>null</code>)
      */
-    public NumberTerm( final QName id,
-                       final QName operationId ) {
-        CheckArg.notNull( id, "id" );
-        CheckArg.notNull( operationId, "operationId" );
-
-        this.id = id;
-        this.operationId = operationId;
-        this.listeners = new HashSet<>( 5 );
+    public NumberTerm( final QName id ) {
+        super( id );
     }
 
     /**
      * @param id
      *        the term identifier (cannot be <code>null</code>)
-     * @param operationId
-     *        the operation identifier that owns this term (cannot be <code>null</code>)
      * @param initialValue
      *        the initial value (can be <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
      */
     public NumberTerm( final QName id,
-                       final QName operationId,
-                       final Number initialValue ) {
-        this( id, operationId );
-        this.value = initialValue;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarEventSource#add(org.polyglotter.grammar.GrammarListener)
-     */
-    @Override
-    public void add( final GrammarListener listener ) {
-        this.listeners.add( listener );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    @Override
-    public final int compareTo( final Term< Number > that ) {
-        if ( this.value == null ) {
-            if ( that.value() == null ) return 0;
-            return -1;
-        }
-
-        if ( that.value() == null ) return 1;
-
-        final Double thisAsDouble = this.value.doubleValue();
-        final Double thatAsDouble = that.value().doubleValue();
-
-        return Double.compare( thisAsDouble, thatAsDouble );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
-     */
-    @Override
-    public String description() {
-        return this.description;
-    }
-
-    private void fire( final GrammarEvent event ) {
-        for ( final GrammarListener listener : this.listeners ) {
-            listener.notify( event );
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarPart#id()
-     */
-    @Override
-    public QName id() {
-        return this.id;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarPart#name()
-     */
-    @Override
-    public String name() {
-        return id().toString();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Term#operationId()
-     */
-    @Override
-    public QName operationId() {
-        return this.operationId;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarEventSource#remove(org.polyglotter.grammar.GrammarListener)
-     */
-    @Override
-    public void remove( final GrammarListener listener ) {
-        this.listeners.remove( listener );
-    }
-
-    /**
-     * @param newDescription
-     *        the new description (can be <code>null</code> or empty)
-     */
-    public void setDescription( final String newDescription ) {
-        boolean changed = false;
-        String oldDescription = null;
-
-        if ( this.description == null ) {
-            if ( newDescription != null ) {
-                this.description = newDescription;
-                changed = true;
-            }
-        } else if ( ( newDescription == null ) || !this.description.equals( newDescription ) ) {
-            oldDescription = this.description;
-            this.description = newDescription;
-            changed = true;
-        }
-
-        if ( changed ) {
-            final Map< String, Object > data = new HashMap< String, Object >( 1 );
-            data.put( GrammarPart.EventTag.OLD_DESCRIPTION, oldDescription );
-            data.put( GrammarPart.EventTag.NEW_DESCRIPTION, newDescription );
-
-            final GrammarEvent event = GrammarFactory.createEvent( GrammarPartEventType.DESCRIPTION_CHANGED, id(), data );
-            fire( event );
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Term#setValue(java.lang.Object)
-     */
-    @Override
-    public void setValue( final Number newValue ) {
-        boolean changed = false;
-        Number oldValue = null;
-
-        if ( this.value == null ) {
-            if ( newValue != null ) {
-                this.value = newValue;
-                changed = true;
-            }
-        } else if ( ( newValue == null ) || !this.value.equals( newValue ) ) {
-            oldValue = this.value;
-            this.value = newValue;
-            changed = true;
-        }
-
-        if ( changed ) {
-            final Map< String, Object > data = new HashMap< String, Object >( 1 );
-            data.put( Term.EventTag.OLD_VALUE, oldValue );
-            data.put( Term.EventTag.NEW_VALUE, newValue );
-
-            final GrammarEvent event = GrammarFactory.createEvent( TermEventType.VALUE_CHANGED, id(), data );
-            fire( event );
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Term#value()
-     */
-    @Override
-    public Number value() {
-        return this.value;
+                       final Number initialValue ) throws PolyglotterException {
+        this( id );
+        setValue( initialValue );
     }
 
 }

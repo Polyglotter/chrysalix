@@ -26,6 +26,7 @@ package org.polyglotter.operation;
 import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
+import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.Operation;
 import org.polyglotter.grammar.Term;
@@ -34,7 +35,7 @@ import org.polyglotter.grammar.ValidationProblem;
 /**
  * A string concatenation operation.
  */
-public final class Concat extends BaseOperation< String > {
+public final class Concat extends AbstractOperation< String > {
 
     /**
      * The operation descriptor.
@@ -91,16 +92,16 @@ public final class Concat extends BaseOperation< String > {
      */
     Concat( final QName id,
             final QName transformId ) {
-        super( id, transformId );
+        super( id, transformId, DESCRIPTOR );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#calculate()
+     * @see org.polyglotter.operation.AbstractOperation#calculate()
      */
     @Override
-    protected String calculate() {
+    protected String calculate() throws PolyglotterException {
         assert !problems().isError();
 
         final StringBuilder result = new StringBuilder();
@@ -116,27 +117,7 @@ public final class Concat extends BaseOperation< String > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
-     */
-    @Override
-    public String description() {
-        return DESCRIPTOR.description();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#descriptor()
-     */
-    @Override
-    public Descriptor descriptor() {
-        return DESCRIPTOR;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
      */
     @Override
     public int maxTerms() {
@@ -146,7 +127,7 @@ public final class Concat extends BaseOperation< String > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#minTerms()
      */
     @Override
     public int minTerms() {
@@ -156,20 +137,10 @@ public final class Concat extends BaseOperation< String > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#name()
+     * @see org.polyglotter.grammar.Operation#validate()
      */
     @Override
-    public String name() {
-        return DESCRIPTOR.name();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#validate()
-     */
-    @Override
-    protected void validate() {
+    public void validate() {
         if ( terms().isEmpty() ) {
             final ValidationProblem problem =
                 GrammarFactory.createError( id(), PolyglotterI18n.addOperationHasNoTerms.text( id() ) );

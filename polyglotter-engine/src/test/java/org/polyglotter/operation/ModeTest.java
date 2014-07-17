@@ -32,48 +32,62 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
+import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.TestConstants;
-import org.polyglotter.grammar.TestIntegerTerm;
+import org.polyglotter.grammar.Term;
 
-@SuppressWarnings( "javadoc" )
-public final class ModeTest implements TestConstants {
+@SuppressWarnings( { "javadoc", "unchecked" } )
+public final class ModeTest {
 
     private Mode operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Mode( ID, TRANSFORM_ID );
+        this.operation = new Mode( TestConstants.ID, TestConstants.TRANSFORM_ID );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( INT_1 );
+        this.operation.add( TestConstants.INT_1_TERM );
         assertThat( this.operation.terms().size(), is( 1 ) );
-        assertThat( ( TestIntegerTerm ) this.operation.get( INT_1.id() ), is( INT_1 ) );
+        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
     }
 
     @Test( expected = PolyglotterException.class )
     public void shouldAllowResultWithOneTerm() throws PolyglotterException {
-        this.operation.add( INT_1 );
+        this.operation.add( TestConstants.INT_1_TERM );
         this.operation.result();
     }
 
     @Test
     public void shouldFindOneNumber() throws PolyglotterException {
-        this.operation.add( INT_1, INT_2, DOUBLE_1, DOUBLE_2, FLOAT_1, FLOAT_2, INT_3 );
+        this.operation.add( TestConstants.INT_1_TERM,
+                            TestConstants.INT_2_TERM,
+                            TestConstants.DOUBLE_1_TERM,
+                            TestConstants.DOUBLE_2_TERM,
+                            TestConstants.FLOAT_1_TERM,
+                            TestConstants.FLOAT_2_TERM,
+                            TestConstants.INT_3_TERM );
         final Number[] result = this.operation.result();
         assertThat( result.length, is( 1 ) );
-        assertThat( result[ 0 ], is( ( Number ) INT_1_VALUE ) );
+        assertThat( result[ 0 ], is( ( Number ) TestConstants.INT_1_VALUE ) );
     }
 
     @Test
     public void shouldFindTwoNumbers() throws PolyglotterException {
-        this.operation.add( INT_1, INT_2, DOUBLE_1, DOUBLE_2, FLOAT_1, FLOAT_2, INT_3, DOUBLE_3 );
+        this.operation.add( TestConstants.INT_1_TERM,
+                            TestConstants.INT_2_TERM,
+                            TestConstants.DOUBLE_1_TERM,
+                            TestConstants.DOUBLE_2_TERM,
+                            TestConstants.FLOAT_1_TERM,
+                            TestConstants.FLOAT_2_TERM,
+                            TestConstants.INT_3_TERM,
+                            TestConstants.DOUBLE_3_TERM );
         final Number[] result = this.operation.result();
         assertThat( result.length, is( 2 ) );
-        assertThat( Arrays.asList( result ), hasItems( ( Number ) INT_1_VALUE, ( Number ) DOUBLE_1_VALUE ) );
+        assertThat( Arrays.asList( result ),
+                    hasItems( ( Number ) TestConstants.INT_1_VALUE, ( Number ) TestConstants.DOUBLE_1_VALUE ) );
     }
 
     @Test
@@ -93,8 +107,8 @@ public final class ModeTest implements TestConstants {
 
     @Test
     public void shouldHaveErrorWhenStringTerm() throws PolyglotterException {
-        this.operation.add( INT_1, INT_2 ); // will get rid of current problems
-        this.operation.add( STRING_1 );
+        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
+        this.operation.add( TestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -111,12 +125,17 @@ public final class ModeTest implements TestConstants {
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( INT_1 );
+        this.operation.terms().add( TestConstants.INT_1_TERM );
     }
 
     @Test
     public void shouldNotFindAMode() throws PolyglotterException {
-        this.operation.add( INT_1, INT_2, DOUBLE_1, DOUBLE_2, FLOAT_1, FLOAT_2 );
+        this.operation.add( TestConstants.INT_1_TERM,
+                            TestConstants.INT_2_TERM,
+                            TestConstants.DOUBLE_1_TERM,
+                            TestConstants.DOUBLE_2_TERM,
+                            TestConstants.FLOAT_1_TERM,
+                            TestConstants.FLOAT_2_TERM );
         final Number[] result = this.operation.result();
         assertThat( result.length, is( 0 ) );
     }

@@ -31,7 +31,7 @@ import org.polyglotter.grammar.Operation;
 /**
  * Counts the number of terms.
  */
-public final class Count extends BaseOperation< Integer > {
+public final class Count extends AbstractOperation< Integer > {
 
     /**
      * The operation descriptor.
@@ -90,13 +90,13 @@ public final class Count extends BaseOperation< Integer > {
      */
     Count( final QName id,
            final QName transformId ) {
-        super( id, transformId );
+        super( id, transformId, DESCRIPTOR );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#calculate()
+     * @see org.polyglotter.operation.AbstractOperation#calculate()
      */
     @Override
     protected Integer calculate() {
@@ -107,27 +107,7 @@ public final class Count extends BaseOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
-     */
-    @Override
-    public String description() {
-        return DESCRIPTOR.description();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#descriptor()
-     */
-    @Override
-    public Descriptor descriptor() {
-        return DESCRIPTOR;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
      */
     @Override
     public int maxTerms() {
@@ -137,7 +117,7 @@ public final class Count extends BaseOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#minTerms()
      */
     @Override
     public int minTerms() {
@@ -147,18 +127,10 @@ public final class Count extends BaseOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#name()
+     * @see org.polyglotter.grammar.Operation#validate()
      */
     @Override
-    public String name() {
-        return DESCRIPTOR.name();
-    }
-
-    /**
-     * Validates the operation's state.
-     */
-    @Override
-    protected void validate() {
+    public void validate() {
         // nothing to do
     }
 

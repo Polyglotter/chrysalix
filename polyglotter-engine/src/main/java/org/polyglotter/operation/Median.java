@@ -36,11 +36,12 @@ import org.polyglotter.grammar.GrammarFactory;
 import org.polyglotter.grammar.Operation;
 import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.internal.NumberTerm;
 
 /**
  * Computes the median value of a collection of number terms.
  */
-public final class Median extends BaseOperation< Number > {
+public final class Median extends AbstractOperation< Number > {
 
     /**
      * The operation descriptor.
@@ -99,17 +100,17 @@ public final class Median extends BaseOperation< Number > {
      */
     Median( final QName id,
             final QName transformId ) {
-        super( id, transformId );
+        super( id, transformId, DESCRIPTOR );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#calculate()
+     * @see org.polyglotter.operation.AbstractOperation#calculate()
      */
     @SuppressWarnings( "unchecked" )
     @Override
-    protected Number calculate() {
+    protected Number calculate() throws PolyglotterException {
         assert !problems().isError();
 
         int size = 0;
@@ -126,7 +127,7 @@ public final class Median extends BaseOperation< Number > {
             }
 
             // sort values
-            Collections.sort( numberTerms, Term.ASCENDING_NUMBER_SORTER );
+            Collections.sort( numberTerms, NumberTerm.ASCENDING_SORTER );
         }
 
         final boolean even = ( ( size & 1 ) == 0 );
@@ -135,15 +136,17 @@ public final class Median extends BaseOperation< Number > {
         if ( even ) {
             final Term< ? > first = numberTerms.get( halfwayIndex - 1 );
             final Term< ? > second = numberTerms.get( halfwayIndex );
-            final Add addOp = new Add( Term.TEMP_ID, id() );
+            final QName tempId1 = new QName( "temp1" );
+            final QName tempId2 = new QName( "temp2" );
+            final Add addOp = new Add( tempId1, id() );
 
             try {
                 addOp.add( first, second );
                 final Number sum = addOp.calculate();
 
-                final Divide divideOp = new Divide( Term.TEMP_ID, id() );
-                divideOp.add( GrammarFactory.createNumberTerm( Term.TEMP_ID, id(), sum ),
-                              GrammarFactory.createNumberTerm( Term.TEMP2_ID, id(), 2 ) );
+                final Divide divideOp = new Divide( tempId1, id() );
+                divideOp.add( GrammarFactory.createNumberTerm( tempId1, sum ),
+                              GrammarFactory.createNumberTerm( tempId2, 2 ) );
 
                 return divideOp.calculate();
             } catch ( final PolyglotterException e ) {
@@ -160,27 +163,7 @@ public final class Median extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
-     */
-    @Override
-    public String description() {
-        return DESCRIPTOR.description();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#descriptor()
-     */
-    @Override
-    public Descriptor descriptor() {
-        return DESCRIPTOR;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
      */
     @Override
     public int maxTerms() {
@@ -190,7 +173,7 @@ public final class Median extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#minTerms()
      */
     @Override
     public int minTerms() {
@@ -200,18 +183,10 @@ public final class Median extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#name()
+     * @see org.polyglotter.grammar.Operation#validate()
      */
     @Override
-    public String name() {
-        return DESCRIPTOR.name();
-    }
-
-    /**
-     * Validates the operation's state.
-     */
-    @Override
-    protected void validate() {
+    public void validate() {
         // make sure there are terms
         if ( terms().isEmpty() ) {
             final ValidationProblem problem =
@@ -226,12 +201,21 @@ public final class Median extends BaseOperation< Number > {
 
             // make sure all the terms have types of Number
             for ( final Term< ? > term : terms() ) {
-                final Object value = term.value();
+                Object value;
 
-                if ( !( value instanceof Number ) ) {
+                try {
+                    value = term.value();
+
+                    if ( !( value instanceof Number ) ) {
+                        final ValidationProblem problem =
+                            GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
+                        problems().add( problem );
+                    }
+                } catch ( final PolyglotterException e ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
+                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
                     problems().add( problem );
+                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
                 }
             }
         }

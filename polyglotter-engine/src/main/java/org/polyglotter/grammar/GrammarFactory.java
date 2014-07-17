@@ -30,9 +30,11 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.polyglotter.common.CheckArg;
+import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.grammar.GrammarEvent.EventType;
 import org.polyglotter.grammar.ValidationProblem.Severity;
 import org.polyglotter.internal.NumberTerm;
+import org.polyglotter.internal.StringTerm;
 
 /**
  * A factory for grammar-related objects.
@@ -91,16 +93,15 @@ public final class GrammarFactory {
     /**
      * @param id
      *        the term identifier (cannot be <code>null</code>)
-     * @param operationId
-     *        the operation identifier that owns this term (cannot be <code>null</code>)
-     * @param number
+     * @param initialValue
      *        the initial value (can be <code>null</code>)
      * @return the new term (never <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
      */
     public static Term< Number > createNumberTerm( final QName id,
-                                                   final QName operationId,
-                                                   final Number number ) {
-        return new NumberTerm( id, operationId, number );
+                                                   final Number initialValue ) throws PolyglotterException {
+        return new NumberTerm( id, initialValue );
     }
 
     /**
@@ -116,6 +117,20 @@ public final class GrammarFactory {
                                               final String message ) {
         CheckArg.notNull( grammarPartId, "grammarPartId" );
         return new Problem( Severity.OK, grammarPartId, message );
+    }
+
+    /**
+     * @param id
+     *        the term identifier (cannot be <code>null</code>)
+     * @param initialValue
+     *        the initial value (can be <code>null</code> or empty)
+     * @return the new term (never <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
+     */
+    public static Term< String > createStringTerm( final QName id,
+                                                   final String initialValue ) throws PolyglotterException {
+        return new StringTerm( id, initialValue );
     }
 
     /**

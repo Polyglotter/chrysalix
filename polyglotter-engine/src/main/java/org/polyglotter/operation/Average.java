@@ -1,5 +1,5 @@
 /*
- * Polyglotter (http://polyglotter.org)
+AbstractOperation * Polyglotter (http://polyglotter.org)
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
@@ -38,7 +38,7 @@ import org.polyglotter.grammar.ValidationProblem;
 /**
  * Computes the average value of a collection of number terms.
  */
-public final class Average extends BaseOperation< Number > {
+public final class Average extends AbstractOperation< Number > {
 
     /**
      * The operation descriptor.
@@ -97,19 +97,22 @@ public final class Average extends BaseOperation< Number > {
      */
     Average( final QName id,
              final QName transformId ) {
-        super( id, transformId );
+        super( id, transformId, DESCRIPTOR );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#calculate()
+     * @see org.polyglotter.operation.AbstractOperation#calculate()
      */
     @Override
-    protected Number calculate() {
+    protected Number calculate() throws PolyglotterException {
         assert !problems().isError();
 
-        final Add addOp = new Add( Term.TEMP_ID, id() );
+        final QName tempId1 = new QName( "temp1" );
+        final QName tempId2 = new QName( "temp2" );
+
+        final Add addOp = new Add( tempId1, id() );
         final List< Term< ? >> terms = terms();
 
         if ( terms.size() == 1 ) {
@@ -121,8 +124,8 @@ public final class Average extends BaseOperation< Number > {
             final Number total = addOp.calculate();
 
             final Divide divideOp = new Divide( id(), transformId() );
-            divideOp.add( GrammarFactory.createNumberTerm( Term.TEMP_ID, id(), total ) );
-            divideOp.add( GrammarFactory.createNumberTerm( Term.TEMP2_ID, id(), terms.size() ) );
+            divideOp.add( GrammarFactory.createNumberTerm( tempId1, total ) );
+            divideOp.add( GrammarFactory.createNumberTerm( tempId2, terms.size() ) );
 
             return divideOp.calculate();
         } catch ( final PolyglotterException e ) {
@@ -138,27 +141,7 @@ public final class Average extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
-     */
-    @Override
-    public String description() {
-        return DESCRIPTOR.description();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#descriptor()
-     */
-    @Override
-    public Descriptor descriptor() {
-        return DESCRIPTOR;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.BaseOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
      */
     @Override
     public int maxTerms() {
@@ -168,7 +151,7 @@ public final class Average extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.BaseOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#minTerms()
      */
     @Override
     public int minTerms() {
@@ -178,18 +161,10 @@ public final class Average extends BaseOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#name()
+     * @see org.polyglotter.grammar.Operation#validate()
      */
     @Override
-    public String name() {
-        return DESCRIPTOR.name();
-    }
-
-    /**
-     * Validates the operation's state.
-     */
-    @Override
-    protected void validate() {
+    public void validate() {
         // make sure there are terms
         if ( terms().isEmpty() ) {
             final ValidationProblem problem =
@@ -204,12 +179,21 @@ public final class Average extends BaseOperation< Number > {
 
             // make sure all the terms have types of Number
             for ( final Term< ? > term : terms() ) {
-                final Object value = term.value();
+                Object value;
 
-                if ( !( value instanceof Number ) ) {
+                try {
+                    value = term.value();
+
+                    if ( !( value instanceof Number ) ) {
+                        final ValidationProblem problem =
+                            GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
+                        problems().add( problem );
+                    }
+                } catch ( final PolyglotterException e ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
+                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
                     problems().add( problem );
+                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
                 }
             }
         }
