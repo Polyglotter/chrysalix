@@ -83,7 +83,7 @@
                             <descriptors>
                                 <descriptor>src/assembly/module-with-dependencies.xml</descriptor>
                             </descriptors>
-                            <outputDirectory>${project.build.testOutputDirectory}/org/modeshape/modeler</outputDirectory>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
                             <finalName>modeshape-modeler-java-${modeshape.version}</finalName>
                         </configuration>
                     </execution>

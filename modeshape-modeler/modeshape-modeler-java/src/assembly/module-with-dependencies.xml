@@ -5,38 +5,24 @@
         <format>zip</format>
     </formats>
     <dependencySets>
+<!-- Add dependency jars not found in the engine
         <dependencySet>
-            <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+            <outputDirectory>${project.artifactId}/lib</outputDirectory>
             <unpack>false</unpack>
             <scope>runtime</scope>
             <useProjectArtifact>false</useProjectArtifact>
             <excludes>
                 <exclude>${project.groupId}:*</exclude>
+                <exclude>org.modeshape:*</exclude>
             </excludes>
         </dependencySet>
+-->
         <dependencySet>
-            <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+            <outputDirectory>${project.artifactId}</outputDirectory>
             <unpack>false</unpack>
             <includes>
                 <include>${project.groupId}:${project.artifactId}:*</include>
             </includes>
         </dependencySet>
     </dependencySets>
-    <fileSets>
-        <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>${project.artifactId}/tests</outputDirectory>
-            <includes>
-                <include>${project.artifactId}-${project.version}-tests.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>${project.artifactId}/sources</outputDirectory>
-            <includes>
-                <include>${project.artifactId}-${project.version}-sources.jar</include>
-                <include>${project.artifactId}-${project.version}-test-sources.jar</include>
-            </includes>
-        </fileSet>
-    </fileSets>
 </assembly>
