@@ -131,6 +131,7 @@ public abstract class BaseTest {
         for ( final URL url : modeler.modelTypeManager().modelTypeRepositories() )
             modeler.modelTypeManager().unregisterModelTypeRepository( url );
         modeler.modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
+        modeler.modelTypeManager().registerModelTypeRepository( new URL( "file:target" ) );
         return modeler;
     }
 

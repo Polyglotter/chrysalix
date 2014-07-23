@@ -57,9 +57,6 @@ public class ExtensionInstaller {
     // pass in category then version
     private static final String ARCHIVE_NAME = "modeshape-modeler-%s-%s-module-with-dependencies.zip";
 
-    // pass in archive name
-    private static final String ARCHIVE_PATH = "org/modeshape/modeler/%s";
-
     static final Logger LOGGER = Logger.getLogger( ExtensionInstaller.class );
 
     private boolean archiveExists( final Node categoryNode,
@@ -126,7 +123,6 @@ public class ExtensionInstaller {
         final String category = categoryNode.getName();
         final String archiveName = String.format( ARCHIVE_NAME, category, version );
         final Path archivePath = library.resolve( archiveName );
-        final String fullArchivePath = String.format( ARCHIVE_PATH, archiveName );
         boolean extensionInstalled = false;
 
         // don't install if already installed
@@ -135,9 +131,9 @@ public class ExtensionInstaller {
             return false;
         }
 
-        // loop through repositories until we find the sequencer archive
+        // loop through repositories until we find the extension archive which is found at root of archive
         for ( final URL repositoryUrl : modelTypeRepositories ) {
-            final URL url = new URL( path( repositoryUrl.toString(), fullArchivePath ) );
+            final URL url = new URL( path( repositoryUrl.toString(), archiveName ) );
             InputStream urlStream = null;
             Exception err = null;
 
