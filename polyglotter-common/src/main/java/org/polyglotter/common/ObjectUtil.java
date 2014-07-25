@@ -27,7 +27,12 @@ package org.polyglotter.common;
  * Utilities for any {@link Object object}.
  */
 public final class ObjectUtil {
-    
+
+    /**
+     * An empty array of objects.
+     */
+    public static final Object[] EMPTY_ARRAY = new Object[ 0 ];
+
     /**
      * @param obj1
      *        the first object used
@@ -40,23 +45,23 @@ public final class ObjectUtil {
         if ( obj1 == obj2 ) {
             return true;
         }
-        
+
         if ( obj1 == null ) {
             return ( obj2 == null );
         }
-        
+
         if ( obj2 == null ) {
             return false;
         }
-        
+
         return obj1.equals( obj2 );
     }
-    
+
     /**
      * Don't allow construction outside of this class.
      */
     private ObjectUtil() {
         // nothing to do
     }
-    
+
 }
