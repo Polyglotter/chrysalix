@@ -72,11 +72,13 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
 
     static final String MODESHAPE_GROUP = "org/modeshape";
 
+    private static final String SEQUENCER_PREFIX = "modeshape-sequencer-";
+
     // pass in category, version, name
-    private static final String SEQUENCER_PATH_PATTERN = MODESHAPE_GROUP + "/modeshape-sequencer-%s/%s/%s";
+    private static final String SEQUENCER_PATH_PATTERN = MODESHAPE_GROUP + "/" + SEQUENCER_PREFIX + "%s/%s/%s";
 
     // pass in category, version
-    private static final String SEQUENCER_ZIP_PATTERN = "modeshape-sequencer-%s-%s-module-with-dependencies.zip";
+    private static final String SEQUENCER_ZIP_PATTERN = SEQUENCER_PREFIX + "%s-%s-module-with-dependencies.zip";
 
     private final ExtensionInstaller extensionInstaller;
     final Manager manager;
@@ -380,22 +382,22 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                                                    stream );
                     }
 
-                    // Iterate through entries looking for appropriate extension classes
-                    try ( final ZipFile jar = new ZipFile( jarPath.toFile() ) ) {
-                        for ( final Enumeration< ? extends ZipEntry > jarIter = jar.entries(); jarIter.hasMoreElements(); ) {
-                            final ZipEntry jarEntry = jarIter.nextElement();
-                            if ( jarEntry.isDirectory() ) continue;
+                    // Iterate through entries looking for appropriate sequencer classes
+                    if ( jarPath.getFileName().toString().startsWith( SEQUENCER_PREFIX ) )
+                        try ( final ZipFile jar = new ZipFile( jarPath.toFile() ) ) {
+                            for ( final Enumeration< ? extends ZipEntry > jarIter = jar.entries(); jarIter.hasMoreElements(); ) {
+                                final ZipEntry jarEntry = jarIter.nextElement();
+                                if ( jarEntry.isDirectory() ) continue;
 
-                            name = jarEntry.getName();
+                                name = jarEntry.getName();
 
-                            // see if class is a possible sequencer
-                            if ( jarPath.getFileName().toString().contains( "sequencer" )
-                                 && name.endsWith( "Sequencer.class" ) ) {
-                                potentialSequencerClassNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                LOGGER.debug( "Potential sequencer: %s", name );
+                                // see if class is a possible sequencer
+                                if ( name.endsWith( "Sequencer.class" ) ) {
+                                    potentialSequencerClassNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                                    LOGGER.debug( "Potential sequencer: %s", name );
+                                }
                             }
                         }
-                    }
                 }
 
                 final Node modelTypesNode = categoryNode.getNode( ModelerLexicon.Category.MODEL_TYPES );

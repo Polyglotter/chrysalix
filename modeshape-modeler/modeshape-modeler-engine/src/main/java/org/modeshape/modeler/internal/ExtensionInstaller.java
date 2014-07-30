@@ -53,13 +53,15 @@ import org.polyglotter.common.Logger;
  */
 public class ExtensionInstaller {
 
+    private static final String MODELER_PREFIX = "modeshape-modeler-";
+
     // pass in category then version
-    private static final String ARCHIVE_NAME = "modeshape-modeler-%s-%s-module-with-dependencies.zip";
+    private static final String ARCHIVE_NAME = MODELER_PREFIX + "%s-%s-module-with-dependencies.zip";
 
     static final Logger LOGGER = Logger.getLogger( ExtensionInstaller.class );
 
     // pass in category, version, name
-    private static final String EXTENSION_PATH_PATTERN = ModelTypeManagerImpl.MODESHAPE_GROUP + "/modeshape-modeler-%s/%s/%s";
+    private static final String EXTENSION_PATH_PATTERN = ModelTypeManagerImpl.MODESHAPE_GROUP + "/" + MODELER_PREFIX + "%s/%s/%s";
 
     private boolean archiveExists( final Node categoryNode,
                                    final String archiveName ) throws Exception {
@@ -208,24 +210,25 @@ public class ExtensionInstaller {
                             LOGGER.debug( "Uploaded jar '%s' to category node", nodePath );
                         }
 
-                        // Iterate through entries looking for appropriate sequencer and extension classes
-                        try ( final ZipFile jar = new ZipFile( jarPath.toFile() ) ) {
-                            for ( final Enumeration< ? extends ZipEntry > itr = jar.entries(); itr.hasMoreElements(); ) {
-                                final ZipEntry entry = itr.nextElement();
-                                if ( entry.isDirectory() ) continue;
+                        // Iterate through entries looking for appropriate extension classes
+                        if ( jarPath.getFileName().toString().startsWith( MODELER_PREFIX ) )
+                            try ( final ZipFile jar = new ZipFile( jarPath.toFile() ) ) {
+                                for ( final Enumeration< ? extends ZipEntry > itr = jar.entries(); itr.hasMoreElements(); ) {
+                                    final ZipEntry entry = itr.nextElement();
+                                    if ( entry.isDirectory() ) continue;
 
-                                name = entry.getName();
+                                    name = entry.getName();
 
-                                // see if class is a possible sequencer or desequencer
-                                if ( isDesequencerName( name ) ) {
-                                    desequencerNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                    LOGGER.debug( "Found potential desequencer '%s'", name );
-                                } else if ( isDependencyProcessorName( name ) ) {
-                                    dependencyProcessorNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                    LOGGER.debug( "Found potential dependency processor '%s'", name );
+                                    // see if class is a possible desequencers or desequencer processors
+                                    if ( isDesequencerName( name ) ) {
+                                        desequencerNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                                        LOGGER.debug( "Found potential desequencer '%s'", name );
+                                    } else if ( isDependencyProcessorName( name ) ) {
+                                        dependencyProcessorNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                                        LOGGER.debug( "Found potential dependency processor '%s'", name );
+                                    }
                                 }
                             }
-                        }
                     } else if ( isDesequencerName( name ) ) {
                         desequencerNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
                         LOGGER.debug( "Found potential desequencer '%s'", name );
