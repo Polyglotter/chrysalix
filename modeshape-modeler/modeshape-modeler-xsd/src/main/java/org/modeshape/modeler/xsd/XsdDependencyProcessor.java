@@ -236,8 +236,8 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
                         final String[] pathSegments = path.split( "/" );
                         final List< String > commonPath = new ArrayList<>();
 
-                        final Node artifactNode = node.getSession().getNode( artifactPath );
-                        final String[] artifactSegments = artifactNode.getPath().split( "/" ); // TODO use this
+                        // final Node artifactNode = node.getSession().getNode( artifactPath );
+                        // final String[] artifactSegments = artifactNode.getPath().split( "/" ); // TODO use this
 
                         // find common parent path between schema location and model's external location
                         for ( int i = 0; i < extLocSegments.length; ++i ) {

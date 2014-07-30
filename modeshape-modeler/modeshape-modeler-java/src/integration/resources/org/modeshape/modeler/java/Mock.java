@@ -21,30 +21,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.xsd;
+package org.modeshape.modeler.java;
 
-import org.junit.Test;
-import org.modeshape.modeler.xsd.test.XsdBaseTest;
+/**
+ * 
+ */
+public class Mock {
 
-@SuppressWarnings( "javadoc" )
-public class ITXsdDesquencerTest extends XsdBaseTest {
-
-    @Test
-    public void should() {}
-
-    // @Test
-    // public void shouldDesequence() throws Exception {
-    // modelTypeManager().install( SRAMP_MODEL_TYPE_CATEGORY );
-    // modelTypeManager().install( XSD_MODEL_TYPE_CATEGORY );
-    // final Model model = modeler().generateModel( new File( "src/test/resources/Books/Books.xsd" ),
-    // null,
-    // modelTypeManager().modelType( XSD_MODEL_TYPE_ID ) );
-    // final Desequencer desequencer = model.modelType().desequencer();
-    // assertThat( desequencer, is( notNullValue() ) );
-    //
-    // try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {
-    // desequencer.execute( model, stream );
-    // assertThat( stream.toString().startsWith( XML_DECLARATION + "\n<xsd:schema " ), is( true ) );
-    // }
-    // }
 }

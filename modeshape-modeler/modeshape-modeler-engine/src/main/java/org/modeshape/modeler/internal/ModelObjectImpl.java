@@ -36,6 +36,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.NodeType;
 
@@ -51,53 +52,6 @@ import org.modeshape.modeler.ModelerLexicon;
  * 
  */
 public class ModelObjectImpl implements ModelObject {
-
-    /**
-     * @param value
-     *        the JCR value holder whose value is being requested (cannot be <code>null</code>)
-     * @param propertyType
-     *        the {@link PropertyType type} of the value being requested
-     * @return the value
-     * @throws ModelerException
-     *         if there is a problem obtaining the value
-     */
-    public static Object getValue( final Value value,
-                                   final int propertyType ) throws ModelerException {
-        try {
-            if ( propertyType == PropertyType.BINARY ) {
-                return value.getBinary();
-            }
-
-            if ( propertyType == PropertyType.BOOLEAN ) {
-                return Boolean.valueOf( value.getBoolean() );
-            }
-
-            if ( propertyType == PropertyType.DATE ) {
-                return value.getDate();
-            }
-
-            if ( propertyType == PropertyType.DOUBLE ) {
-                return Double.valueOf( value.getDouble() );
-            }
-
-            if ( ( propertyType == PropertyType.LONG ) ) {
-                return value.getLong();
-            }
-
-            if ( ( propertyType == PropertyType.STRING )
-                 || ( propertyType == PropertyType.NAME )
-                 || ( propertyType == PropertyType.PATH )
-                 || ( propertyType == PropertyType.REFERENCE )
-                 || ( propertyType == PropertyType.WEAKREFERENCE )
-                 || ( propertyType == PropertyType.URI ) ) {
-                return value.toString();
-            }
-
-            return null;
-        } catch ( final Exception e ) {
-            throw new ModelerException( e );
-        }
-    }
 
     /**
      * 
@@ -540,6 +494,36 @@ public class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
+     * @see org.modeshape.modeler.ModelObject#setValue(java.lang.String, java.lang.Object[])
+     */
+    @Override
+    public void setValue( final String propertyName,
+                          final Object... values ) throws ModelerException {
+        CheckArg.isNotEmpty( propertyName, "propertyName" );
+        manager.run( new Task< Void >() {
+
+            @Override
+            public Void run( final Session session ) throws Exception {
+                try {
+                    final Property prop = session.getNode( path ).getProperty( propertyName );
+                    final ValueFactory factory = session.getValueFactory();
+                    final Value[] vals = new Value[ values.length ];
+                    int ndx = 0;
+                    for ( final Object value : values ) {
+                        vals[ ndx++ ] = factory.createValue( value.toString(), prop.getType() );
+                    }
+                    prop.setValue( vals );
+                } catch ( final Exception e ) {
+                    throw new IllegalArgumentException( e );
+                }
+                return null;
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.modeshape.modeler.ModelObject#stringValue(java.lang.String)
      */
     @Override
@@ -609,11 +593,6 @@ public class ModelObjectImpl implements ModelObject {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
         return manager.run( new Task< Object >() {
 
-            /**
-             * {@inheritDoc}
-             * 
-             * @see org.modeshape.modeler.internal.Task#run(javax.jcr.Session)
-             */
             @Override
             public Object run( final Session session ) throws ModelerException {
                 Value value;
@@ -627,9 +606,56 @@ public class ModelObjectImpl implements ModelObject {
                     throw new ModelerException( e );
                 }
 
-                return getValue( value, propType );
+                return value( value, propType );
             }
         } );
+    }
+
+    /**
+     * @param value
+     *        the JCR value holder whose value is being requested (cannot be <code>null</code>)
+     * @param propertyType
+     *        the {@link PropertyType type} of the value being requested
+     * @return the value
+     * @throws ModelerException
+     *         if there is a problem obtaining the value
+     */
+    Object value( final Value value,
+                  final int propertyType ) throws ModelerException {
+        try {
+            if ( propertyType == PropertyType.BINARY ) {
+                return value.getBinary();
+            }
+
+            if ( propertyType == PropertyType.BOOLEAN ) {
+                return Boolean.valueOf( value.getBoolean() );
+            }
+
+            if ( propertyType == PropertyType.DATE ) {
+                return value.getDate();
+            }
+
+            if ( propertyType == PropertyType.DOUBLE ) {
+                return Double.valueOf( value.getDouble() );
+            }
+
+            if ( ( propertyType == PropertyType.LONG ) ) {
+                return value.getLong();
+            }
+
+            if ( ( propertyType == PropertyType.STRING )
+                 || ( propertyType == PropertyType.NAME )
+                 || ( propertyType == PropertyType.PATH )
+                 || ( propertyType == PropertyType.REFERENCE )
+                 || ( propertyType == PropertyType.WEAKREFERENCE )
+                 || ( propertyType == PropertyType.URI ) ) {
+                return value.toString();
+            }
+
+            return null;
+        } catch ( final Exception e ) {
+            throw new ModelerException( e );
+        }
     }
 
     /**
@@ -642,11 +668,6 @@ public class ModelObjectImpl implements ModelObject {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
         return manager.run( new Task< Object[] >() {
 
-            /**
-             * {@inheritDoc}
-             * 
-             * @see org.modeshape.modeler.internal.Task#run(javax.jcr.Session)
-             */
             @Override
             public Object[] run( final Session session ) throws ModelerException {
                 try {
@@ -662,7 +683,7 @@ public class ModelObjectImpl implements ModelObject {
                     int i = 0;
 
                     for ( final Value value : values ) {
-                        result[ i++ ] = getValue( value, propType );
+                        result[ i++ ] = value( value, propType );
                     }
 
                     return result;

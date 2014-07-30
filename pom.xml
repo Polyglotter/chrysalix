@@ -610,11 +610,9 @@
     <!-- Modules -->
     <!-- ================================================================== -->
     <modules>
-        <module>polyglotter-test</module>
-        <module>polyglotter-common</module>
         <module>modeshape-modeler</module>
+        <module>polyglotter-common</module>
         <module>polyglotter-engine</module>
-        <module>polyglotter-eclipse</module>
     </modules>
 
 </project>
