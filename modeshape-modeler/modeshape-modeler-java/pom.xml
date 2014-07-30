@@ -37,6 +37,11 @@
             <type>test-jar</type>
         </dependency>
 
+        <dependency>
+            <groupId>org.modeshape</groupId>
+            <artifactId>modeshape-sequencer-java</artifactId>
+        </dependency>
+
         <!-- ================================================================== -->
         <!-- Testing -->
         <!-- ================================================================== -->
@@ -77,7 +82,7 @@
                             <descriptors>
                                 <descriptor>src/assembly/module-with-dependencies.xml</descriptor>
                             </descriptors>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <outputDirectory>${project.build.directory}/org/modeshape/modeshape-modeler-java/${modeshape.version}</outputDirectory>
                             <finalName>modeshape-modeler-java-${modeshape.version}</finalName>
                         </configuration>
                     </execution>

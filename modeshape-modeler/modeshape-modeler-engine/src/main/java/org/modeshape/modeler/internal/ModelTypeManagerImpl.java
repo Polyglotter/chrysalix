@@ -70,7 +70,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
 
     static final Logger LOGGER = Logger.getLogger( ModelTypeManagerImpl.class );
 
-    private static final String MODESHAPE_GROUP = "org/modeshape";
+    static final String MODESHAPE_GROUP = "org/modeshape";
 
     // pass in category, version, name
     private static final String SEQUENCER_PATH_PATTERN = MODESHAPE_GROUP + "/modeshape-sequencer-%s/%s/%s";

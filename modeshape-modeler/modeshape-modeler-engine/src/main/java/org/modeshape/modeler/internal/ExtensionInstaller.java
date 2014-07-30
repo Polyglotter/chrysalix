@@ -40,7 +40,6 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
-import org.modeshape.common.util.CheckArg;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelerLexicon;
@@ -58,6 +57,9 @@ public class ExtensionInstaller {
     private static final String ARCHIVE_NAME = "modeshape-modeler-%s-%s-module-with-dependencies.zip";
 
     static final Logger LOGGER = Logger.getLogger( ExtensionInstaller.class );
+
+    // pass in category, version, name
+    private static final String EXTENSION_PATH_PATTERN = ModelTypeManagerImpl.MODESHAPE_GROUP + "/modeshape-modeler-%s/%s/%s";
 
     private boolean archiveExists( final Node categoryNode,
                                    final String archiveName ) throws Exception {
@@ -110,19 +112,13 @@ public class ExtensionInstaller {
                      final Collection< URL > modelTypeRepositories,
                      final String version,
                      final Set< ModelType > modelTypes ) throws Exception {
-        CheckArg.isNotNull( categoryNode, "categoryNode" );
-        CheckArg.isNotNull( libraryClassLoader, "libraryClassLoader" );
-        CheckArg.isNotNull( library, "library" );
-        CheckArg.isNotEmpty( modelTypeRepositories, "modelTypeRepositories" );
-        CheckArg.isNotEmpty( version, "version" );
-        CheckArg.isNotNull( modelTypes, "modelTypes" );
-
         // will not have model types if sequencer jar didn't have installable sequencer
         if ( modelTypes.isEmpty() ) return false;
 
         final String category = categoryNode.getName();
         final String archiveName = String.format( ARCHIVE_NAME, category, version );
         final Path archivePath = library.resolve( archiveName );
+        final String extensionArchivePath = String.format( EXTENSION_PATH_PATTERN, category, version, archiveName );
         boolean extensionInstalled = false;
 
         // don't install if already installed
@@ -133,7 +129,7 @@ public class ExtensionInstaller {
 
         // loop through repositories until we find the extension archive which is found at root of archive
         for ( final URL repositoryUrl : modelTypeRepositories ) {
-            final URL url = new URL( path( repositoryUrl.toString(), archiveName ) );
+            final URL url = new URL( path( repositoryUrl.toString(), extensionArchivePath ) );
             InputStream urlStream = null;
             Exception err = null;
 
