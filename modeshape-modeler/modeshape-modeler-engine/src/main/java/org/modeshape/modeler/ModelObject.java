@@ -193,6 +193,17 @@ public interface ModelObject {
 
     /**
      * @param propertyName
+     *        the name of one of this model object's properties
+     * @param values
+     *        the value(s) of the supplied property
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setValue( String propertyName,
+                   Object... values ) throws ModelerException;
+
+    /**
+     * @param propertyName
      *        the name of one of this model object's single-valued properties
      * @return the String value of the supplied property, or <code>null</code> if the property doesn't exist
      * @throws ModelerException

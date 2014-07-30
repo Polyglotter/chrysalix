@@ -369,7 +369,7 @@ class FocusTreeCanvas extends FigureCanvas {
         // Set preferred width of cells to model value
         for ( final Object child : column.cellColumn.getChildren() ) {
             final Cell cell = ( Cell ) child;
-            final GridData gridData = ( ( GridData ) column.cellColumn.getLayoutManager().getConstraint( cell ) );
+            final GridData gridData = ( GridData ) column.cellColumn.getLayoutManager().getConstraint( cell );
             gridData.widthHint = initialCellWidth;
             column.cellColumn.setConstraint( cell, gridData );
         }

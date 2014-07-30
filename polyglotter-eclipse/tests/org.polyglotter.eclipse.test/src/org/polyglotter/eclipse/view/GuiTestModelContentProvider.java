@@ -125,6 +125,11 @@ public final class GuiTestModelContentProvider {
             }
 
             @Override
+            public int initialCellWidth() {
+                return 100;
+            }
+
+            @Override
             public boolean initialIndexIsOne() {
                 return true;
             }

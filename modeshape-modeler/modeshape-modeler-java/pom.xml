@@ -55,12 +55,6 @@
             <artifactId>mockito-all</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.polyglotter</groupId>
-            <artifactId>polyglotter-test</artifactId>
-            <type>test-jar</type>
-        </dependency>
-
     </dependencies>
 
     <!-- ================================================================== -->
@@ -85,33 +79,6 @@
                             </descriptors>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <finalName>modeshape-modeler-java-${modeshape.version}</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Copy test resources -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven.resources.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>copy-sequencers</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>../../polyglotter-test/src/main/resources</directory>
-                                    <includes>
-                                        <include>**/${modeshape.version}/modeshape-sequencer*module-with-dependencies.zip</include>
-                                    </includes>
-                                </resource>
-                            </resources>
                         </configuration>
                     </execution>
                 </executions>

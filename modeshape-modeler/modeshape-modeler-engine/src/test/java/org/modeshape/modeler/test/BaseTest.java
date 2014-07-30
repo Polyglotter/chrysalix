@@ -53,22 +53,22 @@ public abstract class BaseTest {
 
     protected static final String ARTIFACT_NAME = "artifact";
     protected static final String MODEL_NAME = "model";
-    protected static final String XML_MODEL_TYPE_CATEGORY = "xml";
-    protected static final String XML_MODEL_TYPE_ID = "org.modeshape.modeler.xml.Xml";
-    protected static final String XML_ROOT = "root";
-    protected static final String XML_ROOT_PROPERTY = "property";
-    protected static final String XML_LEAF = "child";
-    protected static final String XML_STRING_VALUE = "string";
-    protected static final String XML_SAME_NAME_SIBLING = "sameNameSibling";
-    protected static final String XML_DECLARATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-    protected static final String XML_ARTIFACT = XML_DECLARATION
-                                                 + '<' + XML_ROOT + " " + XML_ROOT_PROPERTY + "='" + XML_STRING_VALUE + "'>"
-                                                 + "<" + XML_LEAF + "></" + XML_LEAF + ">"
-                                                 + "<" + XML_SAME_NAME_SIBLING + "></" + XML_SAME_NAME_SIBLING + ">"
-                                                 + "<" + XML_SAME_NAME_SIBLING + "></" + XML_SAME_NAME_SIBLING + ">"
-                                                 + "</" + XML_ROOT + ">";
-    protected static final String XSD_ARTIFACT =
-        XML_DECLARATION + "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"></xs:schema>";
+    // protected static final String XML_MODEL_TYPE_CATEGORY = "xml";
+    // protected static final String XML_MODEL_TYPE_ID = "org.modeshape.modeler.xml.Xml";
+    // protected static final String XML_ROOT = "root";
+    // protected static final String XML_ROOT_PROPERTY = "property";
+    // protected static final String XML_LEAF = "child";
+    // protected static final String XML_STRING_VALUE = "string";
+    // protected static final String XML_SAME_NAME_SIBLING = "sameNameSibling";
+    // protected static final String XML_DECLARATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    // protected static final String XML_ARTIFACT = XML_DECLARATION
+    // + '<' + XML_ROOT + " " + XML_ROOT_PROPERTY + "='" + XML_STRING_VALUE + "'>"
+    // + "<" + XML_LEAF + "></" + XML_LEAF + ">"
+    // + "<" + XML_SAME_NAME_SIBLING + "></" + XML_SAME_NAME_SIBLING + ">"
+    // + "<" + XML_SAME_NAME_SIBLING + "></" + XML_SAME_NAME_SIBLING + ">"
+    // + "</" + XML_ROOT + ">";
+    // protected static final String XSD_ARTIFACT =
+    // XML_DECLARATION + "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"></xs:schema>";
 
     static {
         try {
@@ -126,12 +126,11 @@ public abstract class BaseTest {
     }
 
     public ModeShapeModeler modeler() throws Exception {
-        if ( modeler == null )
+        if ( modeler == null ) {
             modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
-        for ( final URL url : modeler.modelTypeManager().modelTypeRepositories() )
-            modeler.modelTypeManager().unregisterModelTypeRepository( url );
-        modeler.modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
-        modeler.modelTypeManager().registerModelTypeRepository( new URL( "file:target" ) );
+            for ( final URL url : modeler.modelTypeManager().modelTypeRepositories() )
+                modeler.modelTypeManager().unregisterModelTypeRepository( url );
+        }
         return modeler;
     }
 
@@ -140,10 +139,7 @@ public abstract class BaseTest {
     }
 
     protected URL modelTypeRepository() throws Exception {
-        if ( modelTypeRepository == null ) {
-            modelTypeRepository = new URL( "file:target/test-classes" );
-        }
-
+        if ( modelTypeRepository == null ) modelTypeRepository = new URL( "file:../../test-metamodel-repository" );
         return modelTypeRepository;
     }
 
