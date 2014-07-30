@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.modeler.ModelObject;
+import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.test.BaseTest;
 
 @SuppressWarnings( "javadoc" )
@@ -45,19 +46,28 @@ public class ITJava extends BaseTest {
     @Before
     public void before() throws Exception {
         modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
+        modelTypeManager().install( CATEGORY );
         super.before();
     }
 
     private ModelObject modelObject() throws Exception {
-        modelTypeManager().install( CATEGORY );
         final ModelObject modelObject =
-            modeler().generateModel( new File( MODEL_NAME ), MODEL_NAME, modelTypeManager().modelType( JAVA_ID ) );
+            modeler().generateModel( new File( MODEL_NAME ), MODEL_NAME, modelType() );
         assertThat( modelObject, notNullValue() );
         return modelObject;
+    }
+
+    private ModelType modelType() throws Exception {
+        return modeler().modelTypeManager().modelType( JAVA_ID );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetBooleanValueIfNonBooleanProperty() throws Exception {
         modelObject().booleanValue( JcrLexicon.PRIMARY_TYPE.toString() );
+    }
+
+    @Test
+    public void shouldGetDependencyProcessor() throws Exception {
+        assertThat( modelType().dependencyProcessor(), notNullValue() );
     }
 }

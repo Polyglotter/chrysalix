@@ -130,6 +130,8 @@ public abstract class BaseTest {
             modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
             for ( final URL url : modeler.modelTypeManager().modelTypeRepositories() )
                 modeler.modelTypeManager().unregisterModelTypeRepository( url );
+            // Add module's target folder as metamodel repository to find extensions created by this module
+            modeler.modelTypeManager().registerModelTypeRepository( new URL( "file:target" ) );
         }
         return modeler;
     }
@@ -139,6 +141,7 @@ public abstract class BaseTest {
     }
 
     protected URL modelTypeRepository() throws Exception {
+        // Local test metamodel repository to avoid searching the Internet for metamodel support
         if ( modelTypeRepository == null ) modelTypeRepository = new URL( "file:../../test-metamodel-repository" );
         return modelTypeRepository;
     }
