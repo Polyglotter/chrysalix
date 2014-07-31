@@ -26,6 +26,7 @@
         <module>modeshape-modeler-engine</module>
         <module>modeshape-modeler-java</module>
         <module>modeshape-modeler-xsd</module>
+        <module>modeshape-modeler-ddl</module>
     </modules>
 
 </project>
