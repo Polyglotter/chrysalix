@@ -207,6 +207,16 @@ public class ModelImpl extends ModelObjectImpl implements Model {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.internal.ModelObjectImpl#model()
+     */
+    @Override
+    public Model model() {
+        return this;
+    }
+
     private boolean modelNode( final Node node ) throws Exception {
         assert ( node != null );
 
@@ -217,6 +227,16 @@ public class ModelImpl extends ModelObjectImpl implements Model {
         }
 
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.internal.ModelObjectImpl#modelRelativePath()
+     */
+    @Override
+    public String modelRelativePath() {
+        return "";
     }
 
     /**

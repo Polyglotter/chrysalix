@@ -382,7 +382,6 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public Model model() throws ModelerException {
-        if ( this instanceof Model ) return ( Model ) this;
         return manager.run( new Task< Model >() {
 
             @Override
@@ -406,7 +405,6 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public String modelRelativePath() throws ModelerException {
-        if ( this instanceof Model ) return "";
         return manager.run( new Task< String >() {
 
             @Override

@@ -276,7 +276,7 @@ public final class ModeShapeModeler implements Modeler {
                         return model;
                     }
 
-                    throw new ModelerException( ModelerI18n.sessionNotSavedWhenCreatingModel, artifactPath );
+                    throw new ModelerException( ModelerI18n.unableToCreateModel, modelType.name(), modelPath, artifactPath );
                 }
             } );
         } finally {
