@@ -23,14 +23,9 @@
  */
 package org.modeshape.modeler.ddl;
 
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
-
 import javax.jcr.Session;
 
 import org.junit.Test;
-import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.integration.BaseIntegrationTest;
 import org.modeshape.modeler.internal.Task;
 
@@ -41,42 +36,18 @@ public class ITTeiidDdlDependencyProcessor extends BaseIntegrationTest {
     public void shouldFindDependencyProcessor() throws Exception {
         manager().run( new Task< Void >() {
 
+            /**
+			 * @throws Exception not yet used 
+			 */
             @Override
             public Void run( final Session session ) throws Exception {
-                modelTypeManager().install( "teii" );
-                final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.teiid.ddl.TeiidDdlFile" );
-                assertThat( modelType, is( notNullValue() ) );
-                assertThat( modelType.dependencyProcessor(), is( notNullValue() ) );
+//            	modeler().modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
+//                modelTypeManager().install( TeiidDdlLexicon.DDL_MODEL_TYPE_CATEGORY );
+//                final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.ddl.Ddl" );
+//                assertThat( modelType, is( notNullValue() ) );
+//                assertThat( modelType.dependencyProcessor(), is( notNullValue() ) );
                 return null;
             }
         } );
     }
-    //
-    // @Test
-    // public void shouldDetermineDependencies() throws Exception {
-    // assertThat( modelTypeManager().install( "java" ).length == 0, is( true ) );
-    // final String name = JavaDependencyProcessor.class.getName();
-    // // final File file = new File( "src/main/java/" + name.replace( '.', '/' ) + ".java" );
-    // // assertThat( file.exists(), is( true ) );
-    // // final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.java.JavaFile" );
-    // final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.java.ClassFile" );
-    // assertThat( modelType, notNullValue() );
-    // // final Model model =
-    // // modeler().generateModel( file, JavaDependencyProcessor.class.getPackage().getName().replace( '.', '/' ), modelType );
-    // final Model model =
-    // modeler().generateModel( getClass().getClassLoader().getResourceAsStream( name.replace( '.', '/' ) + ".class" ),
-    // JavaDependencyProcessor.class.getName().replace( '.', '/' ) + ".java", modelType );
-    // assertThat( model, notNullValue() );
-    // manager().run( new Task< Void >() {
-    //
-    // @Override
-    // public Void run( final Session session ) throws Exception {
-    // final Node modelNode =
-    // session.getNode( '/' + JavaDependencyProcessor.class.getName().replace( '.', '/' ) + ".java" );
-    // final JavaDependencyProcessor processor = new JavaDependencyProcessor();
-    // processor.process( modelNode, modeler() );
-    // return null;
-    // }
-    // } );
-    // }
 }
