@@ -29,9 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.modeshape.modeler.Model;
@@ -61,27 +58,13 @@ public class TeiidDdlDesequencer implements Desequencer {
                          final OutputStream stream ) throws ModelerException {
         ( ( ModelImpl ) model ).manager.run( new Task< Void >() {
 
+            /**
+			 * @throws Exception not used 
+			 */
             @Override
             public Void run( final Session session ) throws Exception {
-                final Node node = session.getNode( model.absolutePath() );
-                // new JcrTools().printSubgraph( node );
-                writer = new PrintWriter( stream, true );
-//                // Print XML declaration
-//                writer.print( "<?xml version=\"1.0\" encoding=\"" );
-//                writer.print( node.getProperty( SrampLexicon.CONTENT_ENCODING ).getString() );
-//                writer.println( "\"?>" );
-//                // Find XSD namespace declaration & build namespace-prefix-by-URI map
-//                for ( final PropertyIterator iter = node.getProperties( "xmlns*" ); iter.hasNext(); ) {
-//                    final Property prop = iter.nextProperty();
-//                    final String uri = prop.getString();
-//                    final int ndx = prop.getName().indexOf( ':' ) + 1;
-//                    String prefix = prop.getName().substring( ndx );
-//                    if ( ndx > 0 ) prefix += ':';
-//                    namespacePrefixByUri.put( uri, prefix );
-//                    if ( uri.equals( TeiidDdlLexicon.Namespace.URI ) ) xsdPrefix = prefix;
-//                }
-                // Print schema
-                print( 0, node );
+
+            	// TODO: BML 
                 return null;
             }
         } );
@@ -95,113 +78,5 @@ public class TeiidDdlDesequencer implements Desequencer {
     @Override
     public String modelType() {
         return TeiidDdlLexicon.DDL_MODEL_TYPE_ID;
-    }
-
-    void print( final int indentLevel,
-                final Node node ) throws RepositoryException {
-//        String element = null;
-//        final String type = node.getPrimaryNodeType().getName();
-//        if ( type.equals( TeiidDdlLexicon.ATTRIBUTE_DECLARATION ) ) element = "attribute";
-//        else if ( type.equals( XsdLexicon.CHOICE ) ) element = "choice";
-//        else if ( type.equals( XsdLexicon.COMPLEX_TYPE_DEFINITION ) ) element = "complexType";
-//        else if ( type.equals( XsdLexicon.ELEMENT_DECLARATION ) ) element = "element";
-//        else if ( type.equals( XsdLexicon.IMPORT ) ) element = "import";
-//        else if ( type.equals( XsdLexicon.SCHEMA_DOCUMENT ) ) element = "schema";
-//        else if ( type.equals( XsdLexicon.SEQUENCE ) ) element = "sequence";
-//        else if ( type.equals( "mm:dependencies" ) ) return;
-//        else throw new UnsupportedOperationException( node.toString() );
-//        printIndent( indentLevel );
-//        writer.print( '<' + xsdPrefix + element );
-//        printAttributes( indentLevel, node );
-//        if ( node.hasNodes() || node.hasProperty( SrampLexicon.DESCRIPTION ) ) {
-//            writer.println( '>' );
-//            int childIndentLevel = indentLevel + 1;
-//            printAnnotation( childIndentLevel, node );
-//            if ( element.equals( "complexType" ) ) {
-//                complexTypeByName.put( node.getProperty( XsdLexicon.NC_NAME ).getString(), node );
-//                final String baseType = node.getProperty( XsdLexicon.BASE_TYPE_NAME ).getString();
-//                final String method = node.getProperty( XsdLexicon.METHOD ).getString();
-//                final String baseTypeNamespace = node.getProperty( XsdLexicon.BASE_TYPE_NAMESPACE ).getString();
-//                if ( !baseType.equals( "anyType" )
-//                     || !method.equals( "restriction" )
-//                     || !baseTypeNamespace.equals( XsdLexicon.Namespace.URI ) ) {
-//                    final String contentType = complexTypeByName.get( baseType ) == null ? "simpleContent" : "complexContent";
-//                    printIndent( indentLevel + 1 );
-//                    writer.println( '<' + xsdPrefix + contentType + '>' );
-//                    printIndent( indentLevel + 2 );
-//                    writer.println( '<' + xsdPrefix + method + " base=\"" + namespacePrefixByUri.get( baseTypeNamespace )
-//                                    + baseType + "\">" );
-//                    childIndentLevel += 2;
-//                    for ( final NodeIterator iter = node.getNodes(); iter.hasNext(); )
-//                        print( childIndentLevel, iter.nextNode() );
-//                    printIndent( indentLevel + 2 );
-//                    writer.println( "</" + xsdPrefix + method + '>' );
-//                    printIndent( indentLevel + 1 );
-//                    writer.println( "</" + xsdPrefix + contentType + '>' );
-//                } else for ( final NodeIterator iter = node.getNodes(); iter.hasNext(); )
-//                    print( childIndentLevel, iter.nextNode() );
-//            } else for ( final NodeIterator iter = node.getNodes(); iter.hasNext(); )
-//                print( childIndentLevel, iter.nextNode() );
-//            printIndent( indentLevel );
-//            writer.println( "</" + xsdPrefix + element + '>' );
-//        } else writer.println( "/>" );
-    }
-
-    private void printAnnotation( final int indentLevel,
-                                  final Node node ) throws RepositoryException {
-//        if ( !node.hasProperty( SrampLexicon.DESCRIPTION ) ) return;
-//        final Property prop = node.getProperty( SrampLexicon.DESCRIPTION );
-//        printIndent( indentLevel );
-//        writer.println( '<' + xsdPrefix + XsdLexicon.ANNOTATION + '>' );
-//        printIndent( indentLevel + 1 );
-//        writer.println( '<' + xsdPrefix + "documentation>" );
-//        printIndent( indentLevel + 2 );
-//        writer.println( prop.getString() );
-//        printIndent( indentLevel + 1 );
-//        writer.println( "</" + xsdPrefix + "documentation>" );
-//        printIndent( indentLevel );
-//        writer.println( "</" + xsdPrefix + XsdLexicon.ANNOTATION + '>' );
-    }
-
-    private void printAttribute( final String name,
-                                 final String value ) {
-        writer.print( ' ' + name + "=\"" + value + "\"" );
-    }
-
-    private void printAttributes( final int indentLevel,
-                                  final Node node ) throws RepositoryException {
-//        String maxOccurs = null;
-//        for ( final PropertyIterator iter = node.getProperties(); iter.hasNext(); ) {
-//            final Property prop = iter.nextProperty();
-//            final String name = prop.getName();
-//            if ( name.equals( XsdLexicon.NC_NAME ) ) printAttribute( "name", prop.getString() );
-//            else if ( name.equals( XsdLexicon.TYPE_NAME ) ) {
-//                printAttribute( "type",
-//                                namespacePrefixByUri.get( node.getProperty( XsdLexicon.TYPE_NAMESPACE ).getString() )
-//                                                + prop.getString() );
-//            } else if ( name.equals( XsdLexicon.MIN_OCCURS ) ) {
-//                if ( prop.getLong() != 1 ) printAttribute( "minOccurs", prop.getString() );
-//                maxOccurs = "unbounded";
-//            } else if ( name.equals( XsdLexicon.MAX_OCCURS ) ) {
-//                if ( prop.getLong() != 1 ) printAttribute( "maxOccurs", prop.getString() );
-//                maxOccurs = null;
-//            } else if ( name.equals( XsdLexicon.USE ) ) {
-//                if ( !prop.getString().equals( "optional" ) ) printAttribute( "use", prop.getString() );
-//            } else if ( name.startsWith( "xmlns" ) ) printAttribute( name, prop.getString() );
-//            else if ( name.equals( XsdLexicon.NAMESPACE ) ) {
-//                if ( !prop.getString().equals( targetNamespace ) ) printAttribute( "namespace", prop.getString() );
-//            }
-//            else if ( name.equals( XsdLexicon.SCHEMA_LOCATION ) ) printAttribute( "schemaLocation", prop.getString() );
-//            else if ( name.equals( "targetNamespace" ) ) {
-//                targetNamespace = prop.getString();
-//                printAttribute( name, targetNamespace );
-//            }
-//        }
-//        if ( maxOccurs != null ) printAttribute( "maxOccurs", maxOccurs );
-    }
-
-    private void printIndent( final int indentLevel ) {
-        for ( int ndx = indentLevel; --ndx >= 0; )
-            writer.print( "  " );
     }
 }
