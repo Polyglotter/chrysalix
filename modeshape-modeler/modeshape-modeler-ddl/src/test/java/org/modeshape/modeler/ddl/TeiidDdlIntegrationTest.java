@@ -23,37 +23,13 @@
  */
 package org.modeshape.modeler.ddl;
 
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import org.modeshape.modeler.test.BaseIntegrationTest;
 
-import javax.jcr.Session;
-
-import org.junit.Test;
-import org.modeshape.modeler.ModelType;
-import org.modeshape.modeler.internal.Task;
-import org.modeshape.modeler.test.BaseTest;
-
+/**
+ * 
+ */
 @SuppressWarnings( "javadoc" )
-public class ITTeiidDdlDependencyProcessor extends BaseTest {
+public abstract class TeiidDdlIntegrationTest extends BaseIntegrationTest {
 
-    @Test
-    public void shouldFindDependencyProcessor() throws Exception {
-        manager().run( new Task< Void >() {
-
-            /**
-			 * @throws Exception not yet used 
-			 */
-            @SuppressWarnings("synthetic-access")
-			@Override
-            public Void run( final Session session ) throws Exception {
-            	modeler().modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
-                modelTypeManager().install( TeiidDdlLexicon.DDL_MODEL_TYPE_CATEGORY );
-                final ModelType modelType = modelTypeManager().modelType( TeiidDdlLexicon.DDL_MODEL_TYPE_ID );
-                assertThat( modelType, is( notNullValue() ) );
-                assertThat( modelType.dependencyProcessor(), is( notNullValue() ) );
-                return null;
-            }
-        } );
-    }
+    protected static final String SRAMP_MODEL_TYPE_CATEGORY = "sramp";
 }

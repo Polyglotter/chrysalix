@@ -31,16 +31,26 @@ public interface TeiidDdlLexicon {
     /**
      * The name of the Teiid DDL model node. Value is {@value} .
      */
-	String DDL_MODEL_TYPE_CATEGORY = "ddl";
+    String DDL_MODEL_TYPE_CATEGORY = "ddl";
+
+    /**
+	 * 
+	 */
     String DDL_MODEL_TYPE_ID = "org.modeshape.modeler.ddl.Ddl";
-    
+
     /**
      * The JCR Teiid namespace mapping.
      */
     public interface Namespace {
 
+        /**
+         * 
+         */
         String PREFIX = "teiidddl";
-        String URI = "http://www.modeshape.org/ddl/teiid/1.0";
 
+        /**
+         * 
+         */
+        String URI = "http://www.modeshape.org/ddl/teiid/1.0";
     }
 }

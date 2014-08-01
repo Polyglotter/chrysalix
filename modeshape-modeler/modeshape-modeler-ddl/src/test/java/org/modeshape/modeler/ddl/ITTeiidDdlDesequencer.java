@@ -23,13 +23,31 @@
  */
 package org.modeshape.modeler.ddl;
 
-import org.modeshape.modeler.test.BaseTest;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertThat;
 
-/**
- * 
- */
+import java.io.File;
+
+import org.junit.Test;
+import org.modeshape.modeler.Model;
+import org.modeshape.modeler.extensions.Desequencer;
+
 @SuppressWarnings( "javadoc" )
-public abstract class TeiidDdlBaseTest extends BaseTest {
+public class ITTeiidDdlDesequencer extends TeiidDdlIntegrationTest {
 
-    protected static final String SRAMP_MODEL_TYPE_CATEGORY = "sramp";
+    @Test
+    public void shouldDesequence() throws Exception {
+        modelTypeManager().install( TeiidDdlLexicon.DDL_MODEL_TYPE_CATEGORY );
+        final Model model = modeler().generateModel( new File( "src/test/resources/Teiid-MySQLAccounts.ddl" ),
+                                                     null,
+                                                     modelTypeManager().modelType( TeiidDdlLexicon.DDL_MODEL_TYPE_ID ) );
+        final Desequencer desequencer = model.modelType().desequencer();
+        assertThat( desequencer, is( notNullValue() ) );
+
+        // try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {
+        // desequencer.execute( model, stream );
+        // assertThat( stream.toString().startsWith( XML_DECLARATION + "\n<xsd:schema " ), is( true ) );
+        // }
+    }
 }
