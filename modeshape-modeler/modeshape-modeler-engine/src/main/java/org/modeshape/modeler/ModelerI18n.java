@@ -40,8 +40,7 @@ public final class ModelerI18n {
     public static final I18n modelTypeCategoryParentNodeNotFound =
         new I18n( "Expected categories child node of '%s' was not found" );
     public static final I18n mustBeModelNode = new I18n( "Node '%s' is not a model node" );
-    public static final I18n sessionNotSavedWhenCreatingModel =
-        new I18n( "The session was not saved when creating model for '%s'" );
+    public static final I18n unableToCreateModel = new I18n( "Unable to create %s model \"%s\" from data at \"%s\"" );
     public static final I18n unableToDetermineDefaultModelType = new I18n( "Unable to determine default model type for file %s" );
     public static final I18n unableToFindModelTypeCategory =
         new I18n( "Unable to find model type category '%s' in registered model type repositories" );

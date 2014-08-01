@@ -136,7 +136,7 @@
                 <build.profile.id>integration-test</build.profile.id>
                 <!-- Only integration tests are run. -->
                 <skip.integration.tests>false</skip.integration.tests>
-                <skip.unit.tests>true</skip.unit.tests>
+                <skip.unit.tests>${skip.unit.tests}</skip.unit.tests>
             </properties>
         </profile>
     </profiles>
@@ -260,7 +260,7 @@
                         <configuration>
                             <!-- Configures the source directory of integration tests. -->
                             <sources>
-                                <source>src/integration/java</source>
+                                <source>src/test/java</source>
                             </sources>
                         </configuration>
                     </execution>
