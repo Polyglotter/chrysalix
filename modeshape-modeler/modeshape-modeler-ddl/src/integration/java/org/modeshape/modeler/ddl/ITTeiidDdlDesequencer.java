@@ -23,18 +23,22 @@
  */
 package org.modeshape.modeler.ddl;
 
-import java.io.ByteArrayOutputStream;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+
 import java.io.File;
 
 import org.junit.Test;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.extensions.Desequencer;
+import org.modeshape.modeler.test.BaseTest;
 
 /**
  * 
  */
 @SuppressWarnings( "javadoc" )
-public class ITTeiidDdlDesequencer extends TeiidDdlBaseTest {
+public class ITTeiidDdlDesequencer extends BaseTest {
 	@Test
     public void shouldDesequence() throws Exception {
     	modeler().modelTypeManager().registerModelTypeRepository( modelTypeRepository() );
@@ -43,12 +47,12 @@ public class ITTeiidDdlDesequencer extends TeiidDdlBaseTest {
                                                      null,
                                                      modelTypeManager().modelType( TeiidDdlLexicon.DDL_MODEL_TYPE_ID ) );
         final Desequencer desequencer = model.modelType().desequencer();
-//        assertThat( desequencer, is( notNullValue() ) );
+        assertThat( desequencer, is( notNullValue() ) );
 
         // TODO: From JPAV: Barry, please rename this test to drop the "Test" suffix.  That's already the 'T' of the "IT" prefix
-        try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {
-            desequencer.execute( model, stream );
+//        try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {
+            //desequencer.execute( model, stream );
             //assertThat( stream.toString().startsWith( XML_DECLARATION + "\n<xsd:schema " ), is( true ) );
-        }
+//        }
     }
 }
