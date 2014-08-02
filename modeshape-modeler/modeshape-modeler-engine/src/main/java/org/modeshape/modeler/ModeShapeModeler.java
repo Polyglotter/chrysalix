@@ -46,7 +46,6 @@ import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.extensions.Desequencer;
 import org.modeshape.modeler.internal.Manager;
 import org.modeshape.modeler.internal.ModelImpl;
-import org.modeshape.modeler.internal.ModelTypeImpl;
 import org.modeshape.modeler.internal.Task;
 import org.polyglotter.common.Logger;
 
@@ -61,21 +60,21 @@ public final class ModeShapeModeler implements Modeler {
      * Uses a default ModeShape configuration.
      * 
      * @param repositoryStoreParentPath
-     *        the path to the folder that should contain the ModeShape repository store
+     *        the path to the folder that should contain the repository store
      */
     public ModeShapeModeler( final String repositoryStoreParentPath ) {
-        this( repositoryStoreParentPath, DEFAULT_MODESHAPE_CONFIGURATION_PATH );
+        this( repositoryStoreParentPath, DEFAULT_CONFIGURATION_PATH );
     }
 
     /**
      * @param repositoryStoreParentPath
-     *        the path to the folder that should contain the ModeShape repository store
-     * @param modeShapeConfigurationPath
-     *        the path to a ModeShape configuration file
+     *        the path to the folder that should contain the repository store
+     * @param configurationPath
+     *        the path to a configuration file
      */
     public ModeShapeModeler( final String repositoryStoreParentPath,
-                             final String modeShapeConfigurationPath ) {
-        manager = new Manager( repositoryStoreParentPath, modeShapeConfigurationPath );
+                             final String configurationPath ) {
+        manager = new Manager( repositoryStoreParentPath, configurationPath );
     }
 
     String absolutePath( String path ) {
@@ -100,6 +99,16 @@ public final class ModeShapeModeler implements Modeler {
     @Override
     public void close() throws ModelerException {
         manager.close();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#configurationPath()
+     */
+    @Override
+    public String configurationPath() {
+        return manager.configurationPath;
     }
 
     /**
@@ -130,10 +139,10 @@ public final class ModeShapeModeler implements Modeler {
         CheckArg.isNotNull( model, "model" );
         CheckArg.isNotNull( stream, "stream" );
 
-        final ModelType modelType = model.modelType();
+        final Metamodel metamodel = model.metamodel();
 
-        if ( modelType != null ) {
-            final Desequencer desequencer = modelType.desequencer();
+        if ( metamodel != null ) {
+            final Desequencer desequencer = metamodel.desequencer();
 
             if ( desequencer != null ) {
                 desequencer.execute( model, stream );
@@ -174,28 +183,28 @@ public final class ModeShapeModeler implements Modeler {
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(File, String, ModelType)
+     * @see Modeler#generateModel(File, String, Metamodel)
      */
     @Override
     public Model generateModel( final File file,
                                 final String modelFolder,
-                                final ModelType modelType ) throws ModelerException {
-        return generateModel( file, modelFolder, null, modelType );
+                                final Metamodel metamodel ) throws ModelerException {
+        return generateModel( file, modelFolder, null, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(File, String, String, ModelType)
+     * @see Modeler#generateModel(File, String, String, Metamodel)
      */
     @Override
     public Model generateModel( final File file,
                                 final String modelFolder,
                                 final String modelName,
-                                final ModelType modelType ) throws ModelerException {
+                                final Metamodel metamodel ) throws ModelerException {
         CheckArg.isNotNull( file, "file" );
         try {
-            return generateModel( file.toURI().toURL(), modelFolder, modelName, modelType );
+            return generateModel( file.toURI().toURL(), modelFolder, modelName, metamodel );
         } catch ( final MalformedURLException e ) {
             throw new ModelerException( e );
         }
@@ -204,26 +213,26 @@ public final class ModeShapeModeler implements Modeler {
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(InputStream, String, ModelType)
+     * @see Modeler#generateModel(InputStream, String, Metamodel)
      */
     @Override
     public Model generateModel( final InputStream stream,
                                 final String modelPath,
-                                final ModelType modelType ) throws ModelerException {
+                                final Metamodel metamodel ) throws ModelerException {
         final String artifactPath = importArtifact( stream, ModelerLexicon.TEMP_FOLDER + "/file" );
-        return generateModel( artifactPath, modelPath, modelType, false );
+        return generateModel( artifactPath, modelPath, metamodel, false );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.Modeler#generateModel(java.lang.String, java.lang.String, org.modeshape.modeler.ModelType,
+     * @see org.modeshape.modeler.Modeler#generateModel(java.lang.String, java.lang.String, org.modeshape.modeler.Metamodel,
      *      boolean)
      */
     @Override
     public Model generateModel( final String artifactPath,
                                 final String modelPath,
-                                final ModelType modelType,
+                                final Metamodel metamodel,
                                 final boolean persistArtifact ) throws ModelerException {
         CheckArg.isNotEmpty( artifactPath, "artifactPath" );
         CheckArg.isNotEmpty( modelPath, "modelPath" );
@@ -234,49 +243,50 @@ public final class ModeShapeModeler implements Modeler {
                 @Override
                 public Model run( final Session session ) throws Exception {
                     final Node artifactNode = manager.artifactNode( session, artifactPath );
-                    ModelType type = modelType;
-                    if ( modelType == null ) {
-                        // If no model type supplied, use default model type if one exists
-                        type = manager.modelTypeManager().defaultModelType( artifactNode,
-                                                                            manager.modelTypeManager().modelTypes( artifactNode ) );
-                        if ( type == null )
-                            throw new IllegalArgumentException( ModelerI18n.unableToDetermineDefaultModelType.text( artifactPath ) );
+                    Metamodel actualMetamodel = metamodel;
+                    if ( actualMetamodel == null ) {
+                        // If no metamodel supplied, use default metamodel if one exists
+                        actualMetamodel =
+                            manager.metamodelManager().defaultMetamodel( artifactNode,
+                                                                         manager.metamodelManager().metamodels( artifactNode ) );
+                        if ( actualMetamodel == null )
+                            throw new IllegalArgumentException( ModelerI18n.unableToDetermineDefaultMetamodel.text( artifactPath ) );
                         throw new UnsupportedOperationException( "Not yet implemented" );
                     }
                     // Build the model
                     final ValueFactory valueFactory = ( ValueFactory ) session.getValueFactory();
                     final Calendar cal = Calendar.getInstance();
-                    final ModelTypeImpl modelType = ( ModelTypeImpl ) type;
                     final Node modelNode = new JcrTools().findOrCreateNode( session, absolutePath( modelPath ) );
                     modelNode.addMixin( ModelerLexicon.Model.MODEL_MIXIN );
                     if ( artifactNode.hasProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ) )
                         modelNode.setProperty( ModelerLexicon.Model.EXTERNAL_LOCATION,
                                                artifactNode.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString() );
-                    final boolean save = modelType.sequencer().execute( artifactNode.getNode( JcrLexicon.CONTENT.getString() )
-                                                                                    .getProperty( JcrLexicon.DATA.getString() ),
-                                                                        modelNode,
-                                                                        new Sequencer.Context() {
+                    final boolean save =
+                        actualMetamodel.sequencer().execute( artifactNode.getNode( JcrLexicon.CONTENT.getString() )
+                                                                         .getProperty( JcrLexicon.DATA.getString() ),
+                                                             modelNode,
+                                                             new Sequencer.Context() {
 
-                                                                            @Override
-                                                                            public Calendar getTimestamp() {
-                                                                                return cal;
-                                                                            }
+                                                                 @Override
+                                                                 public Calendar getTimestamp() {
+                                                                     return cal;
+                                                                 }
 
-                                                                            @Override
-                                                                            public ValueFactory valueFactory() {
-                                                                                return valueFactory;
-                                                                            }
-                                                                        } );
+                                                                 @Override
+                                                                 public ValueFactory valueFactory() {
+                                                                     return valueFactory;
+                                                                 }
+                                                             } );
 
                     if ( save ) {
-                        modelNode.setProperty( ModelerLexicon.Model.MODEL_TYPE, modelType.id() );
+                        modelNode.setProperty( ModelerLexicon.Model.METAMODEL, actualMetamodel.id() );
                         final ModelImpl model = new ModelImpl( manager, modelNode.getPath() );
                         session.save();
                         processDependencies( artifactPath, modelNode, model, persistArtifact );
                         return model;
                     }
 
-                    throw new ModelerException( ModelerI18n.unableToCreateModel, modelType.name(), modelPath, artifactPath );
+                    throw new ModelerException( ModelerI18n.unableToCreateModel, actualMetamodel.name(), modelPath, artifactPath );
                 }
             } );
         } finally {
@@ -289,27 +299,27 @@ public final class ModeShapeModeler implements Modeler {
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(URL, String, ModelType)
+     * @see Modeler#generateModel(URL, String, Metamodel)
      */
     @Override
     public Model generateModel( final URL artifactUrl,
                                 final String modelFolder,
-                                final ModelType modelType ) throws ModelerException {
-        return generateModel( artifactUrl, modelFolder, null, modelType );
+                                final Metamodel metamodel ) throws ModelerException {
+        return generateModel( artifactUrl, modelFolder, null, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(URL, String, String, ModelType)
+     * @see Modeler#generateModel(URL, String, String, Metamodel)
      */
     @Override
     public Model generateModel( final URL artifactUrl,
                                 final String modelFolder,
                                 final String modelName,
-                                final ModelType modelType ) throws ModelerException {
+                                final Metamodel metamodel ) throws ModelerException {
         final String artifactPath = importArtifact( artifactUrl, ModelerLexicon.TEMP_FOLDER );
-        return generateModel( artifactPath, absolutePath( modelFolder, name( modelName, artifactUrl ) ), modelType, false );
+        return generateModel( artifactPath, absolutePath( modelFolder, name( modelName, artifactUrl ) ), metamodel, false );
     }
 
     /**
@@ -399,6 +409,16 @@ public final class ModeShapeModeler implements Modeler {
     /**
      * {@inheritDoc}
      * 
+     * @see Modeler#metamodelManager()
+     */
+    @Override
+    public MetamodelManager metamodelManager() throws ModelerException {
+        return manager.metamodelManager();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see Modeler#model(String)
      */
     @Override
@@ -421,26 +441,6 @@ public final class ModeShapeModeler implements Modeler {
         } );
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#modelTypeManager()
-     */
-    @Override
-    public ModelTypeManager modelTypeManager() throws ModelerException {
-        return manager.modelTypeManager();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#modeShapeConfigurationPath()
-     */
-    @Override
-    public String modeShapeConfigurationPath() {
-        return manager.modeShapeConfigurationPath;
-    }
-
     private String name( String workspaceName,
                          final URL url ) {
         if ( workspaceName != null && !workspaceName.trim().isEmpty() ) return workspaceName;
@@ -453,12 +453,12 @@ public final class ModeShapeModeler implements Modeler {
                               final Node modelNode,
                               final ModelImpl model,
                               final boolean persistArtifacts ) throws Exception {
-        if ( model.modelType() == null ) {
-            Logger.getLogger( getClass() ).debug( "No model type found for model '%s'", modelNode.getName() );
+        if ( model.metamodel() == null ) {
+            Logger.getLogger( getClass() ).debug( "No metamodel found for model '%s'", modelNode.getName() );
             return;
         }
 
-        final DependencyProcessor dependencyProcessor = model.modelType().dependencyProcessor();
+        final DependencyProcessor dependencyProcessor = model.metamodel().dependencyProcessor();
 
         if ( dependencyProcessor == null ) {
             Logger.getLogger( getClass() ).debug( "No dependency processor found for model '%s'", modelNode.getName() );

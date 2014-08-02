@@ -28,11 +28,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
+import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.MetamodelManager;
 import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
-import org.modeshape.modeler.ModelType;
-import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.polyglotter.common.CheckArg;
@@ -60,13 +60,13 @@ public final class Polyglotter implements Modeler {
 
     /**
      * @param repositoryStoreParentPath
-     *        the file path to the folder that should contain the ModeShape repository store
-     * @param modeShapeConfigurationPath
-     *        the file path to a ModeShape configuration file
+     *        the file path to the folder that should contain the repository store
+     * @param configurationPath
+     *        the file path to a configuration file
      */
     public Polyglotter( final String repositoryStoreParentPath,
-                        final String modeShapeConfigurationPath ) {
-        modeler = new ModeShapeModeler( repositoryStoreParentPath, modeShapeConfigurationPath );
+                        final String configurationPath ) {
+        modeler = new ModeShapeModeler( repositoryStoreParentPath, configurationPath );
     }
 
     /**
@@ -77,6 +77,16 @@ public final class Polyglotter implements Modeler {
     @Override
     public void close() throws Exception {
         modeler.close();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#configurationPath()
+     */
+    @Override
+    public String configurationPath() {
+        return modeler.configurationPath();
     }
 
     /**
@@ -126,76 +136,76 @@ public final class Polyglotter implements Modeler {
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(File, String, ModelType)
+     * @see Modeler#generateModel(File, String, Metamodel)
      */
     @Override
     public Model generateModel( final File file,
                                 final String modelFolder,
-                                final ModelType modelType ) throws ModelerException {
-        return modeler.generateModel( file, modelFolder, modelType );
+                                final Metamodel metamodel ) throws ModelerException {
+        return modeler.generateModel( file, modelFolder, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(File, String, String, ModelType)
+     * @see Modeler#generateModel(File, String, String, Metamodel)
      */
     @Override
     public Model generateModel( final File file,
                                 final String modelFolder,
                                 final String modelName,
-                                final ModelType modelType ) throws ModelerException {
-        return modeler.generateModel( file, modelFolder, modelName, modelType );
+                                final Metamodel metamodel ) throws ModelerException {
+        return modeler.generateModel( file, modelFolder, modelName, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(InputStream, String, ModelType)
+     * @see Modeler#generateModel(InputStream, String, Metamodel)
      */
     @Override
     public Model generateModel( final InputStream stream,
                                 final String modelPath,
-                                final ModelType modelType ) throws ModelerException {
-        return modeler.generateModel( stream, modelPath, modelType );
+                                final Metamodel metamodel ) throws ModelerException {
+        return modeler.generateModel( stream, modelPath, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(String, String, ModelType, boolean)
+     * @see Modeler#generateModel(String, String, Metamodel, boolean)
      */
     @Override
     public Model generateModel( final String artifactPath,
                                 final String modelPath,
-                                final ModelType modelType,
+                                final Metamodel metamodel,
                                 final boolean persistArtifact ) throws ModelerException {
-        return modeler.generateModel( artifactPath, modelPath, modelType, persistArtifact );
+        return modeler.generateModel( artifactPath, modelPath, metamodel, persistArtifact );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(URL, String, ModelType)
+     * @see Modeler#generateModel(URL, String, Metamodel)
      */
     @Override
     public Model generateModel( final URL artifactUrl,
                                 final String modelFolder,
-                                final ModelType modelType ) throws ModelerException {
-        return modeler.generateModel( artifactUrl, modelFolder, modelType );
+                                final Metamodel metamodel ) throws ModelerException {
+        return modeler.generateModel( artifactUrl, modelFolder, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(URL, String, String, ModelType)
+     * @see Modeler#generateModel(URL, String, String, Metamodel)
      */
     @Override
     public Model generateModel( final URL artifactUrl,
                                 final String modelFolder,
                                 final String modelName,
-                                final ModelType modelType ) throws ModelerException {
-        return modeler.generateModel( artifactUrl, modelFolder, modelName, modelType );
+                                final Metamodel metamodel ) throws ModelerException {
+        return modeler.generateModel( artifactUrl, modelFolder, modelName, metamodel );
     }
 
     /**
@@ -258,31 +268,21 @@ public final class Polyglotter implements Modeler {
     /**
      * {@inheritDoc}
      * 
+     * @see Modeler#metamodelManager()
+     */
+    @Override
+    public MetamodelManager metamodelManager() throws ModelerException {
+        return modeler.metamodelManager();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see Modeler#model(String)
      */
     @Override
     public Model model( final String path ) throws ModelerException {
         return modeler.model( path );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#modelTypeManager()
-     */
-    @Override
-    public ModelTypeManager modelTypeManager() throws ModelerException {
-        return modeler.modelTypeManager();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#modeShapeConfigurationPath()
-     */
-    @Override
-    public String modeShapeConfigurationPath() {
-        return modeler.modeShapeConfigurationPath();
     }
 
     /**

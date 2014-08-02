@@ -45,8 +45,7 @@ public interface Desequencer {
                   OutputStream stream ) throws ModelerException;
 
     /**
-     * @return the model type name (cannot be <code>null</code> or empty)
+     * @return the metamodel name (cannot be <code>null</code> or empty)
      */
-    String modelType();
-
+    String metamodel();
 }

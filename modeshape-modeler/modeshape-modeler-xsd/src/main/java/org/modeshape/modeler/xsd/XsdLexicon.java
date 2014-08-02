@@ -31,5 +31,5 @@ public interface XsdLexicon {
     /**
      * The name of the XSD model node. Value is {@value} .
      */
-    String MODEL_TYPE_ID = "org.modeshape.modeler.xsd.Xsd";
+    String METAMODEL_ID = "org.modeshape.modeler.xsd.Xsd";
 }

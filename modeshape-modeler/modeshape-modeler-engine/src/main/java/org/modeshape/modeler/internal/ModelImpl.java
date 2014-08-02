@@ -39,7 +39,7 @@ import javax.jcr.nodetype.NodeType;
 
 import org.modeshape.common.util.StringUtil;
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
@@ -242,16 +242,16 @@ public class ModelImpl extends ModelObjectImpl implements Model {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.Model#modelType()
+     * @see org.modeshape.modeler.Model#metamodel()
      */
     @Override
-    public ModelType modelType() throws ModelerException {
-        return manager.run( new Task< ModelType >() {
+    public Metamodel metamodel() throws ModelerException {
+        return manager.run( new Task< Metamodel >() {
 
             @Override
-            public ModelType run( final Session session ) throws Exception {
-                return manager.modelTypeManager().modelType( session.getNode( path )
-                                                                    .getProperty( ModelerLexicon.Model.MODEL_TYPE )
+            public Metamodel run( final Session session ) throws Exception {
+                return manager.metamodelManager().metamodel( session.getNode( path )
+                                                                    .getProperty( ModelerLexicon.Model.METAMODEL )
                                                                     .getString() );
             }
         } );

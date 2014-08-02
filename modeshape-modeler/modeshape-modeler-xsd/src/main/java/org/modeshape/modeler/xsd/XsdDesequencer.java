@@ -93,10 +93,10 @@ public class XsdDesequencer implements Desequencer {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.Desequencer#modelType()
+     * @see org.modeshape.modeler.extensions.Desequencer#metamodel()
      */
     @Override
-    public String modelType() {
+    public String metamodel() {
         return "org.modeshape.modeler.xsd.Xsd";
     }
 

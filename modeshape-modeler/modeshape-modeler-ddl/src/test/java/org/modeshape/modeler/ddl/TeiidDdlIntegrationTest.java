@@ -31,5 +31,5 @@ import org.modeshape.modeler.test.BaseIntegrationTest;
 @SuppressWarnings( "javadoc" )
 public abstract class TeiidDdlIntegrationTest extends BaseIntegrationTest {
 
-    protected static final String SRAMP_MODEL_TYPE_CATEGORY = "sramp";
+    protected static final String SRAMP_METAMODEL_CATEGORY = "sramp";
 }

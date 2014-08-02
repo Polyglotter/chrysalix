@@ -29,7 +29,7 @@ import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 
 /**
- * Processes dependencies for a specific model type.
+ * Processes dependencies for a specific metamodel.
  */
 public interface DependencyProcessor {
 
@@ -44,9 +44,9 @@ public interface DependencyProcessor {
     String SELF_PATH = ".";
 
     /**
-     * @return the model type name (cannot be <code>null</code> or empty)
+     * @return the metamodel name (cannot be <code>null</code> or empty)
      */
-    String modelType();
+    String metamodel();
 
     /**
      * @param artifactPath

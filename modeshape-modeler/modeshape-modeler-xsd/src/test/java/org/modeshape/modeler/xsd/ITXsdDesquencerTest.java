@@ -34,12 +34,12 @@ public class ITXsdDesquencerTest extends XsdIntegrationTest {
 
     // @Test
     // public void shouldDesequence() throws Exception {
-    // modelTypeManager().install( SRAMP_MODEL_TYPE_CATEGORY );
-    // modelTypeManager().install( XSD_MODEL_TYPE_CATEGORY );
+    // metamodelManager().install( SRAMP_METAMODEL_CATEGORY );
+    // metamodelManager().install( XSD_METAMODEL_CATEGORY );
     // final Model model = modeler().generateModel( new File( "src/test/resources/Books/Books.xsd" ),
     // null,
-    // modelTypeManager().modelType( XSD_MODEL_TYPE_ID ) );
-    // final Desequencer desequencer = model.modelType().desequencer();
+    // metamodelManager().metamodel( XSD_METAMODEL_ID ) );
+    // final Desequencer desequencer = model.metamodel().desequencer();
     // assertThat( desequencer, is( notNullValue() ) );
     //
     // try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {

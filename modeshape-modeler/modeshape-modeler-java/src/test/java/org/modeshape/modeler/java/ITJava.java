@@ -34,7 +34,7 @@ public class ITJava extends JavaIntegrationTest {
 
     @Test
     public void shouldGetDependencyProcessor() throws Exception {
-        assertThat( modelType().dependencyProcessor(), notNullValue() );
+        assertThat( metamodel().dependencyProcessor(), notNullValue() );
     }
 
     // private Node createDependenciesNode( final Session session,

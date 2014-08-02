@@ -29,8 +29,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelType;
-import org.modeshape.modeler.ModelTypeManager;
+import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.MetamodelManager;
 import org.modeshape.modeler.ModelerLexicon;
 import org.polyglotter.test.BaseTest;
 
@@ -49,10 +49,10 @@ public class CloneOperationTest extends BaseTest {
     @Override
     public void before() throws Exception {
         super.before();
-        final ModelTypeManager modelTypeManager = polyglotter().modelTypeManager();
-        modelTypeManager.install( XML_MODEL_TYPE_CATEGORY );
-        final ModelType modelType = modelTypeManager.modelType( XML_MODEL_TYPE_NAME );
-        model = polyglotter().generateModel( stream( XML_ARTIFACT ), XML_MODEL_NAME, modelType );
+        final MetamodelManager metamodelManager = polyglotter().metamodelManager();
+        metamodelManager.install( XML_METAMODEL_CATEGORY );
+        final Metamodel metamodel = metamodelManager.metamodel( XML_METAMODEL_NAME );
+        model = polyglotter().generateModel( stream( XML_ARTIFACT ), XML_MODEL_NAME, metamodel );
     }
 
     @Test
@@ -64,7 +64,7 @@ public class CloneOperationTest extends BaseTest {
         assertThat( model.child( XML_ROOT ), notNullValue() );
         assertThat( model.primaryType(), is( this.model.primaryType() ) );
         assertThat( model.mixinTypes(), is( this.model.mixinTypes() ) );
-        assertThat( model.stringValue( ModelerLexicon.Model.MODEL_TYPE ), is( this.model.stringValue( ModelerLexicon.Model.MODEL_TYPE ) ) );
+        assertThat( model.stringValue( ModelerLexicon.Model.METAMODEL ), is( this.model.stringValue( ModelerLexicon.Model.METAMODEL ) ) );
     }
 
     @Test

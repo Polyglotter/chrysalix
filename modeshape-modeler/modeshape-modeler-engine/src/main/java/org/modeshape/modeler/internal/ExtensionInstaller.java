@@ -41,15 +41,15 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
 import org.modeshape.jcr.api.JcrTools;
-import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.extensions.Desequencer;
-import org.modeshape.modeler.internal.ModelTypeManagerImpl.LibraryClassLoader;
+import org.modeshape.modeler.internal.MetamodelManagerImpl.LibraryClassLoader;
 import org.polyglotter.common.Logger;
 
 /**
- * A class that installs model type dependency processors and desequencers.
+ * A class that installs metamodel dependency processors and desequencers.
  */
 public class ExtensionInstaller {
 
@@ -61,7 +61,7 @@ public class ExtensionInstaller {
     static final Logger LOGGER = Logger.getLogger( ExtensionInstaller.class );
 
     // pass in category, version, name
-    private static final String EXTENSION_PATH_PATTERN = ModelTypeManagerImpl.MODESHAPE_GROUP + "/" + MODELER_PREFIX + "%s/%s/%s";
+    private static final String EXTENSION_PATH_PATTERN = MetamodelManagerImpl.MODESHAPE_GROUP + "/" + MODELER_PREFIX + "%s/%s/%s";
 
     private boolean archiveExists( final Node categoryNode,
                                    final String archiveName ) throws Exception {
@@ -77,14 +77,14 @@ public class ExtensionInstaller {
     }
 
     private Node archivesNode( final Node categoryNode ) throws Exception {
-        return categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
+        return categoryNode.getNode( ModelerLexicon.Metamodel.Category.ARCHIVES );
     }
 
-    private ModelType findModelType( final String modelTypeId,
-                                     final Set< ModelType > modelTypes ) {
-        for ( final ModelType type : modelTypes ) {
-            if ( type.id().equals( modelTypeId ) ) {
-                return type;
+    private Metamodel findMetamodel( final String metamodelId,
+                                     final Set< Metamodel > metamodels ) {
+        for ( final Metamodel metamodel : metamodels ) {
+            if ( metamodel.id().equals( metamodelId ) ) {
+                return metamodel;
             }
         }
 
@@ -93,29 +93,29 @@ public class ExtensionInstaller {
 
     /**
      * @param categoryNode
-     *        the model type category whose extensions are being installed (cannot be <code>null</code>)
+     *        the metamodel category whose extensions are being installed (cannot be <code>null</code>)
      * @param libraryClassLoader
      *        the class loader used for extensions classpath (cannot be <code>null</code>)
      * @param library
      *        the path where the extensions classpath is located (cannot be <code>null</code>)
-     * @param modelTypeRepositories
-     *        a collection of repositories to look for the extension archive (cannot be <code>null</code> or empty)
+     * @param metamodelRepositories
+     *        a collection of metamodel repositories to look for the metamodel archive (cannot be <code>null</code> or empty)
      * @param version
-     *        the version of the extension to look for (cannot be <code>null</code> or empty)
-     * @param modelTypes
-     *        the model types cache (cannot be <code>null</code> or empty)
-     * @return <code>true</code> if an extension was installed and the session should be saved
+     *        the version of the metamodel to look for (cannot be <code>null</code> or empty)
+     * @param metamodels
+     *        the metamodels cache (cannot be <code>null</code> or empty)
+     * @return <code>true</code> if an metamodel was installed and the session should be saved
      * @throws Exception
      *         if an error occurs
      */
     boolean install( final Node categoryNode,
                      final LibraryClassLoader libraryClassLoader,
                      final Path library,
-                     final Collection< URL > modelTypeRepositories,
+                     final Collection< URL > metamodelRepositories,
                      final String version,
-                     final Set< ModelType > modelTypes ) throws Exception {
-        // will not have model types if sequencer jar didn't have installable sequencer
-        if ( modelTypes.isEmpty() ) return false;
+                     final Set< Metamodel > metamodels ) throws Exception {
+        // will not have metamodels if sequencer jar didn't have installable sequencer
+        if ( metamodels.isEmpty() ) return false;
 
         final String category = categoryNode.getName();
         final String archiveName = String.format( ARCHIVE_NAME, category, version );
@@ -130,7 +130,7 @@ public class ExtensionInstaller {
         }
 
         // loop through repositories until we find the extension archive which is found at root of archive
-        for ( final URL repositoryUrl : modelTypeRepositories ) {
+        for ( final URL repositoryUrl : metamodelRepositories ) {
             final URL url = new URL( path( repositoryUrl.toString(), extensionArchivePath ) );
             InputStream urlStream = null;
             Exception err = null;
@@ -249,15 +249,15 @@ public class ExtensionInstaller {
                     if ( Desequencer.class.isAssignableFrom( clazz )
                          && !Modifier.isAbstract( clazz.getModifiers() ) ) {
                         final Desequencer desequencer = ( Desequencer ) clazz.newInstance();
-                        final String modelType = desequencer.modelType();
-                        final Node modelTypeNode = modelTypeNode( categoryNode, modelType );
-                        modelTypeNode.setProperty( ModelerLexicon.ModelType.DESEQUENCER_CLASS_NAME, className );
+                        final String metamodelName = desequencer.metamodel();
+                        final Node metamodelNode = metamodelNode( categoryNode, metamodelName );
+                        metamodelNode.setProperty( ModelerLexicon.Metamodel.DESEQUENCER_CLASS_NAME, className );
 
-                        final ModelTypeImpl type = ( ModelTypeImpl ) findModelType( desequencer.modelType(), modelTypes );
-                        type.setDesequencer( desequencer );
+                        final MetamodelImpl metamodel = ( MetamodelImpl ) findMetamodel( desequencer.metamodel(), metamodels );
+                        metamodel.setDesequencer( desequencer );
 
                         extensionInstalled = true;
-                        LOGGER.debug( "Installed desequencer '%s' for model type '%s'", className, modelType );
+                        LOGGER.debug( "Installed desequencer '%s' for metamodel '%s'", className, metamodelName );
                     }
                 } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
                     LOGGER.debug( "Potential desequencer class '%s' cannot be loaded", clazz );
@@ -274,16 +274,16 @@ public class ExtensionInstaller {
                     if ( DependencyProcessor.class.isAssignableFrom( clazz )
                          && !Modifier.isAbstract( clazz.getModifiers() ) ) {
                         final DependencyProcessor dependencyProcessor = ( DependencyProcessor ) clazz.newInstance();
-                        final String modelType = dependencyProcessor.modelType();
+                        final String metamodelName = dependencyProcessor.metamodel();
 
-                        final Node modelTypeNode = modelTypeNode( categoryNode, modelType );
-                        modelTypeNode.setProperty( ModelerLexicon.ModelType.DEPENDENCY_PROCESSOR_CLASS_NAME, className );
+                        final Node metamodelNode = metamodelNode( categoryNode, metamodelName );
+                        metamodelNode.setProperty( ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME, className );
 
-                        final ModelTypeImpl type = ( ModelTypeImpl ) findModelType( dependencyProcessor.modelType(), modelTypes );
-                        type.setDependencyProcessor( dependencyProcessor );
+                        final MetamodelImpl metamodel = ( MetamodelImpl ) findMetamodel( dependencyProcessor.metamodel(), metamodels );
+                        metamodel.setDependencyProcessor( dependencyProcessor );
 
                         extensionInstalled = true;
-                        LOGGER.debug( "Installed dependency processor '%s' for model type '%s'", className, modelType );
+                        LOGGER.debug( "Installed dependency processor '%s' for metamodel '%s'", className, metamodelName );
                     }
                 } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
                     LOGGER.debug( "Potential dependency processor class '%s' cannot be loaded", className );
@@ -312,9 +312,9 @@ public class ExtensionInstaller {
         return false;
     }
 
-    Node modelTypeNode( final Node categoryNode,
-                        final String modelType ) throws Exception {
-        return categoryNode.getNode( ModelerLexicon.Category.MODEL_TYPES ).getNode( modelType );
+    Node metamodelNode( final Node categoryNode,
+                        final String metamodelName ) throws Exception {
+        return categoryNode.getNode( ModelerLexicon.Metamodel.Category.METAMODELS ).getNode( metamodelName );
     }
 
     private String path( final String prefix,

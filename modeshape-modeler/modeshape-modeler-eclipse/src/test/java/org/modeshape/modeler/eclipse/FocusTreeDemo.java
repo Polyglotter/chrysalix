@@ -43,7 +43,7 @@ public class FocusTreeDemo {
         // System.out.println( "Creating ModeShape Modeler..." );
         // try ( final ModeShapeModeler modeler = new ModeShapeModeler( path.toString(), "testModeShapeConfig.json" ) ) {
         // // jpav: remove
-        // System.out.println( "Registering model type repository..." );
+        // System.out.println( "Registering metamodel repository..." );
         // modeler.modelTypeManager().registerModelTypeRepository( new URL( "file:resources" ) );
         // final ModelTypeManager modelTypeManager = modeler.modelTypeManager();
         // // jpav: remove

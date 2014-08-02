@@ -30,10 +30,10 @@ import org.modeshape.modeler.extensions.Desequencer;
 /**
  * 
  */
-public interface ModelType {
+public interface Metamodel {
 
     /**
-     * @return the category of this model type
+     * @return the category of this metamodel
      */
     String category();
 
@@ -45,24 +45,24 @@ public interface ModelType {
     DependencyProcessor dependencyProcessor() throws ModelerException;
 
     /**
-     * @return this model type's desequencer or <code>null</code> if one does not exist
+     * @return this metamodel's desequencer or <code>null</code> if one does not exist
      * @throws ModelerException
      *         if a problem occurs
      */
     Desequencer desequencer() throws ModelerException;
 
     /**
-     * @return the ID of this model type
+     * @return the ID of this metamodel
      */
     String id();
 
     /**
-     * @return the name of this model type
+     * @return the name of this metamodel
      */
     String name();
 
     /**
-     * @return this model type's sequencer (never <code>null</code>)
+     * @return this metamodel's sequencer (never <code>null</code>)
      * @throws ModelerException
      *         if any problem occurs
      */
@@ -70,12 +70,12 @@ public interface ModelType {
 
     /**
      * @param name
-     *        the name of this model type
+     *        the name of this metamodel
      */
     void setName( String name );
 
     /**
-     * @return the source file extensions associated with this model type
+     * @return the source file extensions associated with this metamodel
      */
     String[] sourceFileExtensions();
 }
