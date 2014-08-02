@@ -35,7 +35,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.junit.After;
 import org.modeshape.modeler.ModeShapeModeler;
-import org.modeshape.modeler.ModelTypeManager;
+import org.modeshape.modeler.MetamodelManager;
 
 @SuppressWarnings( "javadoc" )
 public abstract class BaseModelerTest extends BaseTest {
@@ -96,15 +96,15 @@ public abstract class BaseModelerTest extends BaseTest {
     public ModeShapeModeler modeler() throws Exception {
         if ( modeler == null ) {
             modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
-            for ( final URL url : modeler.modelTypeManager().modelTypeRepositories() )
-                modeler.modelTypeManager().unregisterModelTypeRepository( url );
-            modelTypeManager().registerModelTypeRepository( MODULE_TEST_METAMODEL_REPOSITORY_URL );
-            modelTypeManager().registerModelTypeRepository( INTEGRATION_TEST_METAMODEL_REPOSITORY_URL );
+            for ( final URL url : modeler.metamodelManager().metamodelRepositories() )
+                modeler.metamodelManager().unregisterMetamodelRepository( url );
+            metamodelManager().registerMetamodelRepository( MODULE_TEST_METAMODEL_REPOSITORY_URL );
+            metamodelManager().registerMetamodelRepository( INTEGRATION_TEST_METAMODEL_REPOSITORY_URL );
         }
         return modeler;
     }
 
-    public ModelTypeManager modelTypeManager() throws Exception {
-        return modeler().modelTypeManager();
+    public MetamodelManager metamodelManager() throws Exception {
+        return modeler().metamodelManager();
     }
 }

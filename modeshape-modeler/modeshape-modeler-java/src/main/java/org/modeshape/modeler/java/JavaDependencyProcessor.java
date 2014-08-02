@@ -39,10 +39,10 @@ public class JavaDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.DependencyProcessor#modelType()
+     * @see org.modeshape.modeler.extensions.DependencyProcessor#metamodel()
      */
     @Override
-    public String modelType() {
+    public String metamodel() {
         return "org.modeshape.modeler.java.JavaFile";
     }
 

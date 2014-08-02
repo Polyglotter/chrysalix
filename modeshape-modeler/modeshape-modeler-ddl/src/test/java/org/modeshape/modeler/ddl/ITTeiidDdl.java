@@ -37,16 +37,12 @@ public class ITTeiidDdl extends TeiidDdlIntegrationTest {
 
     @Test
     public void shouldGetDdlModel() throws Exception {
-        /**
-         * The name of the Teiid DDL model node. Value is {@value} .
-         */
-        final String DDL_MODEL_TYPE_CATEGORY = "ddl";
-        final String DDL_MODEL_TYPE_ID = "org.modeshape.modeler.ddl.Ddl";
 
-        modelTypeManager().install( DDL_MODEL_TYPE_CATEGORY );
+        metamodelManager().install( TeiidDdlLexicon.DDL_METAMODEL_CATEGORY );
 
         final File dataFile = new File( "src/test/resources/Teiid-MySQLAccounts.ddl" );
-        final Model generatedModel = modeler().generateModel( dataFile, null, modelTypeManager().modelType( DDL_MODEL_TYPE_ID ) );
+        final Model generatedModel =
+            modeler().generateModel( dataFile, null, metamodelManager().metamodel( TeiidDdlLexicon.DDL_METAMODEL_ID ) );
         final Model model = modeler().model( dataFile.getName() );
         assertThat( model, is( generatedModel ) );
 

@@ -14,20 +14,16 @@ Polyglotter is open source, and we welcome anybody that wants to participate and
 
 If you want to report a bug or request an enhancement, please log a new issue in the [GitHub issue tracker](https://github.com/Polyglotter/polyglotter/issues/new) describing the bug or new feature.
 
-## Building
+## Building Polyglotter
 
 We use Maven to build our software. The following command compiles all the code, installs the JARs into your local Maven repository, and runs all of the unit tests:
 
-	$ mvn clean install
+    $ mvn clean install
 
-Running all of the tests may take a while so, alternatively, you can specify `-Dskip.unit.tests=true` to skip all tests:
+Running all of the tests may take a while so, alternatively, you can specify `-Dskip.integration.tests=true` to skip all integration tests, which generally take longer to run:
+
+    $ mvn clean install -Dskip.integration.tests=true
+    
+You may also skip unit tests by adding `-Dskip.unit.tests=false`:
 
     $ mvn clean install -Dskip.unit.tests=true
-    
-Integration tests are long-running and many depend on on-line resources, so they are skipped by default. However, you may still include them by adding `-Dskip.integration.tests=false`:
-
-    $ mvn clean install -Dskip.integration.tests=false
-	
-This command can then be used to run *just* the integration tests:
-
-	$ mvn verify -Pintegration

@@ -55,20 +55,20 @@ import org.modeshape.common.util.CheckArg;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.jcr.api.sequencer.Sequencer;
+import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.MetamodelManager;
 import org.modeshape.modeler.ModeShapeModeler;
-import org.modeshape.modeler.ModelType;
-import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.polyglotter.common.Logger;
 
 /**
- * The default implementation of a model type manager.
+ * The default implementation of a metamodel manager.
  */
-public final class ModelTypeManagerImpl implements ModelTypeManager {
+public final class MetamodelManagerImpl implements MetamodelManager {
 
-    static final Logger LOGGER = Logger.getLogger( ModelTypeManagerImpl.class );
+    static final Logger LOGGER = Logger.getLogger( MetamodelManagerImpl.class );
 
     static final String MODESHAPE_GROUP = "org/modeshape";
 
@@ -82,16 +82,16 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
 
     private final ExtensionInstaller extensionInstaller;
     final Manager manager;
-    final LinkedList< URL > modelTypeRepositories = new LinkedList<>();
-    final Set< ModelType > modelTypes = new HashSet<>();
+    final LinkedList< URL > metamodelRepositories = new LinkedList<>();
+    final Set< Metamodel > metamodels = new HashSet<>();
     final LibraryClassLoader libraryClassLoader = new LibraryClassLoader();
     final Path library;
 
-    ModelTypeManagerImpl( final Manager manager ) throws ModelerException {
+    MetamodelManagerImpl( final Manager manager ) throws ModelerException {
         this.manager = manager;
         this.extensionInstaller = new ExtensionInstaller();
 
-        // setup classpath area for model type archives
+        // setup classpath area for metamodel archives
         try {
             library = Files.createTempDirectory( null );
         } catch ( final IOException e ) {
@@ -105,7 +105,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
             @Override
             public Void run( final Session session,
                              final Node systemNode ) throws Exception {
-                loadModelTypeRepositories( session, systemNode );
+                loadMetamodelRepositories( session, systemNode );
                 loadCategories( session, systemNode );
                 session.save();
 
@@ -128,18 +128,18 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     Node categoryNode( final String category,
                        final Node systemNode,
                        final boolean create ) throws Exception {
-        if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ) ) {
-            throw new ModelerException( ModelerI18n.modelTypeCategoryParentNodeNotFound, systemNode.getPath() );
+        if ( !systemNode.hasNode( ModelerLexicon.METAMODEL_CATEGORIES ) ) {
+            throw new ModelerException( ModelerI18n.metamodelCategoryParentNodeNotFound, systemNode.getPath() );
         }
 
-        final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
+        final Node categoriesNode = systemNode.getNode( ModelerLexicon.METAMODEL_CATEGORIES );
         Node categoryNode = null;
 
         if ( !categoriesNode.hasNode( category ) ) {
             if ( create ) {
-                categoryNode = categoriesNode.addNode( category, ModelerLexicon.Category.NODE_TYPE );
-                categoryNode.addNode( ModelerLexicon.Category.ARCHIVES, ModelerLexicon.Category.ARCHIVES );
-                categoryNode.addNode( ModelerLexicon.Category.MODEL_TYPES, ModelerLexicon.Category.MODEL_TYPES );
+                categoryNode = categoriesNode.addNode( category, ModelerLexicon.Metamodel.Category.NODE_TYPE );
+                categoryNode.addNode( ModelerLexicon.Metamodel.Category.ARCHIVES, ModelerLexicon.Metamodel.Category.ARCHIVES );
+                categoryNode.addNode( ModelerLexicon.Metamodel.Category.METAMODELS, ModelerLexicon.Metamodel.Category.METAMODELS );
                 LOGGER.debug( "Created category node '%s'", category );
             }
         } else {
@@ -153,36 +153,36 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * @param fileNode
      *        the file node
-     * @param modelTypes
-     *        the model types applicable to the supplied file node
-     * @return the default model type for the supplied file node
+     * @param metamodels
+     *        the metamodels applicable to the supplied file node
+     * @return the default metamodel for the supplied file node
      * @throws Exception
      *         if any problem occurs
      */
-    public ModelType defaultModelType( final Node fileNode,
-                                       final ModelType[] modelTypes ) throws Exception {
+    public Metamodel defaultMetamodel( final Node fileNode,
+                                       final Metamodel[] metamodels ) throws Exception {
         final String ext = fileNode.getName().substring( fileNode.getName().lastIndexOf( '.' ) + 1 );
-        for ( final ModelType type : modelTypes )
-            for ( final String typeExt : type.sourceFileExtensions() )
-                if ( typeExt.equals( ext ) ) return type;
-        return modelTypes.length == 0 ? null : modelTypes[ 0 ];
+        for ( final Metamodel metamodel : metamodels )
+            for ( final String fileExt : metamodel.sourceFileExtensions() )
+                if ( fileExt.equals( ext ) ) return metamodel;
+        return metamodels.length == 0 ? null : metamodels[ 0 ];
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#defaultModelType(String)
+     * @see MetamodelManager#defaultMetamodel(String)
      */
     @Override
-    public ModelType defaultModelType( final String filePath ) throws ModelerException {
+    public Metamodel defaultMetamodel( final String filePath ) throws ModelerException {
         CheckArg.isNotEmpty( filePath, "filePath" );
-        return manager.run( new Task< ModelType >() {
+        return manager.run( new Task< Metamodel >() {
 
             @Override
-            public ModelType run( final Session session ) throws Exception {
+            public Metamodel run( final Session session ) throws Exception {
                 final Node node = manager.artifactNode( session, filePath );
-                final ModelType type = defaultModelType( node, modelTypes( node ) );
-                return type == null ? null : type;
+                final Metamodel metamodel = defaultMetamodel( node, metamodels( node ) );
+                return metamodel == null ? null : metamodel;
             }
         } );
     }
@@ -190,7 +190,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#install(String)
+     * @see MetamodelManager#install(String)
      */
     @Override
     public void install( final String category ) throws ModelerException {
@@ -248,12 +248,12 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#installableModelTypeCategories()
+     * @see MetamodelManager#installableMetamodelCategories()
      */
     @Override
-    public String[] installableModelTypeCategories() throws ModelerException {
+    public String[] installableMetamodelCategories() throws ModelerException {
         final Set< String > categories = new HashSet<>();
-        for ( final URL repositoryUrl : modelTypeRepositories ) {
+        for ( final URL repositoryUrl : metamodelRepositories ) {
             try {
                 if ( repositoryUrl.getProtocol().startsWith( "file" ) ) {
                     final String path = ( repositoryUrl.getFile() + File.separatorChar + MODESHAPE_GROUP );
@@ -290,9 +290,9 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
         if ( extensionInstaller.install( categoryNode,
                                          libraryClassLoader,
                                          library,
-                                         modelTypeRepositories,
+                                         metamodelRepositories,
                                          version(),
-                                         modelTypes ) ) {
+                                         metamodels ) ) {
             LOGGER.debug( "Installed extensions for category '%s'", category );
         } else {
             LOGGER.debug( "No extensions installed for category '%s'", category );
@@ -314,7 +314,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
         boolean sequencerArchiveFound = false;
 
         // loop through repositories until we find the sequencer archive
-        for ( final URL repositoryUrl : modelTypeRepositories ) {
+        for ( final URL repositoryUrl : metamodelRepositories ) {
             final URL url = new URL( path( repositoryUrl.toString(), sequencerArchivePath ) );
             InputStream urlStream = null;
             IOException err = null;
@@ -343,7 +343,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
 
             try ( final ZipFile archive = new ZipFile( archivePath.toFile() ) ) {
                 final Collection< String > potentialSequencerClassNames = new ArrayList<>();
-                final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
+                final Node archivesNode = categoryNode.getNode( ModelerLexicon.Metamodel.Category.ARCHIVES );
 
                 for ( final Enumeration< ? extends ZipEntry > archiveIter = archive.entries(); archiveIter.hasMoreElements(); ) {
                     final ZipEntry archiveEntry = archiveIter.nextElement();
@@ -400,7 +400,7 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                         }
                 }
 
-                final Node modelTypesNode = categoryNode.getNode( ModelerLexicon.Category.MODEL_TYPES );
+                final Node metamodelsNode = categoryNode.getNode( ModelerLexicon.Metamodel.Category.METAMODELS );
 
                 // try and load each potential sequencer class that was found
                 for ( final String sequencerClassName : potentialSequencerClassNames ) {
@@ -415,14 +415,14 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
                                         + sequencerClass.getSimpleName();
                             id = id.endsWith( "Sequencer" ) ? id.substring( 0, id.length() - "Sequencer".length() ) : id;
 
-                            // add model type to MS repository
-                            final Node modelTypeNode = modelTypesNode.addNode( id, ModelerLexicon.ModelType.NODE_TYPE );
-                            modelTypeNode.setProperty( ModelerLexicon.ModelType.SEQUENCER_CLASS_NAME, sequencerClass.getName() );
+                            // add metamodel to MS repository
+                            final Node metamodelNode = metamodelsNode.addNode( id, ModelerLexicon.Metamodel.NODE_TYPE );
+                            metamodelNode.setProperty( ModelerLexicon.Metamodel.SEQUENCER_CLASS_NAME, sequencerClass.getName() );
 
                             // add to cache
-                            @SuppressWarnings( "unchecked" ) final ModelTypeImpl type =
-                                new ModelTypeImpl( manager, category, id, ( Class< Sequencer > ) sequencerClass );
-                            modelTypes.add( type );
+                            @SuppressWarnings( "unchecked" ) final MetamodelImpl metamodel =
+                                new MetamodelImpl( manager, category, id, ( Class< Sequencer > ) sequencerClass );
+                            metamodels.add( metamodel );
                         }
                     } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
                         LOGGER.debug( "Potential sequencer class '%s' cannot be loaded", sequencerClass );
@@ -434,33 +434,33 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
         }
 
         if ( !sequencerArchiveFound ) {
-            throw new IllegalArgumentException( ModelerI18n.unableToFindModelTypeCategory.text( category ) );
+            throw new IllegalArgumentException( ModelerI18n.unableToFindMetamodelCategory.text( category ) );
         }
     }
 
     void loadCategories( final Session session,
                          final Node systemNode ) throws Exception {
-        if ( !systemNode.hasNode( ModelerLexicon.MODEL_TYPE_CATEGORIES ) ) {
-            systemNode.addNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
-            LOGGER.debug( "'%s' node created", ModelerLexicon.MODEL_TYPE_CATEGORIES );
+        if ( !systemNode.hasNode( ModelerLexicon.METAMODEL_CATEGORIES ) ) {
+            systemNode.addNode( ModelerLexicon.METAMODEL_CATEGORIES );
+            LOGGER.debug( "'%s' node created", ModelerLexicon.METAMODEL_CATEGORIES );
         } else {
-            final Node categoriesNode = systemNode.getNode( ModelerLexicon.MODEL_TYPE_CATEGORIES );
+            final Node categoriesNode = systemNode.getNode( ModelerLexicon.METAMODEL_CATEGORIES );
 
             for ( final NodeIterator iter = categoriesNode.getNodes(); iter.hasNext(); ) {
                 final Node categoryNode = iter.nextNode();
                 loadCategoryArchives( session, categoryNode );
-                loadModelTypes( session, categoryNode );
+                loadMetamodels( session, categoryNode );
             }
         }
     }
 
     void loadCategoryArchives( final Session session,
                                final Node categoryNode ) throws Exception {
-        if ( !categoryNode.hasNode( ModelerLexicon.Category.ARCHIVES ) ) {
-            categoryNode.addNode( ModelerLexicon.Category.ARCHIVES );
-            LOGGER.debug( "'%s' node created", ModelerLexicon.Category.ARCHIVES );
+        if ( !categoryNode.hasNode( ModelerLexicon.Metamodel.Category.ARCHIVES ) ) {
+            categoryNode.addNode( ModelerLexicon.Metamodel.Category.ARCHIVES );
+            LOGGER.debug( "'%s' node created", ModelerLexicon.Metamodel.Category.ARCHIVES );
         } else {
-            final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
+            final Node archivesNode = categoryNode.getNode( ModelerLexicon.Metamodel.Category.ARCHIVES );
 
             for ( final NodeIterator iter = archivesNode.getNodes(); iter.hasNext(); ) {
                 final Node archiveNode = iter.nextNode();
@@ -478,64 +478,64 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
         }
     }
 
-    void loadModelTypeRepositories( final Session session,
+    void loadMetamodelRepositories( final Session session,
                                     final Node systemNode ) throws Exception {
-        if ( !systemNode.hasProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES ) ) {
+        if ( !systemNode.hasProperty( ModelerLexicon.METAMODEL_REPOSITORIES ) ) {
             final Value[] vals = new Value[ 2 ];
-            vals[ 0 ] = session.getValueFactory().createValue( JBOSS_MODEL_TYPE_REPOSITORY );
-            vals[ 1 ] = session.getValueFactory().createValue( MAVEN_MODEL_TYPE_REPOSITORY );
-            systemNode.setProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES, vals );
+            vals[ 0 ] = session.getValueFactory().createValue( JBOSS_METAMODEL_REPOSITORY );
+            vals[ 1 ] = session.getValueFactory().createValue( MAVEN_METAMODEL_REPOSITORY );
+            systemNode.setProperty( ModelerLexicon.METAMODEL_REPOSITORIES, vals );
         }
 
-        for ( final String url : JcrUtil.values( systemNode, ModelerLexicon.MODEL_TYPE_REPOSITORIES ) ) {
-            modelTypeRepositories.add( new URL( url ) );
+        for ( final String url : JcrUtil.values( systemNode, ModelerLexicon.METAMODEL_REPOSITORIES ) ) {
+            metamodelRepositories.add( new URL( url ) );
         }
     }
 
-    void loadModelTypes( final Session session,
+    void loadMetamodels( final Session session,
                          final Node categoryNode ) throws Exception {
-        if ( !categoryNode.hasNode( ModelerLexicon.Category.MODEL_TYPES ) ) {
-            categoryNode.addNode( ModelerLexicon.Category.MODEL_TYPES );
-            LOGGER.debug( "'%s' node created", ModelerLexicon.Category.MODEL_TYPES );
+        if ( !categoryNode.hasNode( ModelerLexicon.Metamodel.Category.METAMODELS ) ) {
+            categoryNode.addNode( ModelerLexicon.Metamodel.Category.METAMODELS );
+            LOGGER.debug( "'%s' node created", ModelerLexicon.Metamodel.Category.METAMODELS );
         } else {
-            final Node modelTypesNode = categoryNode.getNode( ModelerLexicon.Category.MODEL_TYPES );
+            final Node metamodelsNode = categoryNode.getNode( ModelerLexicon.Metamodel.Category.METAMODELS );
             final String category = categoryNode.getName();
 
-            for ( final NodeIterator iter = modelTypesNode.getNodes(); iter.hasNext(); ) {
-                final Node modelTypeNode = iter.nextNode();
+            for ( final NodeIterator iter = metamodelsNode.getNodes(); iter.hasNext(); ) {
+                final Node metamodelNode = iter.nextNode();
                 String sequencerClassName = null;
                 String desequencerClassName = null;
                 String dependencyProcessorClassName = null;
 
-                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.SEQUENCER_CLASS_NAME ) ) {
-                    sequencerClassName = JcrUtil.value( modelTypeNode,
-                                                        ModelerLexicon.ModelType.SEQUENCER_CLASS_NAME );
+                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.SEQUENCER_CLASS_NAME ) ) {
+                    sequencerClassName = JcrUtil.value( metamodelNode,
+                                                        ModelerLexicon.Metamodel.SEQUENCER_CLASS_NAME );
                 }
 
-                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.DESEQUENCER_CLASS_NAME ) ) {
-                    desequencerClassName = JcrUtil.value( modelTypeNode,
-                                                          ModelerLexicon.ModelType.DESEQUENCER_CLASS_NAME );
+                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.DESEQUENCER_CLASS_NAME ) ) {
+                    desequencerClassName = JcrUtil.value( metamodelNode,
+                                                          ModelerLexicon.Metamodel.DESEQUENCER_CLASS_NAME );
                 }
 
-                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.DEPENDENCY_PROCESSOR_CLASS_NAME ) ) {
-                    dependencyProcessorClassName = JcrUtil.value( modelTypeNode,
-                                                                  ModelerLexicon.ModelType.DEPENDENCY_PROCESSOR_CLASS_NAME );
+                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME ) ) {
+                    dependencyProcessorClassName = JcrUtil.value( metamodelNode,
+                                                                  ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME );
                 }
 
-                final ModelTypeImpl modelType = new ModelTypeImpl( manager,
+                final MetamodelImpl metamodel = new MetamodelImpl( manager,
                                                                    category,
-                                                                   modelTypeNode.getName(),
+                                                                   metamodelNode.getName(),
                                                                    sequencerClassName,
                                                                    desequencerClassName,
                                                                    dependencyProcessorClassName );
 
-                if ( modelTypeNode.hasProperty( ModelerLexicon.ModelType.FILE_EXTENSIONS ) ) {
-                    final String[] fileExtensions = JcrUtil.values( modelTypeNode, ModelerLexicon.ModelType.FILE_EXTENSIONS );
-                    modelType.setSourceFileExtensions( fileExtensions );
+                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.FILE_EXTENSIONS ) ) {
+                    final String[] fileExtensions = JcrUtil.values( metamodelNode, ModelerLexicon.Metamodel.FILE_EXTENSIONS );
+                    metamodel.setSourceFileExtensions( fileExtensions );
                 }
 
-                modelTypes.add( modelType );
-                LOGGER.debug( "Loaded modelType: %s", modelType.id() );
+                metamodels.add( metamodel );
+                LOGGER.debug( "Loaded metamodel: %s", metamodel.id() );
             }
         }
     }
@@ -543,81 +543,81 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#modelType(String)
+     * @see MetamodelManager#metamodel(String)
      */
     @Override
-    public ModelType modelType( final String id ) {
+    public Metamodel metamodel( final String id ) {
         CheckArg.isNotEmpty( id, "id" );
-        for ( final ModelType type : modelTypes )
-            if ( id.equals( type.id() ) ) return type;
+        for ( final Metamodel metamodel : metamodels )
+            if ( id.equals( metamodel.id() ) ) return metamodel;
         return null;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#modelTypeCategories()
+     * @see MetamodelManager#metamodelCategories()
      */
     @Override
-    public String[] modelTypeCategories() {
+    public String[] metamodelCategories() {
         final Set< String > categories = new HashSet<>();
-        for ( final ModelType type : modelTypes )
-            categories.add( type.category() );
+        for ( final Metamodel metamodel : metamodels )
+            categories.add( metamodel.category() );
         return categories.toArray( new String[ categories.size() ] );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#modelTypeRepositories()
+     * @see MetamodelManager#metamodelRepositories()
      */
     @Override
-    public URL[] modelTypeRepositories() {
-        return modelTypeRepositories.toArray( new URL[ modelTypeRepositories.size() ] );
+    public URL[] metamodelRepositories() {
+        return metamodelRepositories.toArray( new URL[ metamodelRepositories.size() ] );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#modelTypes()
+     * @see MetamodelManager#metamodels()
      */
     @Override
-    public ModelType[] modelTypes() {
-        return modelTypes.toArray( new ModelType[ modelTypes.size() ] );
+    public Metamodel[] metamodels() {
+        return metamodels.toArray( new Metamodel[ metamodels.size() ] );
     }
 
     /**
      * @param fileNode
      *        the file node
-     * @return the model types applicable to the supplied file node
+     * @return the metamodels applicable to the supplied file node
      * @throws Exception
      *         if any problem occurs
      */
-    public ModelType[] modelTypes( final Node fileNode ) throws Exception {
-        final Set< ModelType > applicableModelTypes = new HashSet<>();
+    public Metamodel[] metamodels( final Node fileNode ) throws Exception {
+        final Set< Metamodel > applicableMetamodels = new HashSet<>();
         final String mimeType = JcrUtil.value( fileNode.getNode( JcrLexicon.CONTENT.getString() ),
                                                JcrLexicon.MIMETYPE.getString() );
 
-        for ( final ModelType type : modelTypes() ) {
-            if ( ( ( ModelTypeImpl ) type ).sequencer().isAccepted( mimeType ) ) applicableModelTypes.add( type );
+        for ( final Metamodel metamodel : metamodels() ) {
+            if ( ( ( MetamodelImpl ) metamodel ).sequencer().isAccepted( mimeType ) ) applicableMetamodels.add( metamodel );
         }
 
-        return applicableModelTypes.toArray( new ModelType[ applicableModelTypes.size() ] );
+        return applicableMetamodels.toArray( new Metamodel[ applicableMetamodels.size() ] );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#modelTypesForArtifact(String)
+     * @see MetamodelManager#metamodelsForArtifact(String)
      */
     @Override
-    public ModelType[] modelTypesForArtifact( final String filePath ) throws ModelerException {
+    public Metamodel[] metamodelsForArtifact( final String filePath ) throws ModelerException {
         CheckArg.isNotEmpty( filePath, "filePath" );
-        return manager.run( new Task< ModelType[] >() {
+        return manager.run( new Task< Metamodel[] >() {
 
             @Override
-            public final ModelType[] run( final Session session ) throws Exception {
-                return modelTypes( manager.artifactNode( session, filePath ) );
+            public final Metamodel[] run( final Session session ) throws Exception {
+                return metamodels( manager.artifactNode( session, filePath ) );
             }
         } );
     }
@@ -625,47 +625,47 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#modelTypesForCategory(String)
+     * @see MetamodelManager#metamodelsForCategory(String)
      */
     @Override
-    public ModelType[] modelTypesForCategory( final String category ) {
+    public Metamodel[] metamodelsForCategory( final String category ) {
         CheckArg.isNotEmpty( category, "category" );
-        final Set< ModelType > types = new HashSet<>();
-        for ( final ModelType type : modelTypes )
-            if ( category.equals( type.category() ) ) types.add( type );
-        return types.toArray( new ModelType[ types.size() ] );
+        final Set< Metamodel > metamodels = new HashSet<>();
+        for ( final Metamodel metamodel : metamodels )
+            if ( category.equals( metamodel.category() ) ) metamodels.add( metamodel );
+        return metamodels.toArray( new Metamodel[ metamodels.size() ] );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#moveModelTypeRepositoryDown(URL)
+     * @see MetamodelManager#moveMetamodelRepositoryDown(URL)
      */
     @Override
-    public URL[] moveModelTypeRepositoryDown( final URL repositoryUrl ) throws ModelerException {
+    public URL[] moveMetamodelRepositoryDown( final URL repositoryUrl ) throws ModelerException {
         CheckArg.isNotNull( repositoryUrl, "repositoryUrl" );
-        final int ndx = modelTypeRepositories.indexOf( repositoryUrl );
+        final int ndx = metamodelRepositories.indexOf( repositoryUrl );
         if ( ndx < 0 ) throw new IllegalArgumentException( ModelerI18n.urlNotFound.text( repositoryUrl ) );
-        modelTypeRepositories.remove( ndx );
-        modelTypeRepositories.add( Math.min( ndx + 1, modelTypeRepositories.size() ), repositoryUrl );
-        saveModelTypeRepositories();
-        return modelTypeRepositories();
+        metamodelRepositories.remove( ndx );
+        metamodelRepositories.add( Math.min( ndx + 1, metamodelRepositories.size() ), repositoryUrl );
+        saveMetamodelRepositories();
+        return metamodelRepositories();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#moveModelTypeRepositoryUp(URL)
+     * @see MetamodelManager#moveMetamodelRepositoryUp(URL)
      */
     @Override
-    public URL[] moveModelTypeRepositoryUp( final URL repositoryUrl ) throws ModelerException {
+    public URL[] moveMetamodelRepositoryUp( final URL repositoryUrl ) throws ModelerException {
         CheckArg.isNotNull( repositoryUrl, "repositoryUrl" );
-        final int ndx = modelTypeRepositories.indexOf( repositoryUrl );
+        final int ndx = metamodelRepositories.indexOf( repositoryUrl );
         if ( ndx < 0 ) throw new IllegalArgumentException( ModelerI18n.urlNotFound.text( repositoryUrl ) );
-        modelTypeRepositories.remove( ndx );
-        modelTypeRepositories.add( Math.max( ndx - 1, 0 ), repositoryUrl );
-        saveModelTypeRepositories();
-        return modelTypeRepositories();
+        metamodelRepositories.remove( ndx );
+        metamodelRepositories.add( Math.max( ndx - 1, 0 ), repositoryUrl );
+        saveMetamodelRepositories();
+        return metamodelRepositories();
     }
 
     private String path( final String prefix,
@@ -678,29 +678,29 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#registerModelTypeRepository(URL)
+     * @see MetamodelManager#registerMetamodelRepository(URL)
      */
     @Override
-    public URL[] registerModelTypeRepository( final URL repositoryUrl ) throws ModelerException {
+    public URL[] registerMetamodelRepository( final URL repositoryUrl ) throws ModelerException {
         CheckArg.isNotNull( repositoryUrl, "repositoryUrl" );
-        if ( !modelTypeRepositories.contains( repositoryUrl ) ) {
-            modelTypeRepositories.addFirst( repositoryUrl );
-            saveModelTypeRepositories();
+        if ( !metamodelRepositories.contains( repositoryUrl ) ) {
+            metamodelRepositories.addFirst( repositoryUrl );
+            saveMetamodelRepositories();
         }
-        return modelTypeRepositories();
+        return metamodelRepositories();
     }
 
-    private void saveModelTypeRepositories() throws ModelerException {
+    private void saveMetamodelRepositories() throws ModelerException {
         manager.run( this, new SystemTask< Void >() {
 
             @Override
             public Void run( final Session session,
                              final Node systemNode ) throws Exception {
-                final Value[] vals = new Value[ modelTypeRepositories.size() ];
+                final Value[] vals = new Value[ metamodelRepositories.size() ];
                 int ndx = 0;
-                for ( final URL url : modelTypeRepositories )
+                for ( final URL url : metamodelRepositories )
                     vals[ ndx++ ] = session.getValueFactory().createValue( url.toString() );
-                systemNode.setProperty( ModelerLexicon.MODEL_TYPE_REPOSITORIES, vals );
+                systemNode.setProperty( ModelerLexicon.METAMODEL_REPOSITORIES, vals );
                 session.save();
                 return null;
             }
@@ -710,27 +710,27 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#uninstall(String)
+     * @see MetamodelManager#uninstall(String)
      */
     @Override
     public void uninstall( final String category ) throws ModelerException {
         CheckArg.isNotEmpty( category, "category" );
 
-        // delete from cache all model types of that category
+        // delete from cache all metamodels of that category
         boolean deleted = false;
 
-        for ( final Iterator< ModelType > iter = modelTypes.iterator(); iter.hasNext(); ) {
-            final ModelType modelType = iter.next();
+        for ( final Iterator< Metamodel > iter = metamodels.iterator(); iter.hasNext(); ) {
+            final Metamodel metamodel = iter.next();
 
-            if ( category.equals( modelType.category() ) ) {
+            if ( category.equals( metamodel.category() ) ) {
                 deleted = true;
                 iter.remove();
-                LOGGER.debug( "Uninstalled modelType '%s'", modelType.id() );
+                LOGGER.debug( "Uninstalled metamodel '%s'", metamodel.id() );
             }
         }
 
         if ( !deleted ) {
-            throw new ModelerException( ModelerI18n.unableToFindModelTypeCategory, category );
+            throw new ModelerException( ModelerI18n.unableToFindMetamodelCategory, category );
         }
 
         // delete from MS repository
@@ -740,11 +740,11 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
             public Void run( final Session session,
                              final Node systemNode ) throws Exception {
                 final Node categoryNode = categoryNode( category, systemNode, false );
-                if ( categoryNode == null ) throw new ModelerException( ModelerI18n.unableToFindModelTypeCategory, category );
+                if ( categoryNode == null ) throw new ModelerException( ModelerI18n.unableToFindMetamodelCategory, category );
 
                 // remove category archive paths from classpath
-                if ( categoryNode.hasNode( ModelerLexicon.Category.ARCHIVES ) ) {
-                    final Node archivesNode = categoryNode.getNode( ModelerLexicon.Category.ARCHIVES );
+                if ( categoryNode.hasNode( ModelerLexicon.Metamodel.Category.ARCHIVES ) ) {
+                    final Node archivesNode = categoryNode.getNode( ModelerLexicon.Metamodel.Category.ARCHIVES );
 
                     for ( final NodeIterator iter = archivesNode.getNodes(); iter.hasNext(); ) {
                         final Node archiveNode = iter.nextNode();
@@ -765,13 +765,13 @@ public final class ModelTypeManagerImpl implements ModelTypeManager {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelTypeManager#unregisterModelTypeRepository(URL)
+     * @see MetamodelManager#unregisterMetamodelRepository(URL)
      */
     @Override
-    public URL[] unregisterModelTypeRepository( final URL repositoryUrl ) throws ModelerException {
+    public URL[] unregisterMetamodelRepository( final URL repositoryUrl ) throws ModelerException {
         CheckArg.isNotNull( repositoryUrl, "repositoryUrl" );
-        if ( modelTypeRepositories.remove( repositoryUrl ) ) saveModelTypeRepositories();
-        return modelTypeRepositories();
+        if ( metamodelRepositories.remove( repositoryUrl ) ) saveMetamodelRepositories();
+        return metamodelRepositories();
     }
 
     private String version() throws ModelerException {

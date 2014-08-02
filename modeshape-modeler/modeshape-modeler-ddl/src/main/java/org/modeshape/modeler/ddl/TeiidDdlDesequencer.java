@@ -73,10 +73,10 @@ public class TeiidDdlDesequencer implements Desequencer {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.Desequencer#modelType()
+     * @see org.modeshape.modeler.extensions.Desequencer#metamodel()
      */
     @Override
-    public String modelType() {
-        return TeiidDdlLexicon.DDL_MODEL_TYPE_ID;
+    public String metamodel() {
+        return TeiidDdlLexicon.DDL_METAMODEL_ID;
     }
 }

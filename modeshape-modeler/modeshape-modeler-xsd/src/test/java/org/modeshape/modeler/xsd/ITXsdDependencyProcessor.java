@@ -33,7 +33,7 @@ import org.modeshape.modeler.test.BaseTest;
 @SuppressWarnings( "javadoc" )
 public class ITXsdDependencyProcessor extends BaseTest {
 
-    // private static final String XSD_MODEL_TYPE_ID = "org.modeshape.modeler.xsd.Xsd";
+    // private static final String XSD_METAMODEL_ID = "org.modeshape.modeler.xsd.Xsd";
 
     DependencyProcessor processor;
 
@@ -49,31 +49,31 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // public void before() throws Exception {
     // super.before();
     // this.processor = new XsdDependencyProcessor();
-    // modelTypeManager().install( "sramp" );
-    // modelTypeManager().install( "xsd" );
+    // metamodelManager().install( "sramp" );
+    // metamodelManager().install( "xsd" );
     // }
     //
     // @Test
     // public void shouldFindDependencyProcessorForXsdModelNode() throws Exception {
-    // // find XSD model type
-    // ModelType xsdModelType = null;
+    // // find XSD metamodel
+    // Metamodel xsdMetamodel = null;
     //
-    // for ( final ModelType type : modelTypeManager().modelTypes() ) {
-    // if ( type.id().equals( XSD_MODEL_TYPE_ID ) ) {
-    // xsdModelType = type;
+    // for ( final Metamodel metamodel : metamodelManager().metamodels() ) {
+    // if ( metamodel.id().equals( XSD_METAMODEL_ID ) ) {
+    // xsdMetamodel = metamodel;
     // break;
     // }
     // }
     //
-    // assertThat( xsdModelType, notNullValue() );
+    // assertThat( xsdMetamodel, notNullValue() );
     //
     // final String path = importArtifact( XSD_ARTIFACT );
-    // final ModelImpl model = ( ModelImpl ) modeler().generateModel( path, ARTIFACT_NAME, xsdModelType, true );
+    // final ModelImpl model = ( ModelImpl ) modeler().generateModel( path, ARTIFACT_NAME, xsdMetamodel, true );
     // manager().run( new Task< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
-    // assertThat( model.modelType().dependencyProcessor(), is( notNullValue() ) );
+    // assertThat( model.metamodel().dependencyProcessor(), is( notNullValue() ) );
     // return null;
     // }
     // } );
@@ -91,7 +91,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final StringBuilder content = new StringBuilder( XML_DECLARATION );
     // content.append( "<xsd:schema targetNamespace=\"http://www.blahblah.com/XMLSchema/Blah/Blah\" " );
     // content.append( "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" >" );
-    // content.append( "<xsd:import namespace=\"http://www.blahblah.com/XMLSchema/Blah/BlahBlahTypes\" " );
+    // content.append( "<xsd:import namespace=\"http://www.blahblah.com/XMLSchema/Blah/BlahBlah\" " );
     // content.append( "schemaLocation=\"" ).append( dependencyXsdPath.toString() );
     // content.append( "\" />" );
     // content.append( "</xsd:schema>" );
@@ -109,9 +109,9 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // assertThat( workspacePath, is( "/artifact/" + xsdName ) );
     //
     // // create model
-    // final ModelType xsdModelType = xsdModelType();
+    // final Metamodel xsdMetamodel = xsdMetamodel();
     // final String modelPath = "model/dependentXsd";
-    // final ModelImpl model = ( ModelImpl ) modeler().generateModel( workspacePath, modelPath, xsdModelType, true );
+    // final ModelImpl model = ( ModelImpl ) modeler().generateModel( workspacePath, modelPath, xsdMetamodel, true );
     //
     // // check dependencies
     // manager().run( new Task< Node >() {
@@ -140,8 +140,8 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String path = modeler().importFile( new File( xsdUrl.toURI() ), null );
     // assertThat( path, is( "/music.xsd" ) );
     //
-    // final ModelType xsdModelType = xsdModelType();
-    // modeler().generateModel( path, MODEL_NAME, xsdModelType, true );
+    // final Metamodel xsdMetamodel = xsdMetamodel();
+    // modeler().generateModel( path, MODEL_NAME, xsdMetamodel, true );
     //
     // manager().run( new Task< Node >() {
     //
@@ -162,9 +162,9 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), "Artifact/Books/SOAP" );
     // assertThat( artifactPath, is( "/Artifact/Books/SOAP/BooksWithSOAPEncoding.xsd" ) );
     //
-    // final ModelType xsdModelType = xsdModelType();
+    // final Metamodel xsdMetamodel = xsdMetamodel();
     // final String modelPath = "Model/Books/SOAP/BooksWithSOAPEncoding.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdModelType, true );
+    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
     //
     // manager().run( new Task< Node >() {
     //
@@ -245,9 +245,9 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), "Artifact/Books" );
     // assertThat( artifactPath, is( "/Artifact/Books/Books.xsd" ) );
     //
-    // final ModelType xsdModelType = xsdModelType();
+    // final Metamodel xsdMetamodel = xsdMetamodel();
     // final String modelPath = "Model/Books/Books.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdModelType, true );
+    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
     //
     // manager().run( new Task< Node >() {
     //
@@ -281,11 +281,11 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final URL xsdUrl = getClass().getClassLoader().getResource( "Books/SOAP/BooksWithSOAPEncoding.xsd" );
     // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), null );
     //
-    // final ModelType xsdModelType = xsdModelType();
+    // final Metamodel xsdMetamodel = xsdMetamodel();
     //
     // // relative path of ../data/types/BookDatatypes.xsd dependency is not valid since there is no parent folder
     // final String modelPath = "Books.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdModelType, true );
+    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
     //
     // manager().run( new Task< Node >() {
     //
@@ -314,9 +314,9 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), null );
     // assertThat( artifactPath, is( "/Movies.xsd" ) );
     //
-    // final ModelType xsdModelType = xsdModelType();
+    // final Metamodel xsdMetamodel = xsdMetamodel();
     // final String modelPath = "Model/Movies.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdModelType, true );
+    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
     //
     // manager().run( new Task< Node >() {
     //
@@ -346,18 +346,18 @@ public class ITXsdDependencyProcessor extends BaseTest {
     //
     // }
     // //
-    // // private ModelType xsdModelType() throws Exception {
-    // // ModelType xsdModelType = null;
+    // // private Metamodel xsdMetamodel() throws Exception {
+    // // Metamodel xsdMetamodel = null;
     // //
-    // // for ( final ModelType type : modelTypeManager().modelTypes() ) {
-    // // if ( type.id().equals( XsdLexicon.MODEL_TYPE_ID ) ) {
-    // // xsdModelType = type;
+    // // for ( final Metamodel metamodel : metamodelManager().metamodels() ) {
+    // // if ( metamodel.id().equals( XsdLexicon.METAMODEL_ID ) ) {
+    // // xsdMetamodel = metamodel;
     // // break;
     // // }
     // // }
     //
-    // assertThat( xsdModelType, notNullValue() );
-    // return xsdModelType;
+    // assertThat( xsdMetamodel, notNullValue() );
+    // return xsdMetamodel;
     // }
 
 }

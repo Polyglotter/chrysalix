@@ -28,16 +28,16 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.Metamodel;
 
 @SuppressWarnings( "javadoc" )
 public class ITTeiidDdlDependencyProcessor extends TeiidDdlIntegrationTest {
 
     @Test
     public void shouldFindDependencyProcessor() throws Exception {
-        modelTypeManager().install( TeiidDdlLexicon.DDL_MODEL_TYPE_CATEGORY );
-        final ModelType modelType = modelTypeManager().modelType( TeiidDdlLexicon.DDL_MODEL_TYPE_ID );
-        assertThat( modelType, is( notNullValue() ) );
-        assertThat( modelType.dependencyProcessor(), is( notNullValue() ) );
+        metamodelManager().install( TeiidDdlLexicon.DDL_METAMODEL_CATEGORY );
+        final Metamodel metamodel = metamodelManager().metamodel( TeiidDdlLexicon.DDL_METAMODEL_ID );
+        assertThat( metamodel, is( notNullValue() ) );
+        assertThat( metamodel.dependencyProcessor(), is( notNullValue() ) );
     }
 }

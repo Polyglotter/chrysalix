@@ -38,10 +38,10 @@ public class ITJavaDependencyProcessor extends JavaIntegrationTest {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
-    // modelTypeManager().install( "java" );
-    // final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.java.JavaFile" );
-    // assertThat( modelType, is( notNullValue() ) );
-    // assertThat( modelType.dependencyProcessor(), is( notNullValue() ) );
+    // metamodelManager().install( "java" );
+    // final Metamodel metamodel = metamodelManager().metamodel( "org.modeshape.modeler.java.JavaFile" );
+    // assertThat( metamodel, is( notNullValue() ) );
+    // assertThat( metamodel.dependencyProcessor(), is( notNullValue() ) );
     // return null;
     // }
     // } );
@@ -49,18 +49,18 @@ public class ITJavaDependencyProcessor extends JavaIntegrationTest {
     //
     // @Test
     // public void shouldDetermineDependencies() throws Exception {
-    // assertThat( modelTypeManager().install( "java" ).length == 0, is( true ) );
+    // assertThat( metamodelManager().install( "java" ).length == 0, is( true ) );
     // final String name = JavaDependencyProcessor.class.getName();
     // // final File file = new File( "src/main/java/" + name.replace( '.', '/' ) + ".java" );
     // // assertThat( file.exists(), is( true ) );
-    // // final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.java.JavaFile" );
-    // final ModelType modelType = modelTypeManager().modelType( "org.modeshape.modeler.java.ClassFile" );
-    // assertThat( modelType, notNullValue() );
+    // // final Metamodel metamodel = metamodelManager().metamodel( "org.modeshape.modeler.java.JavaFile" );
+    // final Metamodel metamodel = metamodelManager().metamodel( "org.modeshape.modeler.java.ClassFile" );
+    // assertThat( metamodel, notNullValue() );
     // // final Model model =
-    // // modeler().generateModel( file, JavaDependencyProcessor.class.getPackage().getName().replace( '.', '/' ), modelType );
+    // // modeler().generateModel( file, JavaDependencyProcessor.class.getPackage().getName().replace( '.', '/' ), metamodel );
     // final Model model =
     // modeler().generateModel( getClass().getClassLoader().getResourceAsStream( name.replace( '.', '/' ) + ".class" ),
-    // JavaDependencyProcessor.class.getName().replace( '.', '/' ) + ".java", modelType );
+    // JavaDependencyProcessor.class.getName().replace( '.', '/' ) + ".java", metamodel );
     // assertThat( model, notNullValue() );
     // manager().run( new Task< Void >() {
     //

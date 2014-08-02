@@ -39,11 +39,11 @@ public class TeiidDdlDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.DependencyProcessor#modelType()
+     * @see org.modeshape.modeler.extensions.DependencyProcessor#metamodel()
      */
     @Override
-    public String modelType() {
-        return TeiidDdlLexicon.DDL_MODEL_TYPE_ID;
+    public String metamodel() {
+        return TeiidDdlLexicon.DDL_METAMODEL_ID;
     }
 
     /**

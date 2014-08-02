@@ -33,7 +33,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 
 import org.modeshape.common.util.StringUtil;
-import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerLexicon;
@@ -93,10 +93,10 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.DependencyProcessor#modelType()
+     * @see org.modeshape.modeler.extensions.DependencyProcessor#metamodel()
      */
     @Override
-    public String modelType() {
+    public String metamodel() {
         return "org.modeshape.modeler.xsd.Xsd";
     }
 
@@ -321,14 +321,14 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
         assert ( modeler != null );
 
         if ( !modelNode.hasProperty( ModelerLexicon.Model.EXTERNAL_LOCATION )
-             || !modelNode.hasProperty( ModelerLexicon.Model.MODEL_TYPE )
+             || !modelNode.hasProperty( ModelerLexicon.Model.METAMODEL )
              || missingDependencies.isEmpty() ) {
             return;
         }
 
         final String modelName = modelNode.getName();
-        final String type = modelNode.getProperty( ModelerLexicon.Model.MODEL_TYPE ).getString();
-        final ModelType modelType = modeler.modelTypeManager().modelType( type );
+        final String id = modelNode.getProperty( ModelerLexicon.Model.METAMODEL ).getString();
+        final Metamodel metamodel = modeler.metamodelManager().metamodel( id );
 
         String externalLocation = modelNode.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString();
         externalLocation = externalLocation.substring( 0, ( externalLocation.lastIndexOf( "/" ) ) );
@@ -380,7 +380,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
 
                 // create model
                 LOGGER.debug( "Generating model for XSD dependency of model '%s' from path '%s'", modelName, modelPath );
-                modeler.generateModel( dependencyArtifactPath, modelPath, modelType, persistArtifacts );
+                modeler.generateModel( dependencyArtifactPath, modelPath, metamodel, persistArtifacts );
             } catch ( final Exception e ) {
                 LOGGER.error( e, XsdModelerI18n.errorImportingXsdDependencyArtifact, extPath, modelName );
             }

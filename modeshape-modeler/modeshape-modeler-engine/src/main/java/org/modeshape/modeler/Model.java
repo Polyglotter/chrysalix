@@ -55,17 +55,17 @@ public interface Model extends ModelObject {
     URL externalLocation() throws ModelerException;
 
     /**
+     * @return this model's metamodel (can be <code>null</code> if a metamodel is not found)
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    Metamodel metamodel() throws ModelerException;
+
+    /**
      * @return a collection of missing dependencies (never <code>null</code> but can be empty)
      * @throws ModelerException
      *         if any error occurs
      */
     Set< Dependency > missingDependencies() throws ModelerException;
-
-    /**
-     * @return this model's type (can be <code>null</code> if a model type is not found)
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    ModelType modelType() throws ModelerException;
 
 }

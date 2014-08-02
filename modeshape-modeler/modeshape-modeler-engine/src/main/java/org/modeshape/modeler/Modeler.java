@@ -36,7 +36,12 @@ public interface Modeler extends AutoCloseable {
     /**
      * The path to the default ModeShape configuration, which uses a file-based repository
      */
-    String DEFAULT_MODESHAPE_CONFIGURATION_PATH = "jcr/modeShapeConfig.json";
+    String DEFAULT_CONFIGURATION_PATH = "jcr/modeShapeConfig.json";
+
+    /**
+     * @return the path to the configuration for the embedded repository supplied when this Modeler was instantiated.
+     */
+    String configurationPath();
 
     /**
      * @param model
@@ -76,7 +81,7 @@ public interface Modeler extends AutoCloseable {
      *        the workspace path to an artifact; must not be empty.
      * @param modelPath
      *        the path where the model should be created
-     * @return a new model of the default type, determined by the artifact's content, and if the artifact is a file, its file
+     * @return a new model using a metamodel determined by the artifact's content, and if the artifact is a file, its file
      *         extension; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
@@ -91,15 +96,15 @@ public interface Modeler extends AutoCloseable {
      *        the file to be imported. Must not be <code>null</code>.
      * @param modelFolder
      *        the parent path where the model should be created
-     * @param modelType
-     *        the type of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied type; never <code>null</code>
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
     Model generateModel( final File file,
                          final String modelFolder,
-                         final ModelType modelType ) throws ModelerException;
+                         final Metamodel metamodel ) throws ModelerException;
 
     /**
      * Creates a model with the name of the supplied file.
@@ -110,48 +115,48 @@ public interface Modeler extends AutoCloseable {
      *        the parent path where the model should be created
      * @param modelName
      *        the name of the model. If <code>null</code> or empty, the name of the supplied file will be used.
-     * @param modelType
-     *        the type of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied type; never <code>null</code>
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
     Model generateModel( final File file,
                          final String modelFolder,
                          final String modelName,
-                         final ModelType modelType ) throws ModelerException;
+                         final Metamodel metamodel ) throws ModelerException;
 
     /**
      * @param stream
      *        the artifact's content to be imported. Must not be <code>null</code>.
      * @param modelPath
      *        the path where the model should be created
-     * @param modelType
-     *        the type of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied type; never <code>null</code>
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
     Model generateModel( final InputStream stream,
                          final String modelPath,
-                         final ModelType modelType ) throws ModelerException;
+                         final Metamodel metamodel ) throws ModelerException;
 
     /**
      * @param artifactPath
      *        the workspace path to an artifact; must not be empty.
      * @param modelPath
      *        the path where the model should be created
-     * @param modelType
-     *        the type of model to be created for the supplied artifact; may be <code>null</code>.
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
      * @param persistArtifacts
      *        <code>true</code> if auto-imported dependency artifacts should be persisted
-     * @return a new model of the supplied type; never <code>null</code>
+     * @return a new model of the supplied metamodel; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
     Model generateModel( final String artifactPath,
                          final String modelPath,
-                         final ModelType modelType,
+                         final Metamodel metamodel,
                          final boolean persistArtifacts ) throws ModelerException;
 
     /**
@@ -159,15 +164,15 @@ public interface Modeler extends AutoCloseable {
      *        the URL of an artifact; must not be <code>null</code>.
      * @param modelFolder
      *        the parent path where the model should be created
-     * @param modelType
-     *        the type of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied type; never <code>null</code>
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
     Model generateModel( final URL artifactUrl,
                          final String modelFolder,
-                         final ModelType modelType ) throws ModelerException;
+                         final Metamodel metamodel ) throws ModelerException;
 
     /**
      * @param artifactUrl
@@ -176,16 +181,16 @@ public interface Modeler extends AutoCloseable {
      *        the parent path where the model should be created
      * @param modelName
      *        the name of the model. If <code>null</code> or empty, the name of the supplied file will be used.
-     * @param modelType
-     *        the type of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied type; never <code>null</code>
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
     Model generateModel( final URL artifactUrl,
                          final String modelFolder,
                          final String modelName,
-                         final ModelType modelType ) throws ModelerException;
+                         final Metamodel metamodel ) throws ModelerException;
 
     /**
      * @param stream
@@ -255,6 +260,13 @@ public interface Modeler extends AutoCloseable {
                        final String workspaceName ) throws ModelerException;
 
     /**
+     * @return the metamodel manager
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    MetamodelManager metamodelManager() throws ModelerException;
+
+    /**
      * @param path
      *        a workspace path for a model
      * @return the model at the supplied path, or <code>null</code> if not found
@@ -264,20 +276,7 @@ public interface Modeler extends AutoCloseable {
     Model model( final String path ) throws ModelerException;
 
     /**
-     * @return the model type manager
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    ModelTypeManager modelTypeManager() throws ModelerException;
-
-    /**
-     * @return the path to the configuration for the embedded ModeShape repository supplied when this ModeShapeModeler was
-     *         instantiated.
-     */
-    String modeShapeConfigurationPath();
-
-    /**
-     * @return the path to the folder that should contain the ModeShape repository store
+     * @return the path to the folder that should contain the repository store
      */
     String repositoryStoreParentPath();
 }

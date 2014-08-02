@@ -28,11 +28,11 @@ import org.modeshape.modeler.test.BaseTest;
 @SuppressWarnings( "javadoc" )
 public abstract class XsdIntegrationTest extends BaseTest {
 
-    protected static final String SRAMP_MODEL_TYPE_CATEGORY = "sramp";
-    protected static final String XSD_MODEL_TYPE_CATEGORY = "xsd";
-    protected static final String XSD_MODEL_TYPE_ID = "org.modeshape.modeler.xsd.Xsd";
-    // protected static final String XML_MODEL_TYPE_CATEGORY = "xml";
-    // protected static final String XML_MODEL_TYPE_ID = "org.modeshape.modeler.xml.Xml";
+    protected static final String SRAMP_METAMODEL_CATEGORY = "sramp";
+    protected static final String XSD_METAMODEL_CATEGORY = "xsd";
+    protected static final String XSD_METAMODEL_ID = "org.modeshape.modeler.xsd.Xsd";
+    // protected static final String XML_METAMODEL_CATEGORY = "xml";
+    // protected static final String XML_METAMODEL_ID = "org.modeshape.modeler.xml.Xml";
     // protected static final String XML_ROOT = "root";
     // protected static final String XML_ROOT_PROPERTY = "property";
     // protected static final String XML_LEAF = "child";

@@ -34,14 +34,14 @@ public interface ModelerLexicon {
     String NAMESPACE_PREFIX = "mm";
 
     /**
-     * The node type name whose children are all model type categories.
+     * The node type name whose children are all metamodel categories.
      */
-    String MODEL_TYPE_CATEGORIES = NAMESPACE_PREFIX + ":modelTypeCategories";
+    String METAMODEL_CATEGORIES = NAMESPACE_PREFIX + ":metamodelCategories";
 
     /**
-     * the system workspace property containing the registered model type repositories
+     * the system workspace property containing the registered metamodel repositories
      */
-    String MODEL_TYPE_REPOSITORIES = NAMESPACE_PREFIX + ":modelTypeRepositories";
+    String METAMODEL_REPOSITORIES = NAMESPACE_PREFIX + ":metamodelRepositories";
 
     /**
      * Temporary workspace folder
@@ -52,28 +52,6 @@ public interface ModelerLexicon {
      * The mixin for the node where model nodes can be added to.
      */
     String UNSTRUCTURED_MIXIN = NAMESPACE_PREFIX + ":unstructured";
-
-    /**
-     * JCR names related to a model type category.
-     */
-    interface Category {
-
-        /**
-         * The node type name of a category.
-         */
-        String NODE_TYPE = NAMESPACE_PREFIX + ":modelTypeCategory";
-
-        /**
-         * The node type name and type whose children are all archives.
-         */
-        String ARCHIVES = NAMESPACE_PREFIX + ":archives";
-
-        /**
-         * The node type name and type whose children are all model types.
-         */
-        String MODEL_TYPES = NAMESPACE_PREFIX + ":modelTypes";
-
-    }
 
     /**
      * JCR names related to a model dependency.
@@ -98,6 +76,108 @@ public interface ModelerLexicon {
     }
 
     /**
+     * JCR names related to a metamodel.
+     */
+    interface Metamodel {
+
+        /**
+         * The node type name of a category.
+         */
+        String NODE_TYPE = NAMESPACE_PREFIX + ":metamodel";
+
+        /**
+         * The name of the multi-valued property whose value is the file extensions processable by a metamodel.
+         */
+        String FILE_EXTENSIONS = NAMESPACE_PREFIX + ":fileExtensions";
+
+        /**
+         * The name of the property whose value is the class name of the metamodel's sequencer.
+         */
+        String SEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":sequencerClassName";
+
+        /**
+         * The name of the property whose value is the class name of the metamodel's desequencer.
+         */
+        String DESEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":desequencerClassName";
+
+        /**
+         * The name of the property whose value is the class name of the metamodel's dependency processor.
+         */
+        String DEPENDENCY_PROCESSOR_CLASS_NAME = NAMESPACE_PREFIX + ":dependencyProcessorClassName";
+
+        /**
+         * JCR names related to a metamodel category.
+         */
+        interface Category {
+
+            /**
+             * The node type name of a category.
+             */
+            String NODE_TYPE = NAMESPACE_PREFIX + ":metamodelCategory";
+
+            /**
+             * The node type name and type whose children are all archives.
+             */
+            String ARCHIVES = NAMESPACE_PREFIX + ":archives";
+
+            /**
+             * The node type name and type whose children are all metamodels.
+             */
+            String METAMODELS = NAMESPACE_PREFIX + ":metamodels";
+
+        }
+
+        /**
+         * JCR names related to a metamodel extension.
+         */
+        interface Extension {
+
+            /**
+             * The node type name of the abstract node type definition for a metamodel extension.
+             */
+            String NODE_TYPE = NAMESPACE_PREFIX + ":metamodelExtension";
+
+            /**
+             * The property name whose value is the an extension type.
+             */
+
+            String EXTENSION_TYPE = NAMESPACE_PREFIX + ":extensionType";
+
+            /**
+             * The property name whose value is the class name of the metamodel extension.
+             */
+            String CLASS_NAME = NAMESPACE_PREFIX + ":className";
+
+            /**
+             * The property name whose value is the reference to the archive that was used to create the metamodel or load a
+             * metamodel extension.
+             */
+            String ARCHIVE_REFERENCE = NAMESPACE_PREFIX + ":archiveReference";
+
+            /**
+             * The name of the dependency processor node type definition.
+             */
+            String DEPENDENCY_PROCESSOR_NODE_TYPE = NAMESPACE_PREFIX + ":dependencyProcessor";
+
+            /**
+             * The name of the desequencer node type definition.
+             */
+            String DESEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":desequencer";
+
+            /**
+             * The name of the multi-valued property whose values are regular expressions used to mark file names as potential
+             * extensions of this type.
+             */
+            String NAME_PATTERNS = NAMESPACE_PREFIX + ":namePatterns";
+
+            /**
+             * The name of the sequencer node type definition.
+             */
+            String SEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":sequencer";
+        }
+    }
+
+    /**
      * JCR names related to a model.
      */
     interface Model {
@@ -118,91 +198,9 @@ public interface ModelerLexicon {
         String MODEL_MIXIN = NAMESPACE_PREFIX + ":model";
 
         /**
-         * The name of the property whose value is a reference to the model's model type.
+         * The name of the property whose value is a reference to the model's metamodel.
          */
-        String MODEL_TYPE = NAMESPACE_PREFIX + ":modelType";
-
-    }
-
-    /**
-     * JCR names related to a model type.
-     */
-    interface ModelType {
-
-        /**
-         * The node type name of a category.
-         */
-        String NODE_TYPE = NAMESPACE_PREFIX + ":modelType";
-
-        /**
-         * The name of the multi-valued property whose value is the file extensions processable by a model type.
-         */
-        String FILE_EXTENSIONS = NAMESPACE_PREFIX + ":fileExtensions";
-
-        /**
-         * The name of the property whose value is the class name of the model type's sequencer.
-         */
-        String SEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":sequencerClassName";
-
-        /**
-         * The name of the property whose value is the class name of the model type's desequencer.
-         */
-        String DESEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":desequencerClassName";
-
-        /**
-         * The name of the property whose value is the class name of the model type's dependency processor.
-         */
-        String DEPENDENCY_PROCESSOR_CLASS_NAME = NAMESPACE_PREFIX + ":dependencyProcessorClassName";
-
-    }
-
-    /**
-     * JCR names related to a model type extension.
-     */
-    interface ModelTypeExtension {
-
-        /**
-         * The node type name of the abstract node type definition for a model type extension.
-         */
-        String NODE_TYPE = NAMESPACE_PREFIX + ":modelTypeExtension";
-
-        /**
-         * The property name whose value is the an extension type.
-         */
-
-        String EXTENSION_TYPE = NAMESPACE_PREFIX + ":extensionType";
-
-        /**
-         * The property name whose value is the class name of the model type extension.
-         */
-        String CLASS_NAME = NAMESPACE_PREFIX + ":className";
-
-        /**
-         * The property name whose value is the reference to the archive that was used to create the model type or load a model type
-         * extension.
-         */
-        String ARCHIVE_REFERENCE = NAMESPACE_PREFIX + ":archiveReference";
-
-        /**
-         * The name of the dependency processor node type definition.
-         */
-        String DEPENDENCY_PROCESSOR_NODE_TYPE = NAMESPACE_PREFIX + ":dependencyProcessor";
-
-        /**
-         * The name of the desequencer node type definition.
-         */
-        String DESEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":desequencer";
-
-        /**
-         * The name of the multi-valued property whose values are regular expressions used to mark file names as potential
-         * extensions of this type.
-         */
-        String NAME_PATTERNS = NAMESPACE_PREFIX + ":namePatterns";
-
-        /**
-         * The name of the sequencer node type definition.
-         */
-        String SEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":sequencer";
+        String METAMODEL = NAMESPACE_PREFIX + ":metamodel";
 
     }
 

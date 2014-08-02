@@ -54,25 +54,25 @@ public class Manager {
 
     private ModeShapeEngine modeShape;
     private JcrRepository repository;
-    private ModelTypeManagerImpl modelTypeManager;
+    private MetamodelManagerImpl metamodelManager;
 
     /**
      * 
      */
-    public final String modeShapeConfigurationPath;
+    public final String configurationPath;
 
     /**
      * @param repositoryStoreParentPath
      *        the path to the folder that should contain the ModeShape repository store
-     * @param modeShapeConfigurationPath
+     * @param configurationPath
      *        the path to a ModeShape configuration file
      */
     public Manager( final String repositoryStoreParentPath,
-                    final String modeShapeConfigurationPath ) {
+                    final String configurationPath ) {
         CheckArg.isNotEmpty( repositoryStoreParentPath, "repositoryStoreParentPath" );
-        CheckArg.isNotEmpty( modeShapeConfigurationPath, "modeShapeConfigurationPath" );
+        CheckArg.isNotEmpty( configurationPath, "configurationPath" );
         System.setProperty( REPOSITORY_STORE_PARENT_PATH_PROPERTY, repositoryStoreParentPath );
-        this.modeShapeConfigurationPath = modeShapeConfigurationPath;
+        this.configurationPath = configurationPath;
     }
 
     /**
@@ -107,13 +107,13 @@ public class Manager {
     }
 
     /**
-     * @return the model type manager
+     * @return the metamodel manager
      * @throws ModelerException
      *         if any error occurs
      */
-    public ModelTypeManagerImpl modelTypeManager() throws ModelerException {
-        if ( modelTypeManager == null ) modelTypeManager = new ModelTypeManagerImpl( this );
-        return modelTypeManager;
+    public MetamodelManagerImpl metamodelManager() throws ModelerException {
+        if ( metamodelManager == null ) metamodelManager = new MetamodelManagerImpl( this );
+        return metamodelManager;
     }
 
     JcrRepository repository() throws ModelerException {
@@ -121,7 +121,7 @@ public class Manager {
             try {
                 modeShape = new ModeShapeEngine();
                 modeShape.start();
-                final RepositoryConfiguration config = RepositoryConfiguration.read( modeShapeConfigurationPath );
+                final RepositoryConfiguration config = RepositoryConfiguration.read( configurationPath );
                 final Problems problems = config.validate();
                 if ( problems.hasProblems() ) {
                     for ( final Problem problem : problems )

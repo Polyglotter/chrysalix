@@ -35,7 +35,7 @@ import org.modeshape.jcr.ExtensionLogger;
 import org.modeshape.jcr.api.Repository;
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
 import org.modeshape.jcr.api.sequencer.Sequencer;
-import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.extensions.Desequencer;
@@ -43,7 +43,7 @@ import org.modeshape.modeler.extensions.Desequencer;
 /**
  * 
  */
-public final class ModelTypeImpl implements ModelType {
+public final class MetamodelImpl implements Metamodel {
 
     private final Manager manager;
 
@@ -66,13 +66,13 @@ public final class ModelTypeImpl implements ModelType {
      * @param manager
      *        the manager used to access the MS repository (cannot be <code>null</code>)
      * @param category
-     *        the model type category (cannot be <code>null</code> or empty)
+     *        the metamodel category (cannot be <code>null</code> or empty)
      * @param id
-     *        the model type identifier (cannot be <code>null</code> or empty)
+     *        the metamodel identifier (cannot be <code>null</code> or empty)
      * @param sequencerClass
      *        the sequencer class (cannot be <code>null</code>)
      */
-    ModelTypeImpl( final Manager manager,
+    MetamodelImpl( final Manager manager,
                    final String category,
                    final String id,
                    final Class< Sequencer > sequencerClass ) {
@@ -83,15 +83,15 @@ public final class ModelTypeImpl implements ModelType {
      * @param manager
      *        the manager used to access the MS repository (cannot be <code>null</code>)
      * @param category
-     *        the model type category (cannot be <code>null</code> or empty)
+     *        the metamodel category (cannot be <code>null</code> or empty)
      * @param id
-     *        the model type identifier (cannot be <code>null</code> or empty)
+     *        the metamodel identifier (cannot be <code>null</code> or empty)
      * @param sequencerClass
      *        the sequencer class (cannot be <code>null</code> if sequencer class name is <code>null</code> or empty)
      * @param sequencerClassName
      *        the name of the sequencer class (cannot be <code>null</code> or empty if sequencer class is <code>null</code>)
      */
-    private ModelTypeImpl( final Manager manager,
+    private MetamodelImpl( final Manager manager,
                            final String category,
                            final String id,
                            final Class< Sequencer > sequencerClass,
@@ -117,9 +117,9 @@ public final class ModelTypeImpl implements ModelType {
      * @param manager
      *        the manager used to access the MS repository (cannot be <code>null</code>)
      * @param category
-     *        the model type category (cannot be <code>null</code> or empty)
+     *        the metamodel category (cannot be <code>null</code> or empty)
      * @param id
-     *        the model type identifier (cannot be <code>null</code> or empty)
+     *        the metamodel identifier (cannot be <code>null</code> or empty)
      * @param sequencerClassName
      *        the name of the sequencer class (cannot be <code>null</code> or empty)
      * @param desequencerClassName
@@ -127,7 +127,7 @@ public final class ModelTypeImpl implements ModelType {
      * @param dependencyProcessorClassName
      *        the name of the dependency processor class (can be <code>null</code> or empty)
      */
-    ModelTypeImpl( final Manager manager,
+    MetamodelImpl( final Manager manager,
                    final String category,
                    final String id,
                    final String sequencerClassName,
@@ -141,7 +141,7 @@ public final class ModelTypeImpl implements ModelType {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelType#category()
+     * @see Metamodel#category()
      */
     @Override
     public String category() {
@@ -151,7 +151,7 @@ public final class ModelTypeImpl implements ModelType {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.ModelType#dependencyProcessor()
+     * @see org.modeshape.modeler.Metamodel#dependencyProcessor()
      */
     @Override
     public DependencyProcessor dependencyProcessor() throws ModelerException {
@@ -170,7 +170,7 @@ public final class ModelTypeImpl implements ModelType {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.ModelType#desequencer()
+     * @see org.modeshape.modeler.Metamodel#desequencer()
      */
     @Override
     public Desequencer desequencer() throws ModelerException {
@@ -189,7 +189,7 @@ public final class ModelTypeImpl implements ModelType {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelType#id()
+     * @see Metamodel#id()
      */
     @Override
     public String id() {
@@ -197,13 +197,13 @@ public final class ModelTypeImpl implements ModelType {
     }
 
     ClassLoader libraryClassLoader() throws Exception {
-        return manager.modelTypeManager().libraryClassLoader;
+        return manager.metamodelManager().libraryClassLoader;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see ModelType#name()
+     * @see Metamodel#name()
      */
     @Override
     public String name() {
@@ -213,7 +213,7 @@ public final class ModelTypeImpl implements ModelType {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.ModelType#sequencer()
+     * @see org.modeshape.modeler.Metamodel#sequencer()
      */
     @Override
     public Sequencer sequencer() throws ModelerException {
@@ -254,7 +254,7 @@ public final class ModelTypeImpl implements ModelType {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelType#setName(String)
+     * @see Metamodel#setName(String)
      */
     @Override
     public void setName( final String name ) {
@@ -278,7 +278,7 @@ public final class ModelTypeImpl implements ModelType {
     /**
      * {@inheritDoc}
      * 
-     * @see ModelType#sourceFileExtensions()
+     * @see Metamodel#sourceFileExtensions()
      */
     @Override
     public String[] sourceFileExtensions() {

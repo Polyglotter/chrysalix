@@ -37,10 +37,10 @@ public class ITPolyglotter extends BaseTest {
 
     @Test
     public void shouldCreateExecutableCloneModelTransform() throws Exception {
-        polyglotter().modelTypeManager().install( XML_MODEL_TYPE_CATEGORY );
+        polyglotter().metamodelManager().install( XML_METAMODEL_CATEGORY );
         final Model source = polyglotter().generateModel( stream( XML_ARTIFACT ),
                                                           "source",
-                                                          polyglotter().modelTypeManager().modelType( XML_MODEL_TYPE_NAME ) );
+                                                          polyglotter().metamodelManager().metamodel( XML_METAMODEL_NAME ) );
         final ModelTransform xform = polyglotter().newCloneModelTransform( source, "target" );
         assertThat( xform, notNullValue() );
         assertThat( xform.transforms().length, is( 6 ) );

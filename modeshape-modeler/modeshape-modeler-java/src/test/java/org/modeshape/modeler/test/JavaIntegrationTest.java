@@ -30,7 +30,7 @@ import java.io.File;
 
 import org.junit.Before;
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelType;
+import org.modeshape.modeler.Metamodel;
 
 @SuppressWarnings( "javadoc" )
 public abstract class JavaIntegrationTest extends BaseIntegrationTest {
@@ -46,18 +46,18 @@ public abstract class JavaIntegrationTest extends BaseIntegrationTest {
     @Before
     public void before() throws Exception {
         super.before();
-        modelTypeManager().install( CATEGORY );
+        metamodelManager().install( CATEGORY );
     }
 
     protected Model importModel() throws Exception {
-        final Model model = modeler().generateModel( MODEL_FILE, null, modelType() );
+        final Model model = modeler().generateModel( MODEL_FILE, null, metamodel() );
         assertThat( model, notNullValue() );
         return model;
     }
 
-    protected ModelType modelType() throws Exception {
-        final ModelType modelType = modeler().modelTypeManager().modelType( JAVA_ID );
-        assertThat( modelType, notNullValue() );
-        return modelType;
+    protected Metamodel metamodel() throws Exception {
+        final Metamodel metamodel = modeler().metamodelManager().metamodel( JAVA_ID );
+        assertThat( metamodel, notNullValue() );
+        return metamodel;
     }
 }

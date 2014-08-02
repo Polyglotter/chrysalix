@@ -43,7 +43,7 @@ public final class ModelerTest extends BaseModelerTest {
     private static final String MODEL_NAME = "model";
 
     @Mock
-    private ModelType modelType;
+    private Metamodel metamodel;
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToExportIfFileNull() throws Exception {
@@ -86,58 +86,58 @@ public final class ModelerTest extends BaseModelerTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGenerateModelFromStreamIfModelTypeNull() throws Exception {
+    public void shouldFailToGenerateModelFromStreamIfMetamodelNull() throws Exception {
         modeler().generateModel( stream( " " ), MODEL_NAME, null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromStreamIfPathEmpty() throws Exception {
-        modeler().generateModel( stream( " " ), " ", modelType );
+        modeler().generateModel( stream( " " ), " ", metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromStreamIfPathNull() throws Exception {
-        modeler().generateModel( stream( " " ), null, modelType );
+        modeler().generateModel( stream( " " ), null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromStreamIfStreamNull() throws Exception {
-        modeler().generateModel( ( InputStream ) null, MODEL_NAME, modelType );
+        modeler().generateModel( ( InputStream ) null, MODEL_NAME, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromWorkspaceArtifactIfArtifactPathNull() throws Exception {
-        modeler().generateModel( ( String ) null, MODEL_NAME, modelType, true );
+        modeler().generateModel( ( String ) null, MODEL_NAME, metamodel, true );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactPathEmpty() throws Exception {
-        modeler().generateModel( " ", MODEL_NAME, modelType, true );
+        modeler().generateModel( " ", MODEL_NAME, metamodel, true );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactPathNotFound() throws Exception {
-        modeler().generateModel( "doesNotExist", MODEL_NAME, modelType, true );
+        modeler().generateModel( "doesNotExist", MODEL_NAME, metamodel, true );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactUrlNotFound() throws Exception {
-        modeler().generateModel( new URL( "file:doesNotExist" ), null, modelType );
+        modeler().generateModel( new URL( "file:doesNotExist" ), null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactUrlNull() throws Exception {
-        modeler().generateModel( ( URL ) null, null, modelType );
+        modeler().generateModel( ( URL ) null, null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfFileNotFound() throws Exception {
-        modeler().generateModel( new File( "doesNotExist" ), null, modelType );
+        modeler().generateModel( new File( "doesNotExist" ), null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfFileNull() throws Exception {
-        modeler().generateModel( ( File ) null, null, modelType );
+        modeler().generateModel( ( File ) null, null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -198,13 +198,13 @@ public final class ModelerTest extends BaseModelerTest {
 
     @Test
     public void shouldGetChangedModeShapeConfigurationPath() throws Exception {
-        assertThat( modeler().modeShapeConfigurationPath(), is( TEST_MODESHAPE_CONFIGURATION_PATH ) );
+        assertThat( modeler().configurationPath(), is( TEST_MODESHAPE_CONFIGURATION_PATH ) );
     }
 
     @Test
     public void shouldGetDefaultModeShapeConfigurationPathIfNotSet() throws Exception {
         final ModeShapeModeler modeShapeModeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH );
-        assertThat( modeShapeModeler.modeShapeConfigurationPath(), is( Modeler.DEFAULT_MODESHAPE_CONFIGURATION_PATH ) );
+        assertThat( modeShapeModeler.configurationPath(), is( Modeler.DEFAULT_CONFIGURATION_PATH ) );
         modeShapeModeler.close();
     }
 
