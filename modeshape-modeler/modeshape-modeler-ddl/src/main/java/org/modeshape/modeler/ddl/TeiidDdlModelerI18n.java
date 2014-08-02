@@ -26,7 +26,7 @@ package org.modeshape.modeler.ddl;
 import org.polyglotter.common.I18n;
 
 /**
- * Internationalized string constants, in alphabetical order, for the <strong>DDL ModeShape ModeShapeModeler</strong> project.
+ * Internationalized string constants, in alphabetical order, for the <strong>Teiid DDL Modeler</strong> project.
  */
 @SuppressWarnings( "javadoc" )
 public class TeiidDdlModelerI18n {

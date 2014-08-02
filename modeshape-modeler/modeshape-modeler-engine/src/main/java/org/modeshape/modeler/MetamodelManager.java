@@ -41,13 +41,13 @@ public interface MetamodelManager {
     String MAVEN_METAMODEL_REPOSITORY = "http://repo1.maven.org/maven2";
 
     /**
-     * @param artifactPath
-     *        the repository path to an artifact
-     * @return the default metamodel for the artifact at the supplied path
+     * @param dataPath
+     *        the repository path to an data
+     * @return the default metamodel for the data at the supplied path
      * @throws ModelerException
      *         if any problem occurs
      */
-    Metamodel defaultMetamodel( final String artifactPath ) throws ModelerException;
+    Metamodel defaultMetamodel( final String dataPath ) throws ModelerException;
 
     /**
      * @param category
@@ -91,13 +91,13 @@ public interface MetamodelManager {
     Metamodel[] metamodels();
 
     /**
-     * @param artifactPath
-     *        the repository path to an artifact
-     * @return the metamodels applicable to the artifact at the supplied path
+     * @param dataPath
+     *        the workspace path to data
+     * @return the metamodels applicable to the data at the supplied path
      * @throws ModelerException
      *         if any problem occurs
      */
-    Metamodel[] metamodelsForArtifact( final String artifactPath ) throws ModelerException;
+    Metamodel[] metamodelsForArtifact( final String dataPath ) throws ModelerException;
 
     /**
      * @param category

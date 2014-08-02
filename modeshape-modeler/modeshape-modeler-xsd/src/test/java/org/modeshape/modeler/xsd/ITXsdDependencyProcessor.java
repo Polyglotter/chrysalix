@@ -69,7 +69,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     //
     // final String path = importArtifact( XSD_ARTIFACT );
     // final ModelImpl model = ( ModelImpl ) modeler().generateModel( path, ARTIFACT_NAME, xsdMetamodel, true );
-    // manager().run( new Task< Void >() {
+    // modeler().run( new Task< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -103,10 +103,10 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // content.toString().getBytes(),
     // StandardOpenOption.CREATE );
     //
-    // // create XSD workspace artifact
+    // // create XSD workspace data
     // final String xsdName = xsd.getName();
-    // final String workspacePath = modeler().importFile( xsd, "artifact" );
-    // assertThat( workspacePath, is( "/artifact/" + xsdName ) );
+    // final String workspacePath = modeler().importFile( xsd, "data" );
+    // assertThat( workspacePath, is( "/data/" + xsdName ) );
     //
     // // create model
     // final Metamodel xsdMetamodel = xsdMetamodel();
@@ -114,7 +114,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final ModelImpl model = ( ModelImpl ) modeler().generateModel( workspacePath, modelPath, xsdMetamodel, true );
     //
     // // check dependencies
-    // manager().run( new Task< Node >() {
+    // modeler().run( new Task< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -126,8 +126,8 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String dependencyModelName = "/model/" + c.getFileName() + '/' + dependencyXsdPath.getFileName();
     // assertThat( dependencyNode.getProperty( ModelerLexicon.Dependency.PATH ).getString(), is( dependencyModelName ) );
     //
-    // // TODO uncomment this test out when the artifact path is correct
-    // // session.getNode( "/artifact/" + c.getFileName().toString() + '/' + dependencyXsdPath.getFileName() );
+    // // TODO uncomment this test out when the data path is correct
+    // // session.getNode( "/data/" + c.getFileName().toString() + '/' + dependencyXsdPath.getFileName() );
     //
     // return null;
     // }
@@ -143,7 +143,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final Metamodel xsdMetamodel = xsdMetamodel();
     // modeler().generateModel( path, MODEL_NAME, xsdMetamodel, true );
     //
-    // manager().run( new Task< Node >() {
+    // modeler().run( new Task< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -159,14 +159,14 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // @Test
     // public void shouldProcessBooksSoapEncodingXsd() throws Exception {
     // final URL xsdUrl = getClass().getClassLoader().getResource( "Books/SOAP/BooksWithSOAPEncoding.xsd" );
-    // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), "Artifact/Books/SOAP" );
-    // assertThat( artifactPath, is( "/Artifact/Books/SOAP/BooksWithSOAPEncoding.xsd" ) );
+    // final String dataPath = modeler().importFile( new File( xsdUrl.toURI() ), "Artifact/Books/SOAP" );
+    // assertThat( dataPath, is( "/Artifact/Books/SOAP/BooksWithSOAPEncoding.xsd" ) );
     //
     // final Metamodel xsdMetamodel = xsdMetamodel();
     // final String modelPath = "Model/Books/SOAP/BooksWithSOAPEncoding.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
+    // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // manager().run( new Task< Node >() {
+    // modeler().run( new Task< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -242,14 +242,14 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // @Test
     // public void shouldProcessBooksXsd() throws Exception {
     // final URL xsdUrl = getClass().getClassLoader().getResource( "Books/Books.xsd" );
-    // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), "Artifact/Books" );
-    // assertThat( artifactPath, is( "/Artifact/Books/Books.xsd" ) );
+    // final String dataPath = modeler().importFile( new File( xsdUrl.toURI() ), "Artifact/Books" );
+    // assertThat( dataPath, is( "/Artifact/Books/Books.xsd" ) );
     //
     // final Metamodel xsdMetamodel = xsdMetamodel();
     // final String modelPath = "Model/Books/Books.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
+    // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // manager().run( new Task< Node >() {
+    // modeler().run( new Task< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -279,15 +279,15 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // @Test
     // public void shouldProcessDependencyWithInvalidRelativePath() throws Exception {
     // final URL xsdUrl = getClass().getClassLoader().getResource( "Books/SOAP/BooksWithSOAPEncoding.xsd" );
-    // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), null );
+    // final String dataPath = modeler().importFile( new File( xsdUrl.toURI() ), null );
     //
     // final Metamodel xsdMetamodel = xsdMetamodel();
     //
     // // relative path of ../data/types/BookDatatypes.xsd dependency is not valid since there is no parent folder
     // final String modelPath = "Books.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
+    // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // manager().run( new Task< Node >() {
+    // modeler().run( new Task< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -311,14 +311,14 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // @Test
     // public void shouldProcessMoviesXsd() throws Exception {
     // final URL xsdUrl = getClass().getClassLoader().getResource( "Movies/Movies.xsd" );
-    // final String artifactPath = modeler().importFile( new File( xsdUrl.toURI() ), null );
-    // assertThat( artifactPath, is( "/Movies.xsd" ) );
+    // final String dataPath = modeler().importFile( new File( xsdUrl.toURI() ), null );
+    // assertThat( dataPath, is( "/Movies.xsd" ) );
     //
     // final Metamodel xsdMetamodel = xsdMetamodel();
     // final String modelPath = "Model/Movies.xsd";
-    // modeler().generateModel( artifactPath, modelPath, xsdMetamodel, true );
+    // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // manager().run( new Task< Node >() {
+    // modeler().run( new Task< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {

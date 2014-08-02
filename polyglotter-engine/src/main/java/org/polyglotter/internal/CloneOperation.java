@@ -23,23 +23,12 @@
  */
 package org.polyglotter.internal;
 
-import java.util.StringTokenizer;
-
 import javax.jcr.Node;
 import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NodeType;
 
-import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelerException;
-import org.modeshape.modeler.ModelerLexicon;
-import org.modeshape.modeler.internal.ModelImpl;
-import org.modeshape.modeler.internal.Task;
 import org.polyglotter.Operation;
-import org.polyglotter.common.PolyglotterException;
 
 /**
  *
@@ -86,39 +75,39 @@ public class CloneOperation implements Operation {
      * @see org.polyglotter.Operation#execute()
      */
     @Override
-    public void execute() throws PolyglotterException {
-        try {
-            ( ( ModelImpl ) sourceModel ).manager.run( new Task< Void >() {
-
-                @Override
-                public Void run( final Session session ) throws Exception {
-                    Node sourceNode = session.getNode( sourceModel.absolutePath() );
-                    final JcrTools tools = new JcrTools();
-                    Node targetNode = tools.findOrCreateNode( session, targetModelPath, sourceNode.getPrimaryNodeType().getName() );
-                    for ( final NodeType mixin : sourceNode.getMixinNodeTypes() )
-                        targetNode.addMixin( mixin.getName() );
-                    for ( final PropertyIterator iter = sourceNode.getProperties( ModelerLexicon.NAMESPACE_PREFIX + '*' );
-                    iter.hasNext(); )
-                        cloneProperty( iter.nextProperty(), targetNode );
-                    for ( final StringTokenizer iter = new StringTokenizer( sourcePropertyPath, "/" ); iter.hasMoreTokens(); ) {
-                        final String token = iter.nextToken();
-                        if ( token.charAt( 0 ) == '@' ) {
-                            final Property prop = sourceNode.getProperty( token.substring( 1 ) );
-                            cloneProperty( prop, targetNode );
-                            break;
-                        }
-                        sourceNode = sourceNode.getNode( token );
-                        targetNode = tools.findOrCreateChild( targetNode, token, sourceNode.getPrimaryNodeType().getName() );
-                        for ( final NodeType mixin : sourceNode.getMixinNodeTypes() )
-                            targetNode.addMixin( mixin.getName() );
-                    }
-                    session.save();
-                    return null;
-                }
-            } );
-        } catch ( final ModelerException e ) {
-            throw new PolyglotterException( e );
-        }
+    public void execute() {
+        // try {
+        // ( ( ModelImpl ) sourceModel ).modeler.run( new Task< Void >() {
+        //
+        // @Override
+        // public Void run( final Session session ) throws Exception {
+        // Node sourceNode = session.getNode( sourceModel.absolutePath() );
+        // final JcrTools tools = new JcrTools();
+        // Node targetNode = tools.findOrCreateNode( session, targetModelPath, sourceNode.getPrimaryNodeType().getName() );
+        // for ( final NodeType mixin : sourceNode.getMixinNodeTypes() )
+        // targetNode.addMixin( mixin.getName() );
+        // for ( final PropertyIterator iter = sourceNode.getProperties( ModelerLexicon.NAMESPACE_PREFIX + '*' );
+        // iter.hasNext(); )
+        // cloneProperty( iter.nextProperty(), targetNode );
+        // for ( final StringTokenizer iter = new StringTokenizer( sourcePropertyPath, "/" ); iter.hasMoreTokens(); ) {
+        // final String token = iter.nextToken();
+        // if ( token.charAt( 0 ) == '@' ) {
+        // final Property prop = sourceNode.getProperty( token.substring( 1 ) );
+        // cloneProperty( prop, targetNode );
+        // break;
+        // }
+        // sourceNode = sourceNode.getNode( token );
+        // targetNode = tools.findOrCreateChild( targetNode, token, sourceNode.getPrimaryNodeType().getName() );
+        // for ( final NodeType mixin : sourceNode.getMixinNodeTypes() )
+        // targetNode.addMixin( mixin.getName() );
+        // }
+        // session.save();
+        // return null;
+        // }
+        // } );
+        // } catch ( final ModelerException e ) {
+        // throw new PolyglotterException( e );
+        // }
     }
 
     /**

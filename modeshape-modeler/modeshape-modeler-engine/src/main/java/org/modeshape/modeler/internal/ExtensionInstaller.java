@@ -279,7 +279,8 @@ public class ExtensionInstaller {
                         final Node metamodelNode = metamodelNode( categoryNode, metamodelName );
                         metamodelNode.setProperty( ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME, className );
 
-                        final MetamodelImpl metamodel = ( MetamodelImpl ) findMetamodel( dependencyProcessor.metamodel(), metamodels );
+                        final MetamodelImpl metamodel =
+                            ( MetamodelImpl ) findMetamodel( dependencyProcessor.metamodel(), metamodels );
                         metamodel.setDependencyProcessor( dependencyProcessor );
 
                         extensionInstalled = true;

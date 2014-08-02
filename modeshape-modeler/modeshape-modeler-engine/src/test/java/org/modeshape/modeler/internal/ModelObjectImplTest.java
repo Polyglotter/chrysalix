@@ -33,7 +33,7 @@ import org.modeshape.modeler.test.BaseTest;
 public class ModelObjectImplTest extends BaseTest {
 
     protected ModelObject modelObject() {
-        return new ModelObjectImpl( mock( Manager.class ), "object", 0 );
+        return new ModelObjectImpl( mock( ModelerImpl.class ), "object", 0 );
     }
 
     @Test( expected = IllegalArgumentException.class )

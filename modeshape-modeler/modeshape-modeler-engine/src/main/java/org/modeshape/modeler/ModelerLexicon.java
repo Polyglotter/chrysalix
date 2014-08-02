@@ -24,12 +24,12 @@
 package org.modeshape.modeler;
 
 /**
- * The lexicon of the ModeShape modeler.
+ * The lexicon of the modeler.
  */
 public interface ModelerLexicon {
 
     /**
-     * The ModeShape ModeShapeModeler namespace prefix. Value is {@value} .
+     * The Modeler namespace prefix. Value is {@value} .
      */
     String NAMESPACE_PREFIX = "mm";
 

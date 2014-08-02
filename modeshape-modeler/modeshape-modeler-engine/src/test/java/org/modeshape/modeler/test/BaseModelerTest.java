@@ -34,13 +34,13 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import org.junit.After;
-import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.MetamodelManager;
+import org.modeshape.modeler.Modeler;
 
 @SuppressWarnings( "javadoc" )
 public abstract class BaseModelerTest extends BaseTest {
 
-    protected static final String TEST_MODESHAPE_CONFIGURATION_PATH = "testModeShapeConfig.json";
+    protected static final String TEST_CONFIGURATION_PATH = "testConfig.json";
     protected static final String TEST_REPOSITORY_STORE_PARENT_PATH;
 
     protected static final URL MODULE_TEST_METAMODEL_REPOSITORY_URL;
@@ -59,7 +59,7 @@ public abstract class BaseModelerTest extends BaseTest {
         }
     }
 
-    private ModeShapeModeler modeler;
+    private Modeler modeler;
 
     @After
     public void after() throws Exception {
@@ -93,18 +93,18 @@ public abstract class BaseModelerTest extends BaseTest {
             } );
     }
 
-    public ModeShapeModeler modeler() throws Exception {
+    public MetamodelManager metamodelManager() throws Exception {
+        return modeler().metamodelManager();
+    }
+
+    public Modeler modeler() throws Exception {
         if ( modeler == null ) {
-            modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
+            modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH );
             for ( final URL url : modeler.metamodelManager().metamodelRepositories() )
                 modeler.metamodelManager().unregisterMetamodelRepository( url );
             metamodelManager().registerMetamodelRepository( MODULE_TEST_METAMODEL_REPOSITORY_URL );
             metamodelManager().registerMetamodelRepository( INTEGRATION_TEST_METAMODEL_REPOSITORY_URL );
         }
         return modeler;
-    }
-
-    public MetamodelManager metamodelManager() throws Exception {
-        return modeler().metamodelManager();
     }
 }

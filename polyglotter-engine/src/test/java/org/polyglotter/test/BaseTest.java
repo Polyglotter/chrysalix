@@ -44,7 +44,7 @@ import org.polyglotter.Polyglotter;
 @SuppressWarnings( "javadoc" )
 public abstract class BaseTest {
 
-    protected static final String TEST_MODESHAPE_CONFIGURATION_PATH = "testModeShapeConfig.json";
+    protected static final String TEST_CONFIGURATION_PATH = "testConfig.json";
     protected static final String TEST_REPOSITORY_STORE_PARENT_PATH;
 
     protected static final String XML_METAMODEL_CATEGORY = "xml";
@@ -115,7 +115,7 @@ public abstract class BaseTest {
 
     public Polyglotter polyglotter() {
         if ( polyglotter == null )
-            polyglotter = new Polyglotter( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
+            polyglotter = new Polyglotter( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH );
         return polyglotter;
     }
 

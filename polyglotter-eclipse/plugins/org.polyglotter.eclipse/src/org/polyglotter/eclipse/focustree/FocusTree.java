@@ -91,7 +91,6 @@ import org.polyglotter.eclipse.focustree.FocusTreeCanvas.CellColumn;
 //TODO zoom, search
 //TODO separate view from controller
 //TODO color/font registry
-//TODO move to ModeShape modeler eclipse
 //TODO context menu contributions; indicator context menu contributions
 //TODO keyboard arrows
 //TODO tab traversal

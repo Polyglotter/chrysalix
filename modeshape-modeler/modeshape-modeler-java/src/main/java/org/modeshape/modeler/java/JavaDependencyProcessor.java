@@ -53,7 +53,7 @@ public class JavaDependencyProcessor implements DependencyProcessor {
      *      org.modeshape.modeler.Modeler, boolean)
      */
     @Override
-    public String process( final String artifactPath,
+    public String process( final String dataPath,
                            final Node modelNode,
                            final Modeler modeler,
                            final boolean persistArtifacts ) throws ModelerException {

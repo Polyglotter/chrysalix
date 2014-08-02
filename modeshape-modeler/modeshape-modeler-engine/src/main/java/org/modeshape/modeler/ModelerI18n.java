@@ -26,7 +26,7 @@ package org.modeshape.modeler;
 import org.polyglotter.common.I18n;
 
 /**
- * Internationalized string constants, in alphabetical order, for the <strong>ModeShape ModeShapeModeler</strong> project.
+ * Internationalized string constants, in alphabetical order, for the <strong>Modeler</strong> project.
  */
 @SuppressWarnings( "javadoc" )
 public final class ModelerI18n {
@@ -35,8 +35,8 @@ public final class ModelerI18n {
         new I18n( "A dependency node exists for '%s' but has no source references" );
     public static final I18n metamodelCategoryParentNodeNotFound =
         new I18n( "Expected categories child node of '%s' was not found" );
-    public static final I18n modelerStarted = new I18n( "ModeShape Modeler started" );
-    public static final I18n modelerStopped = new I18n( "ModeShape Modeler stopped" );
+    public static final I18n modelerStarted = new I18n( "Modeler started" );
+    public static final I18n modelerStopped = new I18n( "Modeler stopped" );
     public static final I18n modelExportDesequencerNotFound =
         new I18n( "Model '%s' cannot be exported since a desequencer was not found" );
     public static final I18n mustBeModelNode = new I18n( "Node '%s' is not a model node" );

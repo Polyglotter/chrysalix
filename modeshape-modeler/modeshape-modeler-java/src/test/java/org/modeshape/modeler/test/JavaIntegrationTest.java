@@ -50,7 +50,7 @@ public abstract class JavaIntegrationTest extends BaseIntegrationTest {
     }
 
     protected Model importModel() throws Exception {
-        final Model model = modeler().generateModel( MODEL_FILE, null, metamodel() );
+        final Model model = modeler().importModel( MODEL_FILE, null, metamodel() );
         assertThat( model, notNullValue() );
         return model;
     }

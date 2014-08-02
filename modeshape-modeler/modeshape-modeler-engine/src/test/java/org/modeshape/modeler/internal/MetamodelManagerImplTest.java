@@ -38,7 +38,7 @@ import org.modeshape.modeler.test.BaseTest;
 public class MetamodelManagerImplTest extends BaseTest {
 
     private MetamodelManager metamodelManager() throws Exception {
-        return new MetamodelManagerImpl( mock( Manager.class ) );
+        return new MetamodelManagerImpl( mock( ModelerImpl.class ) );
     }
 
     @Test( expected = IllegalArgumentException.class )

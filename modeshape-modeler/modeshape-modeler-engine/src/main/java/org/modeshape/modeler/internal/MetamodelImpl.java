@@ -45,7 +45,7 @@ import org.modeshape.modeler.extensions.Desequencer;
  */
 public final class MetamodelImpl implements Metamodel {
 
-    private final Manager manager;
+    private final ModelerImpl modeler;
 
     Sequencer sequencer;
     final String sequencerClassName;
@@ -63,8 +63,8 @@ public final class MetamodelImpl implements Metamodel {
     private final Set< String > sourceFileExtensions = new HashSet<>();
 
     /**
-     * @param manager
-     *        the manager used to access the MS repository (cannot be <code>null</code>)
+     * @param modeler
+     *        the modeler used to access the MS repository (cannot be <code>null</code>)
      * @param category
      *        the metamodel category (cannot be <code>null</code> or empty)
      * @param id
@@ -72,16 +72,16 @@ public final class MetamodelImpl implements Metamodel {
      * @param sequencerClass
      *        the sequencer class (cannot be <code>null</code>)
      */
-    MetamodelImpl( final Manager manager,
+    MetamodelImpl( final ModelerImpl modeler,
                    final String category,
                    final String id,
                    final Class< Sequencer > sequencerClass ) {
-        this( manager, category, id, sequencerClass, null );
+        this( modeler, category, id, sequencerClass, null );
     }
 
     /**
-     * @param manager
-     *        the manager used to access the MS repository (cannot be <code>null</code>)
+     * @param modeler
+     *        the modeler used to access the MS repository (cannot be <code>null</code>)
      * @param category
      *        the metamodel category (cannot be <code>null</code> or empty)
      * @param id
@@ -91,12 +91,12 @@ public final class MetamodelImpl implements Metamodel {
      * @param sequencerClassName
      *        the name of the sequencer class (cannot be <code>null</code> or empty if sequencer class is <code>null</code>)
      */
-    private MetamodelImpl( final Manager manager,
+    private MetamodelImpl( final ModelerImpl modeler,
                            final String category,
                            final String id,
                            final Class< Sequencer > sequencerClass,
                            final String sequencerClassName ) {
-        CheckArg.isNotNull( manager, "manager" );
+        CheckArg.isNotNull( modeler, "modeler" );
         CheckArg.isNotEmpty( category, "category" );
         CheckArg.isNotEmpty( id, "id" );
 
@@ -106,7 +106,7 @@ public final class MetamodelImpl implements Metamodel {
             CheckArg.isNotNull( sequencerClass, "sequencerClass" );
         }
 
-        this.manager = manager;
+        this.modeler = modeler;
         this.category = category;
         this.id = id;
         this.sequencerClass = sequencerClass;
@@ -114,8 +114,8 @@ public final class MetamodelImpl implements Metamodel {
     }
 
     /**
-     * @param manager
-     *        the manager used to access the MS repository (cannot be <code>null</code>)
+     * @param modeler
+     *        the modeler used to access the MS repository (cannot be <code>null</code>)
      * @param category
      *        the metamodel category (cannot be <code>null</code> or empty)
      * @param id
@@ -127,13 +127,13 @@ public final class MetamodelImpl implements Metamodel {
      * @param dependencyProcessorClassName
      *        the name of the dependency processor class (can be <code>null</code> or empty)
      */
-    MetamodelImpl( final Manager manager,
+    MetamodelImpl( final ModelerImpl modeler,
                    final String category,
                    final String id,
                    final String sequencerClassName,
                    final String desequencerClassName,
                    final String dependencyProcessorClassName ) {
-        this( manager, category, id, null, sequencerClassName );
+        this( modeler, category, id, null, sequencerClassName );
         this.desequencerClassName = desequencerClassName;
         this.dependencyProcessorClassName = dependencyProcessorClassName;
     }
@@ -197,7 +197,7 @@ public final class MetamodelImpl implements Metamodel {
     }
 
     ClassLoader libraryClassLoader() throws Exception {
-        return manager.metamodelManager().libraryClassLoader;
+        return ( ( MetamodelManagerImpl ) modeler.metamodelManager() ).libraryClassLoader;
     }
 
     /**
@@ -219,7 +219,7 @@ public final class MetamodelImpl implements Metamodel {
     public Sequencer sequencer() throws ModelerException {
         if ( sequencer != null ) return sequencer;
 
-        return manager.run( new Task< Sequencer >() {
+        return modeler.run( new Task< Sequencer >() {
 
             @Override
             public Sequencer run( final Session session ) throws Exception {

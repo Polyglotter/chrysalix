@@ -39,7 +39,7 @@ public class ITTeiidDdlDesequencer extends TeiidDdlIntegrationTest {
     @Test
     public void shouldDesequence() throws Exception {
         metamodelManager().install( TeiidDdlLexicon.DDL_METAMODEL_CATEGORY );
-        final Model model = modeler().generateModel( new File( "src/test/resources/Teiid-MySQLAccounts.ddl" ),
+        final Model model = modeler().importModel( new File( "src/test/resources/Teiid-MySQLAccounts.ddl" ),
                                                      null,
                                                      metamodelManager().metamodel( TeiidDdlLexicon.DDL_METAMODEL_ID ) );
         final Desequencer desequencer = model.metamodel().desequencer();

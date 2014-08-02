@@ -51,10 +51,10 @@ import org.polyglotter.eclipse.view.ModelContentProvider.PropertyModel;
 public final class GuiTestModelContentProvider {
 
     private static final URL MODEL_TYPE_REPOSITORY;
-    private static final String TEST_MODESHAPE_CONFIGURATION_PATH = "testModeShapeConfig.json";
+    private static final String TEST_CONFIGURATION_PATH = "testConfig.json";
     private static final String TEST_REPOSITORY_STORE_PARENT_PATH;
 
-    private static ModeShapeModeler _modeler;
+    private static Modeler _modeler;
 
     static {
         try {
@@ -96,10 +96,10 @@ public final class GuiTestModelContentProvider {
         return TestUtil.manager( modeler() );
     }
 
-    static ModeShapeModeler modeler() throws Exception {
+    static Modeler modeler() throws Exception {
         if ( _modeler == null ) {
             _modeler =
-                new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH );
+                new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH );
 
             for ( final URL url : _modeler.modelTypeManager().modelTypeRepositories() ) {
                 _modeler.modelTypeManager().unregisterModelTypeRepository( url );

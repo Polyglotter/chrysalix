@@ -29,13 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.Node;
-import javax.jcr.Session;
 
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.extensions.Desequencer;
-import org.modeshape.modeler.internal.ModelImpl;
-import org.modeshape.modeler.internal.Task;
 
 /**
  * 
@@ -55,19 +51,8 @@ public class TeiidDdlDesequencer implements Desequencer {
      */
     @Override
     public void execute( final Model model,
-                         final OutputStream stream ) throws ModelerException {
-        ( ( ModelImpl ) model ).manager.run( new Task< Void >() {
-
-            /**
-			 * @throws Exception not used 
-			 */
-            @Override
-            public Void run( final Session session ) throws Exception {
-
-            	// TODO: BML 
-                return null;
-            }
-        } );
+                         final OutputStream stream ) {
+        // TODO: BML
     }
 
     /**

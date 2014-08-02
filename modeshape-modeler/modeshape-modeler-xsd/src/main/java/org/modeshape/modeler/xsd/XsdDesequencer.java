@@ -33,13 +33,9 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.extensions.Desequencer;
-import org.modeshape.modeler.internal.ModelImpl;
-import org.modeshape.modeler.internal.Task;
 import org.modeshape.sequencer.sramp.SrampLexicon;
 import org.modeshape.sequencer.xsd.XsdLexicon;
 
@@ -61,33 +57,33 @@ public class XsdDesequencer implements Desequencer {
      */
     @Override
     public void execute( final Model model,
-                         final OutputStream stream ) throws ModelerException {
-        ( ( ModelImpl ) model ).manager.run( new Task< Void >() {
-
-            @Override
-            public Void run( final Session session ) throws Exception {
-                final Node node = session.getNode( model.absolutePath() );
-                // new JcrTools().printSubgraph( node );
-                writer = new PrintWriter( stream, true );
-                // Print XML declaration
-                writer.print( "<?xml version=\"1.0\" encoding=\"" );
-                writer.print( node.getProperty( SrampLexicon.CONTENT_ENCODING ).getString() );
-                writer.println( "\"?>" );
-                // Find XSD namespace declaration & build namespace-prefix-by-URI map
-                for ( final PropertyIterator iter = node.getProperties( "xmlns*" ); iter.hasNext(); ) {
-                    final Property prop = iter.nextProperty();
-                    final String uri = prop.getString();
-                    final int ndx = prop.getName().indexOf( ':' ) + 1;
-                    String prefix = prop.getName().substring( ndx );
-                    if ( ndx > 0 ) prefix += ':';
-                    namespacePrefixByUri.put( uri, prefix );
-                    if ( uri.equals( XsdLexicon.Namespace.URI ) ) xsdPrefix = prefix;
-                }
-                // Print schema
-                print( 0, node );
-                return null;
-            }
-        } );
+                         final OutputStream stream ) {
+        // ( ( ModelImpl ) model ).modeler.run( new Task< Void >() {
+        //
+        // @Override
+        // public Void run( final Session session ) throws Exception {
+        // final Node node = session.getNode( model.absolutePath() );
+        // // new JcrTools().printSubgraph( node );
+        // writer = new PrintWriter( stream, true );
+        // // Print XML declaration
+        // writer.print( "<?xml version=\"1.0\" encoding=\"" );
+        // writer.print( node.getProperty( SrampLexicon.CONTENT_ENCODING ).getString() );
+        // writer.println( "\"?>" );
+        // // Find XSD namespace declaration & build namespace-prefix-by-URI map
+        // for ( final PropertyIterator iter = node.getProperties( "xmlns*" ); iter.hasNext(); ) {
+        // final Property prop = iter.nextProperty();
+        // final String uri = prop.getString();
+        // final int ndx = prop.getName().indexOf( ':' ) + 1;
+        // String prefix = prop.getName().substring( ndx );
+        // if ( ndx > 0 ) prefix += ':';
+        // namespacePrefixByUri.put( uri, prefix );
+        // if ( uri.equals( XsdLexicon.Namespace.URI ) ) xsdPrefix = prefix;
+        // }
+        // // Print schema
+        // print( 0, node );
+        // return null;
+        // }
+        // } );
     }
 
     /**

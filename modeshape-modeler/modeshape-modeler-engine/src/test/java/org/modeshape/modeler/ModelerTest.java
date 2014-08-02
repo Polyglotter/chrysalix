@@ -35,6 +35,7 @@ import java.net.URL;
 
 import org.junit.Test;
 import org.mockito.Mock;
+import org.modeshape.modeler.internal.ModelerImpl;
 import org.modeshape.modeler.test.BaseModelerTest;
 
 @SuppressWarnings( "javadoc" )
@@ -77,67 +78,67 @@ public final class ModelerTest extends BaseModelerTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateDefaultModelIfArtifactPathEmpty() throws Exception {
-        modeler().generateDefaultModel( " ", null );
+        modeler().generateModel( " ", null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateDefaultModelIfArtifactPathNull() throws Exception {
-        modeler().generateDefaultModel( null, null );
+        modeler().generateModel( null, null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromStreamIfMetamodelNull() throws Exception {
-        modeler().generateModel( stream( " " ), MODEL_NAME, null );
+        modeler().importModel( stream( " " ), MODEL_NAME, null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromStreamIfPathEmpty() throws Exception {
-        modeler().generateModel( stream( " " ), " ", metamodel );
+        modeler().importModel( stream( " " ), " ", metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromStreamIfPathNull() throws Exception {
-        modeler().generateModel( stream( " " ), null, metamodel );
+        modeler().importModel( stream( " " ), null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromStreamIfStreamNull() throws Exception {
-        modeler().generateModel( ( InputStream ) null, MODEL_NAME, metamodel );
+        modeler().importModel( ( InputStream ) null, MODEL_NAME, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelFromWorkspaceArtifactIfArtifactPathNull() throws Exception {
-        modeler().generateModel( ( String ) null, MODEL_NAME, metamodel, true );
+        modeler().generateModel( ( String ) null, MODEL_NAME, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactPathEmpty() throws Exception {
-        modeler().generateModel( " ", MODEL_NAME, metamodel, true );
+        modeler().generateModel( " ", MODEL_NAME, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactPathNotFound() throws Exception {
-        modeler().generateModel( "doesNotExist", MODEL_NAME, metamodel, true );
+        modeler().generateModel( "doesNotExist", MODEL_NAME, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactUrlNotFound() throws Exception {
-        modeler().generateModel( new URL( "file:doesNotExist" ), null, metamodel );
+        modeler().importModel( new URL( "file:doesNotExist" ), null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfArtifactUrlNull() throws Exception {
-        modeler().generateModel( ( URL ) null, null, metamodel );
+        modeler().importModel( ( URL ) null, null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfFileNotFound() throws Exception {
-        modeler().generateModel( new File( "doesNotExist" ), null, metamodel );
+        modeler().importModel( new File( "doesNotExist" ), null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGenerateModelIfFileNull() throws Exception {
-        modeler().generateModel( ( File ) null, null, metamodel );
+        modeler().importModel( ( File ) null, null, metamodel );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -147,7 +148,7 @@ public final class ModelerTest extends BaseModelerTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetModelIfPathNotModel() throws Exception {
-        modeler().importArtifact( stream( " " ), MODEL_NAME );
+        modeler().importData( stream( " " ), MODEL_NAME );
         modeler().model( MODEL_NAME );
     }
 
@@ -158,54 +159,54 @@ public final class ModelerTest extends BaseModelerTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportArtifactIfNotFound() throws Exception {
-        modeler().importArtifact( new URL( "file:doesNotExist" ), null );
+        modeler().importData( new URL( "file:doesNotExist" ), null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportArtifactIfPathEmpty() throws Exception {
-        modeler().importArtifact( stream( "stuff" ), " " );
+        modeler().importData( stream( "stuff" ), " " );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportArtifactIfPathNull() throws Exception {
-        modeler().importArtifact( stream( "stuff" ), null );
+        modeler().importData( stream( "stuff" ), null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportArtifactIfStreamNull() throws Exception {
-        modeler().importArtifact( ( InputStream ) null, MODEL_NAME );
+        modeler().importData( ( InputStream ) null, MODEL_NAME );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportArtifactIfUrlNull() throws Exception {
-        modeler().importArtifact( ( URL ) null, null );
+        modeler().importData( ( URL ) null, null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportFileIfFileNull() throws Exception {
-        modeler().importFile( null, null );
+        modeler().importData( ( File ) null, null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportFileIfNotFound() throws Exception {
-        modeler().importFile( new File( "doesNotExist" ), null );
+        modeler().importData( new File( "doesNotExist" ), null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToImportFileUrlIfNotFound() throws Exception {
-        modeler().importArtifact( new URL( "file:doesNotExist" ), null );
+        modeler().importData( new URL( "file:doesNotExist" ), null );
     }
 
     @Test
-    public void shouldGetChangedModeShapeConfigurationPath() throws Exception {
-        assertThat( modeler().configurationPath(), is( TEST_MODESHAPE_CONFIGURATION_PATH ) );
+    public void shouldGetChangedConfigurationPath() throws Exception {
+        assertThat( modeler().configurationPath(), is( TEST_CONFIGURATION_PATH ) );
     }
 
     @Test
-    public void shouldGetDefaultModeShapeConfigurationPathIfNotSet() throws Exception {
-        final ModeShapeModeler modeShapeModeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH );
-        assertThat( modeShapeModeler.configurationPath(), is( Modeler.DEFAULT_CONFIGURATION_PATH ) );
-        modeShapeModeler.close();
+    public void shouldGetDefaultConfigurationPathIfNotSet() throws Exception {
+        final Modeler modeler = new ModelerImpl( TEST_REPOSITORY_STORE_PARENT_PATH );
+        assertThat( modeler.configurationPath(), is( ModelerImpl.DEFAULT_CONFIGURATION_PATH ) );
+        modeler.close();
     }
 
     @Test
@@ -220,27 +221,27 @@ public final class ModelerTest extends BaseModelerTest {
 
     @Test
     public void shouldImportArtifact() throws Exception {
-        final String path = modeler().importArtifact( stream( "stuff" ), "stuff" );
+        final String path = modeler().importData( stream( "stuff" ), "stuff" );
         assertThat( path, is( "/stuff" ) );
     }
 
     @Test
     public void shouldImportArtifactToSuppliedPath() throws Exception {
-        final String path = modeler().importArtifact( stream( "stuff" ), "test/stuff" );
+        final String path = modeler().importData( stream( "stuff" ), "test/stuff" );
         assertThat( path, is( "/test/stuff" ) );
     }
 
     @Test
     public void shouldImportFile() throws Exception {
         final String path =
-            modeler().importFile( new File( getClass().getClassLoader().getResource( "log4j.properties" ).toURI() ), null );
+            modeler().importData( new File( getClass().getClassLoader().getResource( "log4j.properties" ).toURI() ), null );
         assertThat( path, is( "/log4j.properties" ) );
     }
 
     @Test
     public void shouldImportFileToSuppliedPath() throws Exception {
         final String path =
-            modeler().importFile( new File( getClass().getClassLoader().getResource( "log4j.properties" ).toURI() ), "/test" );
+            modeler().importData( new File( getClass().getClassLoader().getResource( "log4j.properties" ).toURI() ), "/test" );
         assertThat( path, is( "/test/log4j.properties" ) );
     }
 }
