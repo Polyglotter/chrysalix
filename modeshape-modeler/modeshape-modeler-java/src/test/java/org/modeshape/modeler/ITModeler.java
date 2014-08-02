@@ -37,8 +37,8 @@ public class ITModeler extends JavaIntegrationTest {
 
     @Test
     public void shouldDeleteTemporaryDataAfterImportingModel() throws Exception {
-        final String path = modeler().importFile( MODEL_FILE, null );
-        final Model model = modeler().generateModel( path, "model", metamodel(), false );
+        final String path = modeler().importData( MODEL_FILE, null );
+        final Model model = modeler().generateModel( path, "model", metamodel() );
         assertThat( model, notNullValue() );
         // TODO: Complete when task #185 is complete
         // final Model model = modeler().generateModel( path, "model", metamodel(), false );
@@ -47,7 +47,7 @@ public class ITModeler extends JavaIntegrationTest {
 
     @Test( expected = ModelerException.class )
     public void shouldFailToCreateModelIfMetamodelIsInapplicable() throws Exception {
-        modeler().generateModel( stream( "stuff" ), MODEL_NAME, metamodel() );
+        modeler().importModel( stream( "stuff" ), MODEL_NAME, metamodel() );
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ITModeler extends JavaIntegrationTest {
 
     @Test
     public void shouldImportModelFromFileWithSuppliedName() throws Exception {
-        final Model model = modeler().generateModel( MODEL_FILE, null, MODEL_NAME, metamodel() );
+        final Model model = modeler().importModel( MODEL_FILE, null, MODEL_NAME, metamodel() );
         assertThat( model, notNullValue() );
         assertThat( model.name(), is( MODEL_NAME ) );
     }
@@ -72,28 +72,28 @@ public class ITModeler extends JavaIntegrationTest {
     @Test
     public void shouldImportModelFromStream() throws Exception {
         try ( InputStream stream = MODEL_FILE.toURI().toURL().openStream() ) {
-            final Model model = modeler().generateModel( stream, MODEL_NAME, metamodel() );
+            final Model model = modeler().importModel( stream, MODEL_NAME, metamodel() );
             assertThat( model, notNullValue() );
         }
     }
 
     @Test
     public void shouldImportModelFromUrl() throws Exception {
-        final Model model = modeler().generateModel( MODEL_FILE.toURI().toURL(), null, metamodel() );
+        final Model model = modeler().importModel( MODEL_FILE.toURI().toURL(), null, metamodel() );
         assertThat( model, notNullValue() );
     }
 
     @Test
     public void shouldImportModelFromUrlWithSuppliedName() throws Exception {
-        final Model model = modeler().generateModel( MODEL_FILE.toURI().toURL(), null, MODEL_NAME, metamodel() );
+        final Model model = modeler().importModel( MODEL_FILE.toURI().toURL(), null, MODEL_NAME, metamodel() );
         assertThat( model, notNullValue() );
         assertThat( model.name(), is( MODEL_NAME ) );
     }
 
     @Test
     public void shouldImportModelFromWorkspace() throws Exception {
-        final String path = modeler().importFile( MODEL_FILE, null );
-        final Model model = modeler().generateModel( path, "model", metamodel(), false );
+        final String path = modeler().importData( MODEL_FILE, null );
+        final Model model = modeler().generateModel( path, "model", metamodel() );
         assertThat( model, notNullValue() );
     }
 }

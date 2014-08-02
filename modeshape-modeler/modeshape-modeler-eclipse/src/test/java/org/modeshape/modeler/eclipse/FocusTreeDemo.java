@@ -40,8 +40,8 @@ public class FocusTreeDemo {
         // final Path path = Files.createTempDirectory( null );
         // path.toFile().deleteOnExit();
         // // jpav: remove
-        // System.out.println( "Creating ModeShape Modeler..." );
-        // try ( final ModeShapeModeler modeler = new ModeShapeModeler( path.toString(), "testModeShapeConfig.json" ) ) {
+        // System.out.println( "Creating Modeler..." );
+        // try ( final ModeShapeModeler modeler = new ModeShapeModeler( path.toString(), "testConfig.json" ) ) {
         // // jpav: remove
         // System.out.println( "Registering metamodel repository..." );
         // modeler.modelTypeManager().registerModelTypeRepository( new URL( "file:resources" ) );
@@ -60,7 +60,7 @@ public class FocusTreeDemo {
         // // jpav: remove
         // System.out.println( "Creating FocusTree..." );
         // final FocusTree focusTree =
-        // new FocusTree( DemoUtil.shell(), new FocusTreeController( new FocusTreeModeShapeModelerXsdModel() ) );
+        // new FocusTree( DemoUtil.shell(), new FocusTreeController( new FocusTreeXsdModel() ) );
         // // jpav: remove
         // System.out.println( "Showing FocusTree..." );
         // DemoUtil.show( focusTree );

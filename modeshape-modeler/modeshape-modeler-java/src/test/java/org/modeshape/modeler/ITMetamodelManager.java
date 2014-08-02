@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThat;
 import java.net.URL;
 
 import org.junit.Test;
-import org.modeshape.modeler.internal.MetamodelManagerImpl;
+import org.modeshape.modeler.internal.ModelerImpl;
 import org.modeshape.modeler.test.JavaIntegrationTest;
 
 @SuppressWarnings( "javadoc" )
@@ -39,7 +39,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
 
     @Test
     public void shouldGetApplicableModelTypeManager() throws Exception {
-        final Metamodel[] metamodels = metamodelManager().metamodelsForArtifact( modeler().importFile( MODEL_FILE, null ) );
+        final Metamodel[] metamodels = metamodelManager().metamodelsForArtifact( modeler().importData( MODEL_FILE, null ) );
         assertThat( metamodels, notNullValue() );
         assertThat( metamodels.length == 0, is( false ) );
     }
@@ -71,7 +71,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     @Test
     public void shouldIniitializeModelTypeRepositories() throws Exception {
         modeler().close();
-        try ( final Modeler modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH ) )
+        try ( final Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) )
         {
             assertThat( modeler.metamodelManager().metamodelRepositories()[ 0 ], is( new URL(
                                                                                               MetamodelManager.JBOSS_METAMODEL_REPOSITORY ) ) );
@@ -90,7 +90,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     @Test
     public void shouldMoveModelTypeRepositoryDown() throws Exception {
         modeler().close();
-        try ( Modeler modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH ) ) {
+        try ( Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) ) {
             final URL url = new URL( MetamodelManager.JBOSS_METAMODEL_REPOSITORY );
             final int size = modeler.metamodelManager().metamodelRepositories().length;
             assertThat( modeler.metamodelManager().metamodelRepositories()[ 0 ], is( url ) );
@@ -103,7 +103,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     @Test
     public void shouldMoveModelTypeRepositoryUp() throws Exception {
         modeler().close();
-        try ( Modeler modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH ) ) {
+        try ( Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) ) {
             final URL url = new URL( MetamodelManager.MAVEN_METAMODEL_REPOSITORY );
             final int size = modeler.metamodelManager().metamodelRepositories().length;
             assertThat( modeler.metamodelManager().metamodelRepositories()[ 1 ], is( url ) );
@@ -125,7 +125,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     @Test
     public void shouldNotMoveModelTypeRepositoryDownIfUrlLast() throws Exception {
         modeler().close();
-        try ( Modeler modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_MODESHAPE_CONFIGURATION_PATH ) ) {
+        try ( Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) ) {
             final URL[] urls = modeler.metamodelManager().metamodelRepositories();
             final URL url = new URL( MetamodelManager.MAVEN_METAMODEL_REPOSITORY );
             modeler.metamodelManager().moveMetamodelRepositoryDown( url );
@@ -152,15 +152,15 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     @Test
     public void shouldRestorePreviouslySavedState() throws Exception {
         modeler().close();
-        try ( Modeler modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH ) ) {
+        try ( Modeler modeler = new ModelerImpl( TEST_REPOSITORY_STORE_PARENT_PATH ) ) {
             final MetamodelManager metamodelManager = modeler.metamodelManager();
             for ( final URL url : metamodelManager.metamodelRepositories() )
                 metamodelManager.unregisterMetamodelRepository( url );
             metamodelManager.registerMetamodelRepository( INTEGRATION_TEST_METAMODEL_REPOSITORY_URL );
             metamodelManager.install( "java" );
         }
-        try ( ModeShapeModeler modeler = new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH ) ) {
-            final MetamodelManagerImpl metamodelManager = ( MetamodelManagerImpl ) modeler.metamodelManager();
+        try ( Modeler modeler = new ModelerImpl( TEST_REPOSITORY_STORE_PARENT_PATH ) ) {
+            final MetamodelManager metamodelManager = modeler.metamodelManager();
             assertThat( metamodelManager.metamodelRepositories().length, is( 1 ) );
             assertThat( metamodelManager.metamodelCategories().length, is( 1 ) );
             assertThat( metamodelManager.metamodels().length, is( 2 ) );

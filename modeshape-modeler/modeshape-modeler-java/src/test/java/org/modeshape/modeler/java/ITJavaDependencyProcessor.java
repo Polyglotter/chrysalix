@@ -34,7 +34,7 @@ public class ITJavaDependencyProcessor extends JavaIntegrationTest {
 
     // @Test
     // public void shouldFindDependencyProcessor() throws Exception {
-    // manager().run( new Task< Void >() {
+    // modeler().run( new Task< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -62,7 +62,7 @@ public class ITJavaDependencyProcessor extends JavaIntegrationTest {
     // modeler().generateModel( getClass().getClassLoader().getResourceAsStream( name.replace( '.', '/' ) + ".class" ),
     // JavaDependencyProcessor.class.getName().replace( '.', '/' ) + ".java", metamodel );
     // assertThat( model, notNullValue() );
-    // manager().run( new Task< Void >() {
+    // modeler().run( new Task< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {

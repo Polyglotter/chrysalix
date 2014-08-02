@@ -48,15 +48,12 @@ import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 
-/**
- * 
- */
-public class ModelObjectImpl implements ModelObject {
+class ModelObjectImpl implements ModelObject {
 
     /**
      * 
      */
-    public final Manager manager;
+    public final ModelerImpl modeler;
 
     /**
      * 
@@ -68,10 +65,10 @@ public class ModelObjectImpl implements ModelObject {
      */
     public final int index;
 
-    ModelObjectImpl( final Manager manager,
+    ModelObjectImpl( final ModelerImpl modeler,
                      final String path,
                      final int index ) {
-        this.manager = manager;
+        this.modeler = modeler;
         this.path = path;
         this.index = index;
     }
@@ -94,7 +91,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public Boolean booleanValue( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Boolean >() {
+        return modeler.run( new Task< Boolean >() {
 
             @Override
             public Boolean run( final Session session ) throws Exception {
@@ -117,7 +114,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public Boolean[] booleanValues( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Boolean[] >() {
+        return modeler.run( new Task< Boolean[] >() {
 
             @Override
             public Boolean[] run( final Session session ) throws Exception {
@@ -146,12 +143,12 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public ModelObject child( final String childName ) throws ModelerException {
         CheckArg.isNotEmpty( childName, "childName" );
-        return manager.run( new Task< ModelObject >() {
+        return modeler.run( new Task< ModelObject >() {
 
             @Override
             public ModelObject run( final Session session ) throws Exception {
                 try {
-                    return new ModelObjectImpl( manager, session.getNode( path ).getNode( childName ).getPath(), 0 );
+                    return new ModelObjectImpl( modeler, session.getNode( path ).getNode( childName ).getPath(), 0 );
                 } catch ( final PathNotFoundException e ) {
                     return null;
                 }
@@ -176,7 +173,7 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public ModelObject[] children() throws ModelerException {
-        return manager.run( new Task< ModelObject[] >() {
+        return modeler.run( new Task< ModelObject[] >() {
 
             @Override
             public ModelObject[] run( final Session session ) throws Exception {
@@ -189,7 +186,7 @@ public class ModelObjectImpl implements ModelObject {
         final ModelObject[] children = new ModelObject[ ( int ) iterator.getSize() ];
         for ( int ndx = 0; iterator.hasNext(); ndx++ ) {
             final Node child = iterator.nextNode();
-            children[ ndx ] = new ModelObjectImpl( manager, child.getPath(), child.getIndex() - 1 );
+            children[ ndx ] = new ModelObjectImpl( modeler, child.getPath(), child.getIndex() - 1 );
         }
         return children;
     }
@@ -202,7 +199,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public ModelObject[] children( final String childName ) throws ModelerException {
         CheckArg.isNotEmpty( childName, "childName" );
-        return manager.run( new Task< ModelObject[] >() {
+        return modeler.run( new Task< ModelObject[] >() {
 
             @Override
             public ModelObject[] run( final Session session ) throws Exception {
@@ -230,7 +227,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public boolean hasChild( final String childName ) throws ModelerException {
         CheckArg.isNotEmpty( childName, "childName" );
-        return manager.run( new Task< Boolean >() {
+        return modeler.run( new Task< Boolean >() {
 
             @Override
             public Boolean run( final Session session ) throws Exception {
@@ -246,7 +243,7 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public boolean hasChildren() throws ModelerException {
-        return manager.run( new Task< Boolean >() {
+        return modeler.run( new Task< Boolean >() {
 
             @Override
             public Boolean run( final Session session ) throws Exception {
@@ -283,7 +280,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public boolean hasProperty( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Boolean >() {
+        return modeler.run( new Task< Boolean >() {
 
             @Override
             public Boolean run( final Session session ) throws Exception {
@@ -310,7 +307,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public Long longValue( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Long >() {
+        return modeler.run( new Task< Long >() {
 
             @Override
             public Long run( final Session session ) throws Exception {
@@ -333,7 +330,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public Long[] longValues( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Long[] >() {
+        return modeler.run( new Task< Long[] >() {
 
             @Override
             public Long[] run( final Session session ) throws Exception {
@@ -361,7 +358,7 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public String[] mixinTypes() throws ModelerException {
-        return manager.run( new Task< String[] >() {
+        return modeler.run( new Task< String[] >() {
 
             @Override
             public String[] run( final Session session ) throws Exception {
@@ -382,11 +379,11 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public Model model() throws ModelerException {
-        return manager.run( new Task< Model >() {
+        return modeler.run( new Task< Model >() {
 
             @Override
             public Model run( final Session session ) throws Exception {
-                return new ModelImpl( manager, modelNode( session ).getPath() );
+                return new ModelImpl( modeler, modelNode( session ).getPath() );
             }
         } );
     }
@@ -405,7 +402,7 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public String modelRelativePath() throws ModelerException {
-        return manager.run( new Task< String >() {
+        return modeler.run( new Task< String >() {
 
             @Override
             public String run( final Session session ) throws Exception {
@@ -421,7 +418,7 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public String name() throws ModelerException {
-        return manager.run( new Task< String >() {
+        return modeler.run( new Task< String >() {
 
             @Override
             public String run( final Session session ) throws Exception {
@@ -437,7 +434,7 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public String primaryType() throws ModelerException {
-        return manager.run( new Task< String >() {
+        return modeler.run( new Task< String >() {
 
             @Override
             public String run( final Session session ) throws Exception {
@@ -454,7 +451,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public boolean propertyHasMultipleValues( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Boolean >() {
+        return modeler.run( new Task< Boolean >() {
 
             @Override
             public Boolean run( final Session session ) throws Exception {
@@ -474,7 +471,7 @@ public class ModelObjectImpl implements ModelObject {
      */
     @Override
     public String[] propertyNames() throws ModelerException {
-        return manager.run( new Task< String[] >() {
+        return modeler.run( new Task< String[] >() {
 
             @Override
             public String[] run( final Session session ) throws Exception {
@@ -498,7 +495,7 @@ public class ModelObjectImpl implements ModelObject {
     public void setValue( final String propertyName,
                           final Object... values ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        manager.run( new Task< Void >() {
+        modeler.run( new Task< Void >() {
 
             @Override
             public Void run( final Session session ) throws Exception {
@@ -527,7 +524,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public String stringValue( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< String >() {
+        return modeler.run( new Task< String >() {
 
             @Override
             public String run( final Session session ) throws Exception {
@@ -550,7 +547,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public String[] stringValues( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< String[] >() {
+        return modeler.run( new Task< String[] >() {
 
             @Override
             public String[] run( final Session session ) throws Exception {
@@ -589,7 +586,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public Object value( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Object >() {
+        return modeler.run( new Task< Object >() {
 
             @Override
             public Object run( final Session session ) throws ModelerException {
@@ -664,7 +661,7 @@ public class ModelObjectImpl implements ModelObject {
     @Override
     public Object[] values( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return manager.run( new Task< Object[] >() {
+        return modeler.run( new Task< Object[] >() {
 
             @Override
             public Object[] run( final Session session ) throws ModelerException {

@@ -28,15 +28,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
+import org.modeshape.modeler.internal.ModelerImpl;
+
 /**
  * 
  */
 public interface Modeler extends AutoCloseable {
-
-    /**
-     * The path to the default ModeShape configuration, which uses a file-based repository
-     */
-    String DEFAULT_CONFIGURATION_PATH = "jcr/modeShapeConfig.json";
 
     /**
      * @return the path to the configuration for the embedded repository supplied when this Modeler was instantiated.
@@ -77,171 +74,43 @@ public interface Modeler extends AutoCloseable {
                  URL url ) throws ModelerException;
 
     /**
-     * @param artifactPath
-     *        the workspace path to an artifact; must not be empty.
+     * @param dataPath
+     *        the workspace path to the data; must not be empty.
      * @param modelPath
-     *        the path where the model should be created
-     * @return a new model using a metamodel determined by the artifact's content, and if the artifact is a file, its file
-     *         extension; never <code>null</code>
+     *        the workspace path where the model should be created
+     * @return a new model using a metamodel determined by the data's content, and if the data is a file, its file extension; never
+     *         <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
-    Model generateDefaultModel( final String artifactPath,
-                                final String modelPath ) throws ModelerException;
+    Model generateModel( final String dataPath,
+                         final String modelPath ) throws ModelerException;
 
     /**
-     * Creates a model with the name of the supplied file.
-     * 
-     * @param file
-     *        the file to be imported. Must not be <code>null</code>.
-     * @param modelFolder
-     *        the parent path where the model should be created
-     * @param metamodel
-     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied metamodel; never <code>null</code>
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    Model generateModel( final File file,
-                         final String modelFolder,
-                         final Metamodel metamodel ) throws ModelerException;
-
-    /**
-     * Creates a model with the name of the supplied file.
-     * 
-     * @param file
-     *        the file to be imported. Must not be <code>null</code>.
-     * @param modelFolder
-     *        the parent path where the model should be created
-     * @param modelName
-     *        the name of the model. If <code>null</code> or empty, the name of the supplied file will be used.
-     * @param metamodel
-     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied metamodel; never <code>null</code>
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    Model generateModel( final File file,
-                         final String modelFolder,
-                         final String modelName,
-                         final Metamodel metamodel ) throws ModelerException;
-
-    /**
-     * @param stream
-     *        the artifact's content to be imported. Must not be <code>null</code>.
+     * @param dataPath
+     *        the workspace path to the data; must not be empty.
      * @param modelPath
-     *        the path where the model should be created
+     *        the workspace path where the model should be created
      * @param metamodel
-     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
+     *        the metamodel of model to be created for the supplied data; may be <code>null</code>.
      * @return a new model of the supplied metamodel; never <code>null</code>
      * @throws ModelerException
      *         if any problem occurs
      */
-    Model generateModel( final InputStream stream,
+    Model generateModel( final String dataPath,
                          final String modelPath,
                          final Metamodel metamodel ) throws ModelerException;
-
-    /**
-     * @param artifactPath
-     *        the workspace path to an artifact; must not be empty.
-     * @param modelPath
-     *        the path where the model should be created
-     * @param metamodel
-     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
-     * @param persistArtifacts
-     *        <code>true</code> if auto-imported dependency artifacts should be persisted
-     * @return a new model of the supplied metamodel; never <code>null</code>
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    Model generateModel( final String artifactPath,
-                         final String modelPath,
-                         final Metamodel metamodel,
-                         final boolean persistArtifacts ) throws ModelerException;
-
-    /**
-     * @param artifactUrl
-     *        the URL of an artifact; must not be <code>null</code>.
-     * @param modelFolder
-     *        the parent path where the model should be created
-     * @param metamodel
-     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied metamodel; never <code>null</code>
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    Model generateModel( final URL artifactUrl,
-                         final String modelFolder,
-                         final Metamodel metamodel ) throws ModelerException;
-
-    /**
-     * @param artifactUrl
-     *        the URL of an artifact; must not be <code>null</code>.
-     * @param modelFolder
-     *        the parent path where the model should be created
-     * @param modelName
-     *        the name of the model. If <code>null</code> or empty, the name of the supplied file will be used.
-     * @param metamodel
-     *        the metamodel of model to be created for the supplied artifact; may be <code>null</code>.
-     * @return a new model of the supplied metamodel; never <code>null</code>
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    Model generateModel( final URL artifactUrl,
-                         final String modelFolder,
-                         final String modelName,
-                         final Metamodel metamodel ) throws ModelerException;
-
-    /**
-     * @param stream
-     *        the artifact's content to be imported. Must not be <code>null</code>.
-     * @param workspacePath
-     *        the path where the artifact should be imported
-     * @return the workspace path the to imported artifact
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    String importArtifact( final InputStream stream,
-                           final String workspacePath ) throws ModelerException;
-
-    /**
-     * @param url
-     *        the name of the artifact as it should be stored in the workspace. Must not be empty.
-     * @param workspaceFolder
-     *        the parent path where the artifact should be imported
-     * @return the workspace path the to imported artifact
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    String importArtifact( final URL url,
-                           final String workspaceFolder ) throws ModelerException;
-
-    /**
-     * @param url
-     *        the name of the artifact as it should be stored in the workspace. Must not be empty.
-     * @param workspaceFolder
-     *        the parent path where the artifact should be imported
-     * @param workspaceName
-     *        the name of the artifact in the workspace. If <code>null</code> or empty, the last segment of the supplied URL will be
-     *        used.
-     * @return the workspace path the to imported artifact
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    String importArtifact( final URL url,
-                           final String workspaceFolder,
-                           final String workspaceName ) throws ModelerException;
 
     /**
      * @param file
      *        the file to be imported. Must not be <code>null</code>.
      * @param workspaceFolder
      *        the parent path where the file should be imported
-     * @return the workspace path the to imported artifact
+     * @return the workspace path the to imported data
      * @throws ModelerException
      *         if any problem occurs
      */
-    String importFile( final File file,
+    String importData( final File file,
                        final String workspaceFolder ) throws ModelerException;
 
     /**
@@ -251,16 +120,141 @@ public interface Modeler extends AutoCloseable {
      *        the parent path where the file should be imported
      * @param workspaceName
      *        the name of the file in the workspace. If <code>null</code> or empty, the name of the supplied file will be used.
-     * @return the workspace path the to imported artifact
+     * @return the workspace path the to imported data
      * @throws ModelerException
      *         if any problem occurs
      */
-    String importFile( final File file,
+    String importData( final File file,
                        final String workspaceFolder,
                        final String workspaceName ) throws ModelerException;
 
     /**
-     * @return the metamodel manager
+     * @param stream
+     *        the data's content to be imported. Must not be <code>null</code>.
+     * @param workspacePath
+     *        the path where the data should be imported
+     * @return the workspace path the to imported data
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    String importData( final InputStream stream,
+                       final String workspacePath ) throws ModelerException;
+
+    /**
+     * @param url
+     *        the name of the data as it should be stored in the workspace. Must not be empty.
+     * @param workspaceFolder
+     *        the parent path where the data should be imported
+     * @return the workspace path the to imported data
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    String importData( final URL url,
+                       final String workspaceFolder ) throws ModelerException;
+
+    /**
+     * @param url
+     *        the name of the data as it should be stored in the workspace. Must not be empty.
+     * @param workspaceFolder
+     *        the parent path where the data should be imported
+     * @param workspaceName
+     *        the name of the data in the workspace. If <code>null</code> or empty, the last segment of the supplied URL will be
+     *        used.
+     * @return the workspace path the to imported data
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    String importData( final URL url,
+                       final String workspaceFolder,
+                       final String workspaceName ) throws ModelerException;
+
+    /**
+     * Creates a model with the name of the supplied file.
+     * 
+     * @param file
+     *        the file to be imported. Must not be <code>null</code>.
+     * @param modelFolder
+     *        the parent path where the model should be created
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied data; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    Model importModel( final File file,
+                       final String modelFolder,
+                       final Metamodel metamodel ) throws ModelerException;
+
+    /**
+     * Creates a model with the name of the supplied file.
+     * 
+     * @param file
+     *        the file to be imported. Must not be <code>null</code>.
+     * @param modelFolder
+     *        the parent path where the model should be created
+     * @param modelName
+     *        the name of the model. If <code>null</code> or empty, the name of the supplied file will be used.
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied data; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    Model importModel( final File file,
+                       final String modelFolder,
+                       final String modelName,
+                       final Metamodel metamodel ) throws ModelerException;
+
+    /**
+     * @param stream
+     *        the data's content to be imported. Must not be <code>null</code>.
+     * @param modelPath
+     *        the path where the model should be created
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied data; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    Model importModel( final InputStream stream,
+                       final String modelPath,
+                       final Metamodel metamodel ) throws ModelerException;
+
+    /**
+     * @param dataUrl
+     *        the URL of an data; must not be <code>null</code>.
+     * @param modelFolder
+     *        the parent path where the model should be created
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied data; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    Model importModel( final URL dataUrl,
+                       final String modelFolder,
+                       final Metamodel metamodel ) throws ModelerException;
+
+    /**
+     * @param dataUrl
+     *        the URL of an data; must not be <code>null</code>.
+     * @param modelFolder
+     *        the parent path where the model should be created
+     * @param modelName
+     *        the name of the model. If <code>null</code> or empty, the name of the supplied file will be used.
+     * @param metamodel
+     *        the metamodel of model to be created for the supplied data; may be <code>null</code>.
+     * @return a new model of the supplied metamodel; never <code>null</code>
+     * @throws ModelerException
+     *         if any problem occurs
+     */
+    Model importModel( final URL dataUrl,
+                       final String modelFolder,
+                       final String modelName,
+                       final Metamodel metamodel ) throws ModelerException;
+
+    /**
+     * @return the metamodel modeler
      * @throws ModelerException
      *         if any error occurs
      */
@@ -279,4 +273,33 @@ public interface Modeler extends AutoCloseable {
      * @return the path to the folder that should contain the repository store
      */
     String repositoryStoreParentPath();
+
+    /**
+     * 
+     */
+    class Factory {
+
+        /**
+         * Uses a default configuration.
+         * 
+         * @param repositoryStoreParentPath
+         *        the path to the folder that should contain the repository store
+         * @return a new Modeler with a default configuration
+         */
+        public static Modeler instance( final String repositoryStoreParentPath ) {
+            return instance( repositoryStoreParentPath );
+        }
+
+        /**
+         * @param repositoryStoreParentPath
+         *        the path to the folder that should contain the repository store
+         * @param configurationPath
+         *        the path to a configuration file
+         * @return a new Modeler
+         */
+        public static Modeler instance( final String repositoryStoreParentPath,
+                                        final String configurationPath ) {
+            return new ModelerImpl( repositoryStoreParentPath, configurationPath );
+        }
+    }
 }

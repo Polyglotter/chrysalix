@@ -57,16 +57,16 @@ import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.jcr.api.sequencer.Sequencer;
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.MetamodelManager;
-import org.modeshape.modeler.ModeShapeModeler;
+import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.polyglotter.common.Logger;
 
 /**
- * The default implementation of a metamodel manager.
+ * The default implementation of a metamodel modeler.
  */
-public final class MetamodelManagerImpl implements MetamodelManager {
+final class MetamodelManagerImpl implements MetamodelManager {
 
     static final Logger LOGGER = Logger.getLogger( MetamodelManagerImpl.class );
 
@@ -81,14 +81,14 @@ public final class MetamodelManagerImpl implements MetamodelManager {
     private static final String SEQUENCER_ZIP_PATTERN = SEQUENCER_PREFIX + "%s-%s-module-with-dependencies.zip";
 
     private final ExtensionInstaller extensionInstaller;
-    final Manager manager;
+    final ModelerImpl modeler;
     final LinkedList< URL > metamodelRepositories = new LinkedList<>();
     final Set< Metamodel > metamodels = new HashSet<>();
     final LibraryClassLoader libraryClassLoader = new LibraryClassLoader();
     final Path library;
 
-    MetamodelManagerImpl( final Manager manager ) throws ModelerException {
-        this.manager = manager;
+    MetamodelManagerImpl( final ModelerImpl modeler ) throws ModelerException {
+        this.modeler = modeler;
         this.extensionInstaller = new ExtensionInstaller();
 
         // setup classpath area for metamodel archives
@@ -100,7 +100,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
         library.toFile().deleteOnExit();
 
         // load caches from MS repository
-        manager.run( this, new SystemTask< Void >() {
+        modeler.run( this, new SystemTask< Void >() {
 
             @Override
             public Void run( final Session session,
@@ -176,11 +176,11 @@ public final class MetamodelManagerImpl implements MetamodelManager {
     @Override
     public Metamodel defaultMetamodel( final String filePath ) throws ModelerException {
         CheckArg.isNotEmpty( filePath, "filePath" );
-        return manager.run( new Task< Metamodel >() {
+        return modeler.run( new Task< Metamodel >() {
 
             @Override
             public Metamodel run( final Session session ) throws Exception {
-                final Node node = manager.artifactNode( session, filePath );
+                final Node node = modeler.dataNode( session, filePath );
                 final Metamodel metamodel = defaultMetamodel( node, metamodels( node ) );
                 return metamodel == null ? null : metamodel;
             }
@@ -198,7 +198,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
         LOGGER.debug( "Installing category '%s'", category );
 
         try {
-            manager.run( this, new SystemTask< Void >() {
+            modeler.run( this, new SystemTask< Void >() {
 
                 @Override
                 public Void run( final Session session,
@@ -217,7 +217,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
             } );
         } catch ( final Exception e ) {
             // try to rollback session
-            manager.run( this, new SystemTask< Void >() {
+            modeler.run( this, new SystemTask< Void >() {
 
                 /**
                  * {@inheritDoc}
@@ -411,7 +411,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
 
                         if ( Sequencer.class.isAssignableFrom( sequencerClass )
                              && !Modifier.isAbstract( sequencerClass.getModifiers() ) ) {
-                            String id = ModeShapeModeler.class.getPackage().getName() + '.' + category + '.'
+                            String id = Modeler.class.getPackage().getName() + '.' + category + '.'
                                         + sequencerClass.getSimpleName();
                             id = id.endsWith( "Sequencer" ) ? id.substring( 0, id.length() - "Sequencer".length() ) : id;
 
@@ -421,7 +421,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
 
                             // add to cache
                             @SuppressWarnings( "unchecked" ) final MetamodelImpl metamodel =
-                                new MetamodelImpl( manager, category, id, ( Class< Sequencer > ) sequencerClass );
+                                new MetamodelImpl( modeler, category, id, ( Class< Sequencer > ) sequencerClass );
                             metamodels.add( metamodel );
                         }
                     } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
@@ -522,7 +522,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
                                                                   ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME );
                 }
 
-                final MetamodelImpl metamodel = new MetamodelImpl( manager,
+                final MetamodelImpl metamodel = new MetamodelImpl( modeler,
                                                                    category,
                                                                    metamodelNode.getName(),
                                                                    sequencerClassName,
@@ -613,11 +613,11 @@ public final class MetamodelManagerImpl implements MetamodelManager {
     @Override
     public Metamodel[] metamodelsForArtifact( final String filePath ) throws ModelerException {
         CheckArg.isNotEmpty( filePath, "filePath" );
-        return manager.run( new Task< Metamodel[] >() {
+        return modeler.run( new Task< Metamodel[] >() {
 
             @Override
             public final Metamodel[] run( final Session session ) throws Exception {
-                return metamodels( manager.artifactNode( session, filePath ) );
+                return metamodels( modeler.dataNode( session, filePath ) );
             }
         } );
     }
@@ -691,7 +691,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
     }
 
     private void saveMetamodelRepositories() throws ModelerException {
-        manager.run( this, new SystemTask< Void >() {
+        modeler.run( this, new SystemTask< Void >() {
 
             @Override
             public Void run( final Session session,
@@ -734,7 +734,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
         }
 
         // delete from MS repository
-        manager.run( this, new SystemTask< Void >() {
+        modeler.run( this, new SystemTask< Void >() {
 
             @Override
             public Void run( final Session session,
@@ -775,7 +775,7 @@ public final class MetamodelManagerImpl implements MetamodelManager {
     }
 
     private String version() throws ModelerException {
-        return manager.repository().getDescriptor( Repository.REP_VERSION_DESC );
+        return modeler.repository().getDescriptor( Repository.REP_VERSION_DESC );
     }
 
     class LibraryClassLoader extends URLClassLoader {

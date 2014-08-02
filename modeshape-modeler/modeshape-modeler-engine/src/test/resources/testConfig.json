@@ -4,5 +4,5 @@
         "predefined" : ["modeler"],
         "default" : "default"
     },
-    "node-types" : ["jcr/metamodel.cnd"]
+    "node-types" : ["metamodel.cnd"]
 }

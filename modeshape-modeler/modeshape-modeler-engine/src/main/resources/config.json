@@ -6,11 +6,11 @@
     },
     "storage" : {
         "cacheName" : "ModeShapeModelerRepository",
-        "cacheConfiguration" : "jcr/infinispan.xml",
+        "cacheConfiguration" : "infinispan.xml",
         "binaryStorage" : {
             "type" : "file",
             "directory" : "${org.modeshape.modeler.repositoryStoreParentPath}/modelerRepository/binaries"
         }
     },
-    "node-types" : ["jcr/metamodel.cnd"]
+    "node-types" : ["metamodel.cnd"]
 }

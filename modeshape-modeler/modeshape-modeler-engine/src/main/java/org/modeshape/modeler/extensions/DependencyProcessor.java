@@ -49,21 +49,21 @@ public interface DependencyProcessor {
     String metamodel();
 
     /**
-     * @param artifactPath
-     *        the workspace path of the artifact whose dependencies are being processed
+     * @param dataPath
+     *        the workspace path of the data whose dependencies are being processed
      * @param modelNode
      *        the node of the model whose dependencies are being processed (cannot be <code>null</code>)
      * @param modeler
-     *        the modeler used to upload dependency artifacts and create models (cannot be <code>null</code>)
-     * @param persistArtifacts
-     *        <code>true</code> if the auto-imported dependency artifacts should be persisted
+     *        the modeler used to upload dependency data and create models (cannot be <code>null</code>)
+     * @param persistData
+     *        <code>true</code> if the auto-imported dependency data should be persisted
      * @return the path to the dependencies node or <code>null</code> if no dependencies were processed
      * @throws ModelerException
      *         if the specified model is not valid for this processor or if there is an error during processing
      */
-    String process( final String artifactPath,
+    String process( final String dataPath,
                     final Node modelNode,
                     final Modeler modeler,
-                    final boolean persistArtifacts ) throws ModelerException;
+                    final boolean persistData ) throws ModelerException;
 
 }

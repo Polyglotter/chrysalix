@@ -31,13 +31,13 @@ import javax.jcr.Session;
  *        any type
  */
 public interface SystemTask< T > {
-    
+
     /**
      * @param session
      *        a new session
      * @param systemNode
      *        the node containing the system properties for the system class within which this task is being
-     *        {@link Manager#run(Object, SystemTask) run}.
+     *        {@link ModelerImpl#run(Object, SystemTask) run}.
      * @return the task's return value
      * @throws Exception
      *         if any problem occurs

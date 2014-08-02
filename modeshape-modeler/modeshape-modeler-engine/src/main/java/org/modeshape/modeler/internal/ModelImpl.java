@@ -38,29 +38,26 @@ import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 
 import org.modeshape.common.util.StringUtil;
-import org.modeshape.modeler.Model;
 import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.Dependency;
 
-/**
- * 
- */
-public class ModelImpl extends ModelObjectImpl implements Model {
+class ModelImpl extends ModelObjectImpl implements Model {
 
     private Set< Dependency > dependencies;
 
     /**
-     * @param manager
-     *        the ModeShapeModeler's manager
+     * @param modeler
+     *        the modeler's modeler
      * @param modelPath
      *        a path to a model
      */
-    public ModelImpl( final Manager manager,
-                      final String modelPath ) {
-        super( manager, modelPath, -1 );
+    ModelImpl( final ModelerImpl modeler,
+               final String modelPath ) {
+        super( modeler, modelPath, -1 );
     }
 
     /**
@@ -81,7 +78,7 @@ public class ModelImpl extends ModelObjectImpl implements Model {
     @Override
     public Set< Dependency > dependencies() throws ModelerException {
         if ( this.dependencies == null ) {
-            this.dependencies = manager.run( new Task< Set< Dependency > >() {
+            this.dependencies = modeler.run( new Task< Set< Dependency > >() {
 
                 @Override
                 public Set< Dependency > run( final Session session ) throws Exception {
@@ -140,7 +137,7 @@ public class ModelImpl extends ModelObjectImpl implements Model {
      */
     @Override
     public URL externalLocation() throws ModelerException {
-        return manager.run( new Task< URL >() {
+        return modeler.run( new Task< URL >() {
 
             @Override
             public URL run( final Session session ) throws Exception {
@@ -155,11 +152,29 @@ public class ModelImpl extends ModelObjectImpl implements Model {
     /**
      * {@inheritDoc}
      * 
+     * @see org.modeshape.modeler.Model#metamodel()
+     */
+    @Override
+    public Metamodel metamodel() throws ModelerException {
+        return modeler.run( new Task< Metamodel >() {
+
+            @Override
+            public Metamodel run( final Session session ) throws Exception {
+                return modeler.metamodelManager().metamodel( session.getNode( path )
+                                                                    .getProperty( ModelerLexicon.Model.METAMODEL )
+                                                                    .getString() );
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.modeshape.modeler.Model#missingDependencies()
      */
     @Override
     public Set< Dependency > missingDependencies() throws ModelerException {
-        return manager.run( new Task< Set< Dependency > >() {
+        return modeler.run( new Task< Set< Dependency > >() {
 
             @Override
             public Set< Dependency > run( final Session session ) throws Exception {
@@ -198,7 +213,7 @@ public class ModelImpl extends ModelObjectImpl implements Model {
                 final Node kid = itr.nextNode();
 
                 if ( modelNode( kid ) ) {
-                    final Model dependencyModel = new ModelImpl( this.manager, dependency.path() );
+                    final Model dependencyModel = new ModelImpl( this.modeler, dependency.path() );
                     missing.addAll( dependencyModel.missingDependencies() );
                 }
             }
@@ -237,24 +252,6 @@ public class ModelImpl extends ModelObjectImpl implements Model {
     @Override
     public String modelRelativePath() {
         return "";
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.Model#metamodel()
-     */
-    @Override
-    public Metamodel metamodel() throws ModelerException {
-        return manager.run( new Task< Metamodel >() {
-
-            @Override
-            public Metamodel run( final Session session ) throws Exception {
-                return manager.metamodelManager().metamodel( session.getNode( path )
-                                                                    .getProperty( ModelerLexicon.Model.METAMODEL )
-                                                                    .getString() );
-            }
-        } );
     }
 
 }

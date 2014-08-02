@@ -42,7 +42,7 @@ public class ITTeiidDdl extends TeiidDdlIntegrationTest {
 
         final File dataFile = new File( "src/test/resources/Teiid-MySQLAccounts.ddl" );
         final Model generatedModel =
-            modeler().generateModel( dataFile, null, metamodelManager().metamodel( TeiidDdlLexicon.DDL_METAMODEL_ID ) );
+            modeler().importModel( dataFile, null, metamodelManager().metamodel( TeiidDdlLexicon.DDL_METAMODEL_ID ) );
         final Model model = modeler().model( dataFile.getName() );
         assertThat( model, is( generatedModel ) );
 

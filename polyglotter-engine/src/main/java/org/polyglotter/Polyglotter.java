@@ -30,7 +30,6 @@ import java.net.URL;
 
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.MetamodelManager;
-import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.Modeler;
@@ -49,13 +48,13 @@ public final class Polyglotter implements Modeler {
     private final Modeler modeler;
 
     /**
-     * Uses a default ModeShape configuration.
+     * Uses a default configuration.
      * 
      * @param repositoryStoreParentPath
-     *        the file path to the folder that should contain the ModeShape repository store
+     *        the file path to the folder that should contain the repository store
      */
     public Polyglotter( final String repositoryStoreParentPath ) {
-        modeler = new ModeShapeModeler( repositoryStoreParentPath );
+        modeler = Modeler.Factory.instance( repositoryStoreParentPath );
     }
 
     /**
@@ -66,7 +65,7 @@ public final class Polyglotter implements Modeler {
      */
     public Polyglotter( final String repositoryStoreParentPath,
                         final String configurationPath ) {
-        modeler = new ModeShapeModeler( repositoryStoreParentPath, configurationPath );
+        modeler = Modeler.Factory.instance( repositoryStoreParentPath, configurationPath );
     }
 
     /**
@@ -125,144 +124,143 @@ public final class Polyglotter implements Modeler {
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateDefaultModel(String, String)
+     * @see Modeler#generateModel(String, String)
      */
     @Override
-    public Model generateDefaultModel( final String artifactPath,
-                                       final String modelPath ) throws ModelerException {
-        return modeler.generateDefaultModel( artifactPath, modelPath );
+    public Model generateModel( final String dataPath,
+                                final String modelPath ) throws ModelerException {
+        return modeler.generateModel( dataPath, modelPath );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(File, String, Metamodel)
+     * @see Modeler#generateModel(String, String, Metamodel)
      */
     @Override
-    public Model generateModel( final File file,
-                                final String modelFolder,
-                                final Metamodel metamodel ) throws ModelerException {
-        return modeler.generateModel( file, modelFolder, metamodel );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#generateModel(File, String, String, Metamodel)
-     */
-    @Override
-    public Model generateModel( final File file,
-                                final String modelFolder,
-                                final String modelName,
-                                final Metamodel metamodel ) throws ModelerException {
-        return modeler.generateModel( file, modelFolder, modelName, metamodel );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#generateModel(InputStream, String, Metamodel)
-     */
-    @Override
-    public Model generateModel( final InputStream stream,
+    public Model generateModel( final String dataPath,
                                 final String modelPath,
                                 final Metamodel metamodel ) throws ModelerException {
-        return modeler.generateModel( stream, modelPath, metamodel );
+        return modeler.generateModel( dataPath, modelPath, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(String, String, Metamodel, boolean)
+     * @see Modeler#importData(File, String)
      */
     @Override
-    public Model generateModel( final String artifactPath,
-                                final String modelPath,
-                                final Metamodel metamodel,
-                                final boolean persistArtifact ) throws ModelerException {
-        return modeler.generateModel( artifactPath, modelPath, metamodel, persistArtifact );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#generateModel(URL, String, Metamodel)
-     */
-    @Override
-    public Model generateModel( final URL artifactUrl,
-                                final String modelFolder,
-                                final Metamodel metamodel ) throws ModelerException {
-        return modeler.generateModel( artifactUrl, modelFolder, metamodel );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#generateModel(URL, String, String, Metamodel)
-     */
-    @Override
-    public Model generateModel( final URL artifactUrl,
-                                final String modelFolder,
-                                final String modelName,
-                                final Metamodel metamodel ) throws ModelerException {
-        return modeler.generateModel( artifactUrl, modelFolder, modelName, metamodel );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#importArtifact(InputStream, String)
-     */
-    @Override
-    public String importArtifact( final InputStream stream,
-                                  final String workspacePath ) throws ModelerException {
-        return modeler.importArtifact( stream, workspacePath );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#importArtifact(URL, String)
-     */
-    @Override
-    public String importArtifact( final URL url,
-                                  final String workspaceFolder ) throws ModelerException {
-        return modeler.importArtifact( url, workspaceFolder );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#importArtifact(URL, String, String)
-     */
-    @Override
-    public String importArtifact( final URL url,
-                                  final String workspaceFolder,
-                                  final String workspaceName ) throws ModelerException {
-        return modeler.importArtifact( url, workspaceFolder, workspaceName );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Modeler#importFile(File, String)
-     */
-    @Override
-    public String importFile( final File file,
+    public String importData( final File file,
                               final String workspaceFolder ) throws ModelerException {
-        return modeler.importFile( file, workspaceFolder );
+        return modeler.importData( file, workspaceFolder );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importFile(File, String, String)
+     * @see Modeler#importData(File, String, String)
      */
     @Override
-    public String importFile( final File file,
+    public String importData( final File file,
                               final String workspaceFolder,
                               final String workspaceName ) throws ModelerException {
-        return modeler.importFile( file, workspaceFolder, workspaceName );
+        return modeler.importData( file, workspaceFolder, workspaceName );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importData(InputStream, String)
+     */
+    @Override
+    public String importData( final InputStream stream,
+                              final String workspacePath ) throws ModelerException {
+        return modeler.importData( stream, workspacePath );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importData(URL, String)
+     */
+    @Override
+    public String importData( final URL url,
+                              final String workspaceFolder ) throws ModelerException {
+        return modeler.importData( url, workspaceFolder );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importData(URL, String, String)
+     */
+    @Override
+    public String importData( final URL url,
+                              final String workspaceFolder,
+                              final String workspaceName ) throws ModelerException {
+        return modeler.importData( url, workspaceFolder, workspaceName );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importModel(File, String, Metamodel)
+     */
+    @Override
+    public Model importModel( final File file,
+                              final String modelFolder,
+                              final Metamodel metamodel ) throws ModelerException {
+        return modeler.importModel( file, modelFolder, metamodel );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importModel(File, String, String, Metamodel)
+     */
+    @Override
+    public Model importModel( final File file,
+                              final String modelFolder,
+                              final String modelName,
+                              final Metamodel metamodel ) throws ModelerException {
+        return modeler.importModel( file, modelFolder, modelName, metamodel );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importModel(InputStream, String, Metamodel)
+     */
+    @Override
+    public Model importModel( final InputStream stream,
+                              final String modelPath,
+                              final Metamodel metamodel ) throws ModelerException {
+        return modeler.importModel( stream, modelPath, metamodel );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importModel(URL, String, Metamodel)
+     */
+    @Override
+    public Model importModel( final URL dataUrl,
+                              final String modelFolder,
+                              final Metamodel metamodel ) throws ModelerException {
+        return modeler.importModel( dataUrl, modelFolder, metamodel );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modeler#importModel(URL, String, String, Metamodel)
+     */
+    @Override
+    public Model importModel( final URL dataUrl,
+                              final String modelFolder,
+                              final String modelName,
+                              final Metamodel metamodel ) throws ModelerException {
+        return modeler.importModel( dataUrl, modelFolder, modelName, metamodel );
     }
 
     /**

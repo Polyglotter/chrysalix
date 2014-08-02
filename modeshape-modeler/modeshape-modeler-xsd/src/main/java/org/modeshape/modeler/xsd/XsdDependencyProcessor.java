@@ -38,11 +38,12 @@ import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
+import org.modeshape.modeler.internal.ModelerImpl;
 import org.modeshape.sequencer.xsd.XsdLexicon;
 import org.polyglotter.common.Logger;
 
 /**
- * The XSD dependency processor for the ModeShape modeler.
+ * The XSD dependency processor for the modeler.
  */
 public final class XsdDependencyProcessor implements DependencyProcessor {
 
@@ -107,7 +108,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
      *      org.modeshape.modeler.Modeler, boolean)
      */
     @Override
-    public String process( final String artifactPath,
+    public String process( final String dataPath,
                            final Node modelNode,
                            final Modeler modeler,
                            final boolean persistArtifacts ) throws ModelerException {
@@ -236,8 +237,8 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
                         final String[] pathSegments = path.split( "/" );
                         final List< String > commonPath = new ArrayList<>();
 
-                        // final Node artifactNode = node.getSession().getNode( artifactPath );
-                        // final String[] artifactSegments = artifactNode.getPath().split( "/" ); // TODO use this
+                        // final Node dataNode = node.getSession().getNode( dataPath );
+                        // final String[] dataSegments = dataNode.getPath().split( "/" ); // TODO use this
 
                         // find common parent path between schema location and model's external location
                         for ( int i = 0; i < extLocSegments.length; ++i ) {
@@ -300,7 +301,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
 
             // process any missing dependencies
             if ( !pathsToMissingDependencies.isEmpty() ) {
-                uploadMissingDependencies( artifactPath, modelNode, pathsToMissingDependencies, modeler, persistArtifacts );
+                uploadMissingDependencies( dataPath, modelNode, pathsToMissingDependencies, modeler, persistArtifacts );
             }
 
             modelNode.getSession().save();
@@ -311,7 +312,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
         }
     }
 
-    void uploadMissingDependencies( final String artifactPath,
+    void uploadMissingDependencies( final String dataPath,
                                     final Node modelNode,
                                     final List< MissingDependency > missingDependencies,
                                     final Modeler modeler,
@@ -333,22 +334,22 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
         String externalLocation = modelNode.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString();
         externalLocation = externalLocation.substring( 0, ( externalLocation.lastIndexOf( "/" ) ) );
 
-        final String artifactDir = artifactPath.substring( 0, ( artifactPath.lastIndexOf( "/" ) ) );
+        final String dataDir = dataPath.substring( 0, ( dataPath.lastIndexOf( "/" ) ) );
 
         for ( final MissingDependency missingDependency : missingDependencies ) {
             String extPath;
-            String artifactLocation;
+            String dataLocation;
             String modelPath;
 
             if ( missingDependency.isRelative() ) {
-                artifactLocation = artifactDir;
+                dataLocation = dataDir;
                 String location = externalLocation;
                 int numParentDirs = missingDependency.numParentDirs;
 
                 // navigate up parent dirs if necessary
                 while ( numParentDirs > 0 ) {
                     location = location.substring( 0, ( externalLocation.lastIndexOf( "/" ) ) );
-                    artifactLocation = artifactLocation.substring( 0, ( artifactLocation.lastIndexOf( "/" ) ) );
+                    dataLocation = dataLocation.substring( 0, ( dataLocation.lastIndexOf( "/" ) ) );
                     --numParentDirs;
                 }
 
@@ -361,26 +362,26 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
 
                 extPath += missingDependency.path;
 
-                // setup dependency artifact path
-                if ( !artifactLocation.endsWith( "/" ) ) {
-                    artifactLocation += "/";
+                // setup dependency data path
+                if ( !dataLocation.endsWith( "/" ) ) {
+                    dataLocation += "/";
                 }
 
-                artifactLocation += missingDependency.path;
+                dataLocation += missingDependency.path;
                 modelPath = ( missingDependency.modelParentPath + missingDependency.path );
             } else {
                 extPath = missingDependency.path;
-                artifactLocation = missingDependency.artifactPath;
+                dataLocation = missingDependency.dataPath;
                 modelPath = missingDependency.modelPath;
             }
 
             try {
-                LOGGER.debug( "Importing XSD dependency from external path '%s' for source '%s' and path '%s'", extPath, modelName, artifactLocation );
-                final String dependencyArtifactPath = modeler.importArtifact( new URL( extPath ).openStream(), artifactLocation );
+                LOGGER.debug( "Importing XSD dependency from external path '%s' for source '%s' and path '%s'", extPath, modelName, dataLocation );
+                final String dependencyArtifactPath = modeler.importData( new URL( extPath ).openStream(), dataLocation );
 
                 // create model
                 LOGGER.debug( "Generating model for XSD dependency of model '%s' from path '%s'", modelName, modelPath );
-                modeler.generateModel( dependencyArtifactPath, modelPath, metamodel, persistArtifacts );
+                ( ( ModelerImpl ) modeler ).generateModel( dependencyArtifactPath, modelPath, metamodel, persistArtifacts );
             } catch ( final Exception e ) {
                 LOGGER.error( e, XsdModelerI18n.errorImportingXsdDependencyArtifact, extPath, modelName );
             }
@@ -394,7 +395,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
         final String path;
 
         final String modelPath;
-        final String artifactPath;
+        final String dataPath;
 
         MissingDependency( final String relativePath,
                            final int numParentDirs,
@@ -404,14 +405,14 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
             this.modelParentPath = modelParentPath;
 
             this.modelPath = null;
-            this.artifactPath = null;
+            this.dataPath = null;
         }
 
         MissingDependency( final String externalPath,
-                           final String artifactPath,
+                           final String dataPath,
                            final String modelPath ) {
             this.path = externalPath;
-            this.artifactPath = artifactPath;
+            this.dataPath = dataPath;
             this.modelPath = modelPath;
 
             this.numParentDirs = -1;
