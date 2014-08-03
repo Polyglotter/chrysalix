@@ -42,6 +42,50 @@ public class ITModelObject extends JavaIntegrationTest {
         return importModel().child( "org" );
     }
 
+    @Test
+    public void shouldAddChild() throws Exception {
+        final ModelObject obj = modelObject();
+        assertThat( obj.hasChild( "blah" ), is( false ) );
+        obj.addChild( "blah" );
+        assertThat( obj.hasChild( "blah" ), is( true ) );
+        obj.addChild( "blah", "blah" );
+        ModelObject[] children = obj.children( "blah" );
+        assertThat( children, notNullValue() );
+        assertThat( children.length, is( 3 ) );
+
+        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blahblah" );
+        assertThat( obj.hasChild( "blahblah" ), is( true ) );
+        assertThat( obj.child( "blahblah" ).primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
+        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blahblah", "blahblah" );
+        children = obj.children( "blahblah" );
+        assertThat( children, notNullValue() );
+        assertThat( children.length, is( 3 ) );
+        for ( final ModelObject child : children )
+            assertThat( child.primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildIfEmptyAdditionalName() throws Exception {
+        modelObject().addChild( "blah", " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildIfInvalidType() throws Exception {
+        modelObject().addChildOfType( "blah", "name" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildIfNullAdditionalName() throws Exception {
+        modelObject().addChild( "blah", ( String ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToGetBooleanValueIfMultiValuedProperty() throws Exception {
+        final ModelObject obj = modelObject();
+        obj.setProperty( "blah", true, true );
+        obj.booleanValue( "blah" );
+    }
+
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetBooleanValueIfNonBooleanProperty() throws Exception {
         modelObject().booleanValue( JcrLexicon.PRIMARY_TYPE.toString() );
@@ -53,18 +97,55 @@ public class ITModelObject extends JavaIntegrationTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValueIfNonLongProperty() throws Exception {
+    public void shouldFailToGetLongValueIfMultiValuedProperty() throws Exception {
+        final ModelObject obj = modelObject();
+        obj.setProperty( "blah", 0L, 0L );
+        obj.longValue( "blah" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToGetLongValueIfNonLongCompatibleProperty() throws Exception {
         modelObject().longValue( JcrLexicon.PRIMARY_TYPE.toString() );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValuesIfNonLongProperty() throws Exception {
+    public void shouldFailToGetLongValuesIfNonLongCompatibleProperty() throws Exception {
         modelObject().longValues( JcrLexicon.PRIMARY_TYPE.toString() );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetStringValueIfMultiValuedProperty() throws Exception {
         modelObject().stringValue( JcrLexicon.MIXIN_TYPES.getString() );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToRemoveChildIfEmptyAdditionalName() throws Exception {
+        modelObject().removeChild( "blah", " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToRemoveChildIfNullAdditionalName() throws Exception {
+        modelObject().removeChild( "blah", ( String ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetBooleanValuesIfAdditionalValuesNullArray() throws Exception {
+        modelObject().setProperty( "blah", null, ( Boolean[] ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetLongValuesIfAdditionalValuesNullArray() throws Exception {
+        modelObject().setProperty( "blah", null, ( Long[] ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetStringValuesIfAdditionalValuesNullArray() throws Exception {
+        modelObject().setProperty( "blah", null, ( String[] ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetStringValuesIfNotMultiValuedProperty() throws Exception {
+        importModel().setProperty( ModelerLexicon.Model.EXTERNAL_LOCATION, " ", " " );
     }
 
     @Test
@@ -132,22 +213,22 @@ public class ITModelObject extends JavaIntegrationTest {
 
     @Test
     public void shouldGetNullValueIfBooleanPropertyNotFound() throws Exception {
-        assertThat( modelObject().booleanValue( "bogus" ), nullValue() );
+        assertThat( modelObject().booleanValue( "blah" ), nullValue() );
     }
 
     @Test
     public void shouldGetNullValueIfChildNotFound() throws Exception {
-        assertThat( modelObject().child( "bogus" ), nullValue() );
+        assertThat( modelObject().child( "blah" ), nullValue() );
     }
 
     @Test
     public void shouldGetNullValueIfLongPropertyNotFound() throws Exception {
-        assertThat( modelObject().longValue( "bogus" ), nullValue() );
+        assertThat( modelObject().longValue( "blah" ), nullValue() );
     }
 
     @Test
     public void shouldGetNullValueIfStringPropertyNotFound() throws Exception {
-        assertThat( modelObject().stringValue( "bogus" ), nullValue() );
+        assertThat( modelObject().stringValue( "blah" ), nullValue() );
     }
 
     @Test
@@ -169,7 +250,11 @@ public class ITModelObject extends JavaIntegrationTest {
 
     @Test
     public void shouldGetStringValues() throws Exception {
-        final String[] vals = modelObject().stringValues( JcrLexicon.PRIMARY_TYPE.toString() );
+        final ModelObject obj = modelObject();
+        String[] vals = obj.stringValues( JcrLexicon.PRIMARY_TYPE.toString() );
+        assertThat( vals, notNullValue() );
+        assertThat( vals.length, is( 1 ) );
+        vals = obj.stringValues( JcrLexicon.MIXIN_TYPES.toString() );
         assertThat( vals, notNullValue() );
         assertThat( vals.length, is( 1 ) );
     }
@@ -185,7 +270,7 @@ public class ITModelObject extends JavaIntegrationTest {
     public void shouldIndicateIfHasChild() throws Exception {
         final ModelObject obj = modelObject();
         assertThat( obj.hasChild( "modeshape" ), is( true ) );
-        assertThat( obj.hasChild( "bogus" ), is( false ) );
+        assertThat( obj.hasChild( "blah" ), is( false ) );
     }
 
     @Test
@@ -202,7 +287,7 @@ public class ITModelObject extends JavaIntegrationTest {
     public void shouldIndicateIfHasProperty() throws Exception {
         final ModelObject obj = modelObject();
         assertThat( obj.hasProperty( JcrLexicon.PRIMARY_TYPE.getString() ), is( true ) );
-        assertThat( obj.hasProperty( "bogus" ), is( false ) );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
     }
 
     @Test
@@ -210,6 +295,79 @@ public class ITModelObject extends JavaIntegrationTest {
         final ModelObject obj = modelObject();
         assertThat( obj.propertyHasMultipleValues( JcrLexicon.PRIMARY_TYPE.getString() ), is( false ) );
         assertThat( obj.propertyHasMultipleValues( JcrLexicon.MIXIN_TYPES.getString() ), is( true ) );
-        assertThat( obj.propertyHasMultipleValues( "bogus" ), is( false ) );
+        assertThat( obj.propertyHasMultipleValues( "blah" ), is( false ) );
+    }
+
+    @Test
+    public void shouldRemoveChild() throws Exception {
+        final ModelObject obj = modelObject();
+        assertThat( obj.hasChild( "blah" ), is( false ) );
+        obj.addChild( "blah" );
+        assertThat( obj.hasChild( "blah" ), is( true ) );
+        obj.removeChild( "blah" );
+        assertThat( obj.hasChild( "blah" ), is( false ) );
+        obj.addChild( "blah", "blahblah", "blahblah", "blahblahblah" );
+        assertThat( obj.children( "blah*" ).length, is( 4 ) );
+        obj.removeChild( "blah", "blahblahblah" );
+        assertThat( obj.children( "blah*" ).length, is( 2 ) );
+        obj.removeChild( "blahblah" );
+        assertThat( obj.children( "blah*" ).length, is( 1 ) );
+    }
+
+    @Test
+    public void shouldSetValues() throws Exception {
+        final ModelObject obj = modelObject();
+
+        obj.setProperty( JcrLexicon.MIXIN_TYPES.getString(), ClassFileSequencerLexicon.PACKAGE, ClassFileSequencerLexicon.PACKAGE );
+        obj.setProperty( JcrLexicon.MIXIN_TYPES.getString(), ClassFileSequencerLexicon.PACKAGE );
+
+        obj.setProperty( "blah", ( String ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+        obj.setProperty( "blah", "" );
+        assertThat( obj.hasProperty( "blah" ), is( true ) );
+        assertThat( obj.stringValue( "blah" ), is( "" ) );
+        assertThat( obj.stringValues( "blah" ), is( new String[] { "" } ) );
+        obj.setProperty( "blah", false );
+        assertThat( obj.stringValue( "blah" ), is( "false" ) );
+        obj.setProperty( "blah", 1L );
+        assertThat( obj.stringValue( "blah" ), is( "1" ) );
+        obj.setProperty( "blah", ( String ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+        obj.setProperty( "blah", "", "" );
+        assertThat( obj.stringValues( "blah" ), is( new String[] { "", "" } ) );
+        obj.setProperty( "blah", ( String ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+
+        obj.setProperty( "blah", ( Boolean ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+        obj.setProperty( "blah", false );
+        assertThat( obj.hasProperty( "blah" ), is( true ) );
+        assertThat( obj.booleanValue( "blah" ), is( false ) );
+        assertThat( obj.booleanValues( "blah" ), is( new Boolean[] { false } ) );
+        obj.setProperty( "blah", ( Boolean ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+        obj.setProperty( "blah", false, false );
+        assertThat( obj.booleanValues( "blah" ), is( new Boolean[] { false, false } ) );
+        obj.setProperty( "blah", ( Boolean ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+
+        obj.setProperty( "blah", ( Long ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+        obj.setProperty( "blah", 0L );
+        assertThat( obj.hasProperty( "blah" ), is( true ) );
+        assertThat( obj.longValue( "blah" ), is( 0L ) );
+        assertThat( obj.longValues( "blah" ), is( new Long[] { 0L } ) );
+        // obj.setValue( "blah", 0 );
+        // assertThat( obj.longValue( "blah" ), is( 0L ) );
+        // obj.setValue( "blah", '\0' );
+        // assertThat( obj.longValue( "blah" ), is( 0L ) );
+        // obj.setValue( "blah", false );
+        // assertThat( obj.longValue( "blah" ), is( 0L ) );
+        obj.setProperty( "blah", ( Long ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
+        obj.setProperty( "blah", 0L, 0L );
+        assertThat( obj.longValues( "blah" ), is( new Long[] { 0L, 0L } ) );
+        obj.setProperty( "blah", ( Long ) null );
+        assertThat( obj.hasProperty( "blah" ), is( false ) );
     }
 }

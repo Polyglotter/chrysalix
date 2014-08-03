@@ -37,6 +37,16 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildIfEmptyName() throws Exception {
+        modelObject().addChild( " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildIfNullName() throws Exception {
+        modelObject().addChild( null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetBooleanValueIfPropertyEmpty() throws Exception {
         modelObject().booleanValue( " " );
     }
@@ -77,42 +87,42 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValueIfPropertyEmpty() throws Exception {
+    public void shouldFailToGetLongValueIfNameEmpty() throws Exception {
         modelObject().longValue( " " );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValueIfPropertyNull() throws Exception {
+    public void shouldFailToGetLongValueIfNameNull() throws Exception {
         modelObject().longValue( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValuesIfPropertyEmpty() throws Exception {
+    public void shouldFailToGetLongValuesIfNameEmpty() throws Exception {
         modelObject().longValues( " " );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValuesIfPropertyNull() throws Exception {
+    public void shouldFailToGetLongValuesIfNameNull() throws Exception {
         modelObject().longValues( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValueIfPropertyEmpty() throws Exception {
+    public void shouldFailToGetStringValueIfNameEmpty() throws Exception {
         modelObject().stringValue( " " );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValueIfPropertyNull() throws Exception {
+    public void shouldFailToGetStringValueIfNameNull() throws Exception {
         modelObject().stringValue( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValuesIfPropertyEmpty() throws Exception {
+    public void shouldFailToGetStringValuesIfNameEmpty() throws Exception {
         modelObject().stringValues( " " );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValuesIfPropertyNull() throws Exception {
+    public void shouldFailToGetStringValuesIfNameNull() throws Exception {
         modelObject().stringValues( null );
     }
 
@@ -154,5 +164,45 @@ public class ModelObjectImplTest extends BaseTest {
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToIndicateIfPropertyHasMultipleValuesIfNameNull() throws Exception {
         modelObject().propertyHasMultipleValues( null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToRemoveChildIfEmptyName() throws Exception {
+        modelObject().removeChild( " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToRemoveChildIfNullName() throws Exception {
+        modelObject().removeChild( null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetBooleanValueIfEmptyName() throws Exception {
+        modelObject().setProperty( " ", false );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetBooleanValueIfNullName() throws Exception {
+        modelObject().setProperty( null, false );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetLongValueIfEmptyName() throws Exception {
+        modelObject().setProperty( " ", 0L );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetLongValueIfNullName() throws Exception {
+        modelObject().setProperty( null, 0L );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetStringValueIfEmptyName() throws Exception {
+        modelObject().setProperty( " ", " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetStringValueIfNullName() throws Exception {
+        modelObject().setProperty( null, " " );
     }
 }

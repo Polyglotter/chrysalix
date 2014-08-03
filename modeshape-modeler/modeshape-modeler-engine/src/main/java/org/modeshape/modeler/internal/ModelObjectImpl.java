@@ -38,6 +38,8 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 import org.modeshape.common.util.CheckArg;
@@ -81,6 +83,47 @@ class ModelObjectImpl implements ModelObject {
     @Override
     public String absolutePath() {
         return path;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#addChild(java.lang.String, java.lang.String[])
+     */
+    @Override
+    public void addChild( final String name,
+                          final String... additionalNames ) throws ModelerException {
+        addChildOfType( null, name, additionalNames );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#addChildOfType(java.lang.String, java.lang.String, java.lang.String[])
+     */
+    @Override
+    public void addChildOfType( final String primaryType,
+                                final String name,
+                                final String... additionalNames ) throws ModelerException {
+        CheckArg.isNotEmpty( name, "name" );
+        modeler.run( new Task< Void >() {
+
+            @Override
+            public Void run( final Session session ) throws Exception {
+                final Node node = session.getNode( path );
+                try {
+                    node.addNode( name, primaryType );
+                    for ( final String additionalName : additionalNames ) {
+                        CheckArg.isNotEmpty( additionalName, "additionalName" );
+                        node.addNode( additionalName, primaryType );
+                    }
+                    session.save();
+                    return null;
+                } catch ( final NoSuchNodeTypeException e ) {
+                    throw new IllegalArgumentException( e );
+                }
+            }
+        } );
     }
 
     /**
@@ -489,29 +532,146 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.ModelObject#setValue(java.lang.String, java.lang.Object[])
+     * @see org.modeshape.modeler.ModelObject#removeChild(java.lang.String, java.lang.String[])
      */
     @Override
-    public void setValue( final String propertyName,
-                          final Object... values ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
+    public void removeChild( final String name,
+                             final String... additionalNames ) throws ModelerException {
+        CheckArg.isNotEmpty( name, "name" );
         modeler.run( new Task< Void >() {
 
             @Override
             public Void run( final Session session ) throws Exception {
+                final Node node = session.getNode( path );
+                if ( node.hasNode( name ) ) node.getNode( name ).remove();
+                for ( final String additionalName : additionalNames ) {
+                    CheckArg.isNotEmpty( additionalName, "additionalName" );
+                    if ( node.hasNode( additionalName ) ) node.getNode( additionalName ).remove();
+                }
+                session.save();
+                return null;
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#setProperty(java.lang.String, java.lang.Boolean, java.lang.Boolean[])
+     */
+    @Override
+    public void setProperty( final String name,
+                             final Boolean value,
+                             final Boolean... additionalValues ) throws ModelerException {
+        setProperty( name, value, new SetPropertyTask< Boolean >() {
+
+            @Override
+            public Value createValue( final ValueFactory factory,
+                                      final Boolean value ) {
+                return factory.createValue( value );
+            }
+
+            @Override
+            public void setProperty( final Node node,
+                                     final String propertyName,
+                                     final Boolean value ) throws RepositoryException {
+                node.setProperty( propertyName, value );
+            }
+
+        }, additionalValues );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#setProperty(java.lang.String, java.lang.Long, java.lang.Long[])
+     */
+    @Override
+    public void setProperty( final String name,
+                             final Long value,
+                             final Long... additionalValues ) throws ModelerException {
+        setProperty( name, value, new SetPropertyTask< Long >() {
+
+            @Override
+            public Value createValue( final ValueFactory factory,
+                                      final Long value ) {
+                return factory.createValue( value );
+            }
+
+            @Override
+            public void setProperty( final Node node,
+                                     final String propertyName,
+                                     final Long value ) throws RepositoryException {
+                node.setProperty( propertyName, value );
+            }
+
+        }, additionalValues );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#setProperty(java.lang.String, java.lang.String, java.lang.String[])
+     */
+    @Override
+    public void setProperty( final String name,
+                             final String value,
+                             final String... additionalValues ) throws ModelerException {
+        setProperty( name, value, new SetPropertyTask< String >() {
+
+            @Override
+            public Value createValue( final ValueFactory factory,
+                                      final String value ) {
+                return factory.createValue( value );
+            }
+
+            @Override
+            public void setProperty( final Node node,
+                                     final String propertyName,
+                                     final String value ) throws RepositoryException {
+                node.setProperty( propertyName, value );
+            }
+
+        }, additionalValues );
+    }
+
+    private < T > void setProperty( final String name,
+                                    final T value,
+                                    final SetPropertyTask< T > task,
+                                    final T[] additionalValues ) throws ModelerException {
+        CheckArg.isNotEmpty( name, "name" );
+        CheckArg.isNotNull( additionalValues, "additionalValues" );
+        modeler.run( new Task< Void >() {
+
+            @Override
+            public Void run( final Session session ) throws Exception {
+                final Node node = session.getNode( path );
                 try {
-                    final Property prop = session.getNode( path ).getProperty( propertyName );
-                    final ValueFactory factory = session.getValueFactory();
-                    final Value[] vals = new Value[ values.length ];
-                    int ndx = 0;
-                    for ( final Object value : values ) {
-                        vals[ ndx++ ] = factory.createValue( value.toString(), prop.getType() );
-                    }
-                    prop.setValue( vals );
-                } catch ( final Exception e ) {
+                    if ( additionalValues.length == 0 ) {
+                        if ( value == null ) {
+                            if ( node.hasProperty( name ) ) node.getProperty( name ).remove();
+                        } else if ( node.hasProperty( name ) && node.getProperty( name ).isMultiple() ) {
+                            setProperty( session, node );
+                        } else task.setProperty( node, name, value );
+                    } else setProperty( session, node );
+                    session.save();
+                } catch ( final ConstraintViolationException | PathNotFoundException | ValueFormatException e ) {
                     throw new IllegalArgumentException( e );
                 }
                 return null;
+            }
+
+            void setProperty( final Session session,
+                              final Node node ) throws RepositoryException {
+                final Value[] values = new Value[ additionalValues.length + 1 ];
+                final ValueFactory factory = session.getValueFactory();
+                values[ 0 ] = task.createValue( factory, value );
+                int ndx = 1;
+                for ( final T val : additionalValues )
+                    values[ ndx++ ] = task.createValue( factory, val );
+                if ( node.hasProperty( name ) ) {
+                    node.setProperty( name, values, node.getProperty( name ).getType() );
+                } else node.setProperty( name, values );
             }
         } );
     }
@@ -528,8 +688,9 @@ class ModelObjectImpl implements ModelObject {
 
             @Override
             public String run( final Session session ) throws Exception {
+                final Node node = session.getNode( path );
                 try {
-                    return session.getNode( path ).getProperty( propertyName ).getString();
+                    return node.getProperty( propertyName ).getString();
                 } catch ( final ValueFormatException e ) {
                     throw new IllegalArgumentException( e );
                 } catch ( final PathNotFoundException e ) {
@@ -687,5 +848,15 @@ class ModelObjectImpl implements ModelObject {
                 }
             }
         } );
+    }
+
+    private interface SetPropertyTask< T > {
+
+        Value createValue( ValueFactory factory,
+                           T value );
+
+        void setProperty( Node node,
+                          String name,
+                          T value ) throws RepositoryException;
     }
 }

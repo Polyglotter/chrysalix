@@ -77,7 +77,7 @@ public class ModelerImpl implements Modeler {
      */
     public static final String REPOSITORY_STORE_PARENT_PATH_PROPERTY = "org.modeshape.modeler.repositoryStoreParentPath";
 
-    private ModeShapeEngine modeShape;
+    private ModeShapeEngine engine;
     private JcrRepository repository;
     private MetamodelManagerImpl metamodelManager;
     private final String configurationPath;
@@ -128,7 +128,7 @@ public class ModelerImpl implements Modeler {
     @Override
     public void close() throws ModelerException {
         try {
-            if ( modeShape != null ) modeShape.shutdown().get();
+            if ( engine != null ) engine.shutdown().get();
         } catch ( InterruptedException | ExecutionException e ) {
             throw new ModelerException( e );
         }
@@ -543,8 +543,8 @@ public class ModelerImpl implements Modeler {
     JcrRepository repository() throws ModelerException {
         if ( repository == null ) {
             try {
-                modeShape = new ModeShapeEngine();
-                modeShape.start();
+                engine = new ModeShapeEngine();
+                engine.start();
                 final RepositoryConfiguration config = RepositoryConfiguration.read( configurationPath );
                 final Problems problems = config.validate();
                 if ( problems.hasProblems() ) {
@@ -554,9 +554,9 @@ public class ModelerImpl implements Modeler {
                 }
                 JcrRepository repository;
                 try {
-                    repository = modeShape.getRepository( config.getName() );
+                    repository = engine.getRepository( config.getName() );
                 } catch ( final NoSuchRepositoryException err ) {
-                    repository = modeShape.deploy( config );
+                    repository = engine.deploy( config );
                 }
                 this.repository = repository;
                 Logger.getLogger( getClass() ).info( ModelerI18n.modelerStarted );

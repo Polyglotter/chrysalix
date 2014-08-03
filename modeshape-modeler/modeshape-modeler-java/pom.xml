@@ -37,6 +37,9 @@
             <type>test-jar</type>
         </dependency>
 
+        <!-- ================================================================== -->
+        <!-- ModeShape -->
+        <!-- ================================================================== -->
         <dependency>
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-sequencer-java</artifactId>
