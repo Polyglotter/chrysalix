@@ -33,7 +33,7 @@ import javax.xml.namespace.QName;
 public interface GrammarEvent {
     
     /**
-     * @return a collection of data related to the event (can be <code>null</code> or empty)
+     * @return a collection of event data (can be <code>null</code> or empty)
      */
     Map< String, ? > data();
     
