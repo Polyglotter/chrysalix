@@ -34,6 +34,31 @@ public interface ModelObject {
     String absolutePath();
 
     /**
+     * @param name
+     *        the first name of the new children to be added to this object
+     * @param additionalNames
+     *        additional names of the new children to be added to this object
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void addChild( String name,
+                   String... additionalNames ) throws ModelerException;
+
+    /**
+     * @param primaryType
+     *        the primary type of the children, or <code>null</code>
+     * @param name
+     *        the first name of the new children to be added to this object
+     * @param additionalNames
+     *        additional names of the new children to be added to this object
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void addChildOfType( String primaryType,
+                         String name,
+                         String... additionalNames ) throws ModelerException;
+
+    /**
      * @param propertyName
      *        the name of one of this model object's single-valued properties
      * @return the Boolean value of the supplied property, or <code>null</code> if the property doesn't exist
@@ -192,15 +217,57 @@ public interface ModelObject {
     String[] propertyNames() throws ModelerException;
 
     /**
-     * @param propertyName
-     *        the name of one of this model object's properties
-     * @param values
-     *        the value(s) of the supplied property
+     * @param name
+     *        the name of the first child to be removed from this object
+     * @param additionalNames
+     *        the names of additional children to be removed from this object
      * @throws ModelerException
      *         if any error occurs
      */
-    void setValue( String propertyName,
-                   Object... values ) throws ModelerException;
+    void removeChild( String name,
+                      String... additionalNames ) throws ModelerException;
+
+    /**
+     * @param propertyName
+     *        the name of one of this model object's properties
+     * @param value
+     *        the (first) value of the supplied property
+     * @param additionalValues
+     *        additional value(s) of the supplied property if it is multi-valued
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setProperty( String propertyName,
+                      Boolean value,
+                      Boolean... additionalValues ) throws ModelerException;
+
+    /**
+     * @param propertyName
+     *        the name of one of this model object's properties
+     * @param value
+     *        the (first) value of the supplied property
+     * @param additionalValues
+     *        additional value(s) of the supplied property if it is multi-valued
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setProperty( String propertyName,
+                      Long value,
+                      Long... additionalValues ) throws ModelerException;
+
+    /**
+     * @param propertyName
+     *        the name of one of this model object's properties
+     * @param value
+     *        the (first) value of the supplied property
+     * @param additionalValues
+     *        additional value(s) of the supplied property if it is multi-valued
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setProperty( String propertyName,
+                      String value,
+                      String... additionalValues ) throws ModelerException;
 
     /**
      * @param propertyName

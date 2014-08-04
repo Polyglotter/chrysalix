@@ -24,15 +24,54 @@
 package org.modeshape.modeler.internal;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.Value;
 
 import org.modeshape.common.util.CheckArg;
+import org.modeshape.jcr.api.JcrTools;
+import org.modeshape.modeler.ModelObject;
+import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 
 /**
  * A collection of utilities related to JCR.
  */
 public final class JcrUtil {
+
+    /**
+     * @param modeler
+     *        the modeler
+     * @param object
+     *        the model object to debug
+     * @throws ModelerException
+     *         if an error occurs
+     */
+    public static void debug( final Modeler modeler,
+                              final ModelObject object ) throws ModelerException {
+        ( ( ModelerImpl ) modeler ).run( new Task< Void >() {
+
+            @Override
+            public Void run( final Session session ) throws Exception {
+                final JcrTools tools = new JcrTools();
+                tools.setDebug( true );
+                tools.printSubgraph( session.getNode( object.absolutePath() ) );
+                return null;
+            }
+        } );
+    }
+
+    /**
+     * @param node
+     *        the node to debug
+     * @throws RepositoryException
+     *         if an error occurs
+     */
+    public static void debug( final Node node ) throws RepositoryException {
+        final JcrTools tools = new JcrTools();
+        tools.setDebug( true );
+        tools.printSubgraph( node );
+    }
 
     /**
      * @param node
