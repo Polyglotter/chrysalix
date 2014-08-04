@@ -59,6 +59,13 @@ import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.extensions.Desequencer;
+import org.modeshape.modeler.internal.task.SystemTask;
+import org.modeshape.modeler.internal.task.SystemTaskWithResult;
+import org.modeshape.modeler.internal.task.Task;
+import org.modeshape.modeler.internal.task.TaskWithResult;
+import org.modeshape.modeler.internal.task.WriteSystemTask;
+import org.modeshape.modeler.internal.task.WriteTask;
+import org.modeshape.modeler.internal.task.WriteTaskWithResult;
 import org.polyglotter.common.CommonI18n;
 import org.polyglotter.common.Logger;
 
@@ -66,6 +73,8 @@ import org.polyglotter.common.Logger;
  * 
  */
 public class ModelerImpl implements Modeler {
+
+    static final Logger LOGGER = Logger.getLogger( ModelerImpl.class );
 
     /**
      * The path to the default configuration, which uses a file-based repository
@@ -256,7 +265,7 @@ public class ModelerImpl implements Modeler {
         CheckArg.isNotEmpty( modelPath, "modelPath" );
 
         try {
-            return run( new Task< Model >() {
+            return run( new WriteTaskWithResult< Model >() {
 
                 @Override
                 public Model run( final Session session ) throws Exception {
@@ -351,7 +360,7 @@ public class ModelerImpl implements Modeler {
                               final String workspacePath ) throws ModelerException {
         CheckArg.isNotNull( stream, "stream" );
         CheckArg.isNotEmpty( workspacePath, "workspacePath" );
-        return run( new Task< String >() {
+        return run( new WriteTaskWithResult< String >() {
 
             @Override
             public String run( final Session session ) throws Exception {
@@ -359,7 +368,6 @@ public class ModelerImpl implements Modeler {
                 final Node node = new JcrTools().uploadFile( session, absolutePath( workspacePath ), stream );
                 // Add unstructured mix-in to allow node to contain anything else, like models created later
                 node.addMixin( ModelerLexicon.UNSTRUCTURED_MIXIN );
-                session.save();
                 return node.getPath();
             }
         } );
@@ -485,7 +493,7 @@ public class ModelerImpl implements Modeler {
     @Override
     public Model model( final String path ) throws ModelerException {
         CheckArg.isNotEmpty( path, "path" );
-        return run( new Task< Model >() {
+        return run( new TaskWithResult< Model >() {
 
             @Override
             public Model run( final Session session ) throws Exception {
@@ -529,13 +537,11 @@ public class ModelerImpl implements Modeler {
     }
 
     private void removeTemporaryArtifact( final String dataPath ) throws ModelerException {
-        run( new Task< Void >() {
+        run( new WriteTask() {
 
             @Override
-            public Void run( final Session session ) throws Exception {
+            public void run( final Session session ) throws Exception {
                 session.getNode( dataPath ).remove();
-                session.save();
-                return null;
             }
         } );
     }
@@ -577,21 +583,25 @@ public class ModelerImpl implements Modeler {
         return System.getProperty( REPOSITORY_STORE_PARENT_PATH_PROPERTY );
     }
 
-    < T > T run( final Object systemObject,
-                 final SystemTask< T > task
+    /**
+     * Runs the supplied task after logging into and starting a session with the underlying repository engine that uses the system
+     * workspace, then afterwards closes the session. It is the caller's responsibility to save any changes made within the session.
+     * 
+     * @param systemObject
+     *        the object whose simple class name will be passed as a node to the supplied task
+     * @param task
+     *        the system task to run
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    public void run( final Object systemObject,
+                     final SystemTask task
                     ) throws ModelerException {
         try {
-            final Session session = repository().login( "modeler" );
-            final String path = '/' + systemObject.getClass().getSimpleName();
-            final Node node;
-            if ( session.nodeExists( path ) ) node = session.getNode( path );
-            else {
-                node = session.getRootNode().addNode( path );
-                session.save();
-            }
+            final Session session = systemSession();
             try {
-                return task.run( session, node );
-            } catch ( final RuntimeException e ) {
+                task.run( session, systemNode( session, systemObject ) );
+            } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
                 throw new ModelerException( e );
@@ -603,12 +613,169 @@ public class ModelerImpl implements Modeler {
         }
     }
 
-    < T > T run( final Task< T > task ) throws ModelerException {
+    /**
+     * Runs the supplied task after logging into and starting a session with the underlying repository engine that uses the system
+     * workspace, then afterwards closes the session. It is the caller's responsibility to save any changes made within the session.
+     * 
+     * @param systemObject
+     *        the object whose simple class name will be passed as a node to the supplied task
+     * @param task
+     *        the system task to run
+     * @return the return value of the supplied task
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    public < T > T run( final Object systemObject,
+                        final SystemTaskWithResult< T > task
+                    ) throws ModelerException {
         try {
-            final Session session = repository().login( "default" );
+            final Session session = systemSession();
+            try {
+                return task.run( session, systemNode( session, systemObject ) );
+            } catch ( final RuntimeException | ModelerException e ) {
+                throw e;
+            } catch ( final Exception e ) {
+                throw new ModelerException( e );
+            } finally {
+                session.logout();
+            }
+        } catch ( final RepositoryException e ) {
+            throw new ModelerException( e );
+        }
+    }
+
+    /**
+     * Runs the supplied task after logging into and starting a session with the underlying repository engine that uses the system
+     * workspace, then afterwards saves and closes the session.
+     * 
+     * @param systemObject
+     *        the object whose simple class name will be passed as a node to the supplied task
+     * @param task
+     *        the system task to run
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    public void run( final Object systemObject,
+                     final WriteSystemTask task
+                    ) throws ModelerException {
+        try {
+            final Session session = systemSession();
+            try {
+                task.run( session, systemNode( session, systemObject ) );
+                session.save();
+                LOGGER.debug( "Session saved" );
+            } catch ( final RuntimeException | ModelerException e ) {
+                throw e;
+            } catch ( final Exception e ) {
+                throw new ModelerException( e );
+            } finally {
+                session.logout();
+            }
+        } catch ( final RepositoryException e ) {
+            throw new ModelerException( e );
+        }
+    }
+
+    /**
+     * Runs the supplied task after logging into and starting a session with the underlying repository engine, then afterwards
+     * closes the session. It is the caller's responsibility to save any changes made within the session.
+     * 
+     * @param task
+     *        the task to run
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    public void run( final Task task ) throws ModelerException {
+        try {
+            final Session session = session();
+            try {
+                task.run( session );
+            } catch ( final RuntimeException | ModelerException e ) {
+                throw e;
+            } catch ( final Exception e ) {
+                throw new ModelerException( e );
+            } finally {
+                session.logout();
+            }
+        } catch ( final RepositoryException e ) {
+            throw new ModelerException( e );
+        }
+    }
+
+    /**
+     * Runs the supplied task after logging into and starting a session with the underlying repository engine, then afterwards
+     * closes the session. It is the caller's responsibility to save any changes made within the session.
+     * 
+     * @param task
+     *        the task to run
+     * @return the return value of the supplied task
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    public < T > T run( final TaskWithResult< T > task ) throws ModelerException {
+        try {
+            final Session session = session();
             try {
                 return task.run( session );
-            } catch ( final RuntimeException e ) {
+            } catch ( final RuntimeException | ModelerException e ) {
+                throw e;
+            } catch ( final Exception e ) {
+                throw new ModelerException( e );
+            } finally {
+                session.logout();
+            }
+        } catch ( final RepositoryException e ) {
+            throw new ModelerException( e );
+        }
+    }
+
+    /**
+     * Runs the supplied task after logging into and starting a session with the underlying repository engine, then afterwards saves
+     * and closes the session.
+     * 
+     * @param task
+     *        the write task to run
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void run( final WriteTask task ) throws ModelerException {
+        try {
+            final Session session = session();
+            try {
+                task.run( session );
+                session.save();
+                LOGGER.debug( "Session saved" );
+            } catch ( final RuntimeException | ModelerException e ) {
+                throw e;
+            } catch ( final Exception e ) {
+                throw new ModelerException( e );
+            } finally {
+                session.logout();
+            }
+        } catch ( final RepositoryException e ) {
+            throw new ModelerException( e );
+        }
+    }
+
+    /**
+     * Runs the supplied task after logging into and starting a session with the underlying repository engine, then afterwards saves
+     * and closes the session.
+     * 
+     * @param task
+     *        the write task to run
+     * @return the return value of the supplied task
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    < T > T run( final WriteTaskWithResult< T > task ) throws ModelerException {
+        try {
+            final Session session = session();
+            try {
+                final T returnValue = task.run( session );
+                session.save();
+                LOGGER.debug( "Session saved" );
+                return returnValue;
+            } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
                 throw new ModelerException( e );
@@ -622,14 +789,27 @@ public class ModelerImpl implements Modeler {
 
     private void saveExternalLocation( final String path,
                                        final String location ) throws ModelerException {
-        run( new Task< Void >() {
+        run( new WriteTask() {
 
             @Override
-            public Void run( final Session session ) throws Exception {
+            public void run( final Session session ) throws Exception {
                 session.getNode( path ).setProperty( ModelerLexicon.Model.EXTERNAL_LOCATION, location );
-                session.save();
-                return null;
             }
         } );
+    }
+
+    private Session session() throws ModelerException, RepositoryException {
+        return repository().login( "default" );
+    }
+
+    private Node systemNode( final Session session,
+                             final Object systemObject ) throws RepositoryException {
+        final String path = '/' + systemObject.getClass().getSimpleName();
+        if ( session.nodeExists( path ) ) return session.getNode( path );
+        return session.getRootNode().addNode( path );
+    }
+
+    private Session systemSession() throws ModelerException, RepositoryException {
+        return repository().login( Modeler.class.getSimpleName() );
     }
 }

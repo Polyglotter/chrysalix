@@ -58,7 +58,7 @@ public class XsdDesequencer implements Desequencer {
     @Override
     public void execute( final Model model,
                          final OutputStream stream ) {
-        // ( ( ModelImpl ) model ).modeler.run( new Task< Void >() {
+        // ( ( ModelImpl ) model ).modeler.run( new TaskWithResult< Void >() {
         //
         // @Override
         // public Void run( final Session session ) throws Exception {

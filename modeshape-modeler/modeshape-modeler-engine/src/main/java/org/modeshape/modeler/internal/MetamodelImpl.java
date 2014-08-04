@@ -39,6 +39,7 @@ import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.extensions.Desequencer;
+import org.modeshape.modeler.internal.task.TaskWithResult;
 
 /**
  * 
@@ -219,7 +220,7 @@ public final class MetamodelImpl implements Metamodel {
     public Sequencer sequencer() throws ModelerException {
         if ( sequencer != null ) return sequencer;
 
-        return modeler.run( new Task< Sequencer >() {
+        return modeler.run( new TaskWithResult< Sequencer >() {
 
             @Override
             public Sequencer run( final Session session ) throws Exception {

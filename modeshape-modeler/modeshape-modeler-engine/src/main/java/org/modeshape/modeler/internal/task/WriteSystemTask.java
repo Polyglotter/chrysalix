@@ -21,22 +21,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.internal;
+package org.modeshape.modeler.internal.task;
 
+import javax.jcr.Node;
 import javax.jcr.Session;
 
+import org.modeshape.modeler.internal.ModelerImpl;
+
 /**
- * @param <T>
- *        the task's return value
+ * 
  */
-public interface Task< T > {
-    
+public interface WriteSystemTask {
+
     /**
      * @param session
      *        a new session
-     * @return the task's return value
+     * @param systemNode
+     *        the node containing the system properties for the system class within which this task is being
+     *        {@link ModelerImpl#run(Object, WriteSystemTask) run}.
      * @throws Exception
      *         if any problem occurs
      */
-    T run( Session session ) throws Exception;
+    void run( Session session,
+              Node systemNode ) throws Exception;
 }

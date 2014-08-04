@@ -77,7 +77,7 @@ public class CloneOperation implements Operation {
     @Override
     public void execute() {
         // try {
-        // ( ( ModelImpl ) sourceModel ).modeler.run( new Task< Void >() {
+        // ( ( ModelImpl ) sourceModel ).modeler.run( new TaskWithResult< Void >() {
         //
         // @Override
         // public Void run( final Session session ) throws Exception {
