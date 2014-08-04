@@ -61,6 +61,8 @@ import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
+import org.modeshape.modeler.internal.task.TaskWithResult;
+import org.modeshape.modeler.internal.task.WriteSystemTask;
 import org.polyglotter.common.Logger;
 
 /**
@@ -100,16 +102,13 @@ final class MetamodelManagerImpl implements MetamodelManager {
         library.toFile().deleteOnExit();
 
         // load caches from MS repository
-        modeler.run( this, new SystemTask< Void >() {
+        modeler.run( this, new WriteSystemTask() {
 
             @Override
-            public Void run( final Session session,
+            public void run( final Session session,
                              final Node systemNode ) throws Exception {
                 loadMetamodelRepositories( session, systemNode );
                 loadCategories( session, systemNode );
-                session.save();
-
-                return null;
             }
         } );
     }
@@ -176,7 +175,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
     @Override
     public Metamodel defaultMetamodel( final String filePath ) throws ModelerException {
         CheckArg.isNotEmpty( filePath, "filePath" );
-        return modeler.run( new Task< Metamodel >() {
+        return modeler.run( new TaskWithResult< Metamodel >() {
 
             @Override
             public Metamodel run( final Session session ) throws Exception {
@@ -196,53 +195,18 @@ final class MetamodelManagerImpl implements MetamodelManager {
     public void install( final String category ) throws ModelerException {
         CheckArg.isNotEmpty( category, "category" );
         LOGGER.debug( "Installing category '%s'", category );
+        modeler.run( this, new WriteSystemTask() {
 
-        try {
-            modeler.run( this, new SystemTask< Void >() {
+            @Override
+            public void run( final Session session,
+                             final Node systemNode ) throws Exception {
+                LOGGER.debug( "Installing sequencer for category '%s'", category );
+                installSequencer( category, session, systemNode );
 
-                @Override
-                public Void run( final Session session,
-                                 final Node systemNode ) throws Exception {
-                    LOGGER.debug( "Installing sequencer for category '%s'", category );
-                    installSequencer( category, session, systemNode );
-
-                    LOGGER.debug( "Installing extensions for category '%s'", category );
-                    installExtensions( category, session, systemNode );
-
-                    session.save();
-                    LOGGER.debug( "Session saved" );
-
-                    return null;
-                }
-            } );
-        } catch ( final Exception e ) {
-            // try to rollback session
-            modeler.run( this, new SystemTask< Void >() {
-
-                /**
-                 * {@inheritDoc}
-                 * 
-                 * @see org.modeshape.modeler.internal.SystemTask#run(javax.jcr.Session, javax.jcr.Node)
-                 */
-                @Override
-                public Void run( final Session session,
-                                 final Node systemNode ) {
-                    try {
-                        session.refresh( false );
-                        LOGGER.debug( "*** Session rollback success ***" );
-                    } catch ( final Exception err ) {
-                        LOGGER.error( err, ModelerI18n.sessionRollbackFailed, category );
-                    }
-
-                    return null;
-                }
-            } );
-
-            // session successfully rolled back
-            if ( e instanceof RuntimeException ) throw e;
-            if ( e instanceof ModelerException ) throw ( ModelerException ) e;
-            throw new ModelerException( e );
-        }
+                LOGGER.debug( "Installing extensions for category '%s'", category );
+                installExtensions( category, session, systemNode );
+            }
+        } );
     }
 
     /**
@@ -613,7 +577,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
     @Override
     public Metamodel[] metamodelsForArtifact( final String filePath ) throws ModelerException {
         CheckArg.isNotEmpty( filePath, "filePath" );
-        return modeler.run( new Task< Metamodel[] >() {
+        return modeler.run( new TaskWithResult< Metamodel[] >() {
 
             @Override
             public final Metamodel[] run( final Session session ) throws Exception {
@@ -691,18 +655,16 @@ final class MetamodelManagerImpl implements MetamodelManager {
     }
 
     private void saveMetamodelRepositories() throws ModelerException {
-        modeler.run( this, new SystemTask< Void >() {
+        modeler.run( this, new WriteSystemTask() {
 
             @Override
-            public Void run( final Session session,
+            public void run( final Session session,
                              final Node systemNode ) throws Exception {
                 final Value[] vals = new Value[ metamodelRepositories.size() ];
                 int ndx = 0;
                 for ( final URL url : metamodelRepositories )
                     vals[ ndx++ ] = session.getValueFactory().createValue( url.toString() );
                 systemNode.setProperty( ModelerLexicon.METAMODEL_REPOSITORIES, vals );
-                session.save();
-                return null;
             }
         } );
     }
@@ -734,10 +696,10 @@ final class MetamodelManagerImpl implements MetamodelManager {
         }
 
         // delete from MS repository
-        modeler.run( this, new SystemTask< Void >() {
+        modeler.run( this, new WriteSystemTask() {
 
             @Override
-            public Void run( final Session session,
+            public void run( final Session session,
                              final Node systemNode ) throws Exception {
                 final Node categoryNode = categoryNode( category, systemNode, false );
                 if ( categoryNode == null ) throw new ModelerException( ModelerI18n.unableToFindMetamodelCategory, category );
@@ -755,9 +717,6 @@ final class MetamodelManagerImpl implements MetamodelManager {
 
                 // remove from MS repo now
                 categoryNode.remove();
-                session.save();
-
-                return null;
             }
         } );
     }

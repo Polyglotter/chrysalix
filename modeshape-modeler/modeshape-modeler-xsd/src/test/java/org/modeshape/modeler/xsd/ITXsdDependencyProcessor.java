@@ -69,7 +69,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     //
     // final String path = importArtifact( XSD_ARTIFACT );
     // final ModelImpl model = ( ModelImpl ) modeler().generateModel( path, ARTIFACT_NAME, xsdMetamodel, true );
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -114,7 +114,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final ModelImpl model = ( ModelImpl ) modeler().generateModel( workspacePath, modelPath, xsdMetamodel, true );
     //
     // // check dependencies
-    // modeler().run( new Task< Node >() {
+    // modeler().run( new TaskWithResult< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -143,7 +143,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final Metamodel xsdMetamodel = xsdMetamodel();
     // modeler().generateModel( path, MODEL_NAME, xsdMetamodel, true );
     //
-    // modeler().run( new Task< Node >() {
+    // modeler().run( new TaskWithResult< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -166,7 +166,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String modelPath = "Model/Books/SOAP/BooksWithSOAPEncoding.xsd";
     // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // modeler().run( new Task< Node >() {
+    // modeler().run( new TaskWithResult< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -249,7 +249,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String modelPath = "Model/Books/Books.xsd";
     // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // modeler().run( new Task< Node >() {
+    // modeler().run( new TaskWithResult< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -287,7 +287,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String modelPath = "Books.xsd";
     // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // modeler().run( new Task< Node >() {
+    // modeler().run( new TaskWithResult< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {
@@ -318,7 +318,7 @@ public class ITXsdDependencyProcessor extends BaseTest {
     // final String modelPath = "Model/Movies.xsd";
     // modeler().generateModel( dataPath, modelPath, xsdMetamodel, true );
     //
-    // modeler().run( new Task< Node >() {
+    // modeler().run( new TaskWithResult< Node >() {
     //
     // @Override
     // public Node run( final Session session ) throws Exception {

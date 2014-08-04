@@ -33,6 +33,7 @@ import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
+import org.modeshape.modeler.internal.task.Task;
 
 /**
  * A collection of utilities related to JCR.
@@ -49,14 +50,13 @@ public final class JcrUtil {
      */
     public static void debug( final Modeler modeler,
                               final ModelObject object ) throws ModelerException {
-        ( ( ModelerImpl ) modeler ).run( new Task< Void >() {
+        ( ( ModelerImpl ) modeler ).run( new Task() {
 
             @Override
-            public Void run( final Session session ) throws Exception {
+            public void run( final Session session ) throws Exception {
                 final JcrTools tools = new JcrTools();
                 tools.setDebug( true );
                 tools.printSubgraph( session.getNode( object.absolutePath() ) );
-                return null;
             }
         } );
     }

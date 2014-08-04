@@ -139,6 +139,26 @@ public class ITModelObject extends JavaIntegrationTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetMixinTypesIfInvalidType() throws Exception {
+        modelObject().setMixinTypes( ClassFileSequencerLexicon.CLASS );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetMixinTypesIfNonExistingType() throws Exception {
+        modelObject().setMixinTypes( "blah" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetPrimaryTypeIfInvalidType() throws Exception {
+        modelObject().setPrimaryType( ClassFileSequencerLexicon.PACKAGE );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetPrimaryTypeIfNonExistingType() throws Exception {
+        modelObject().setPrimaryType( "blah" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToSetStringValuesIfAdditionalValuesNullArray() throws Exception {
         modelObject().setProperty( "blah", null, ( String[] ) null );
     }
@@ -312,6 +332,26 @@ public class ITModelObject extends JavaIntegrationTest {
         assertThat( obj.children( "blah*" ).length, is( 2 ) );
         obj.removeChild( "blahblah" );
         assertThat( obj.children( "blah*" ).length, is( 1 ) );
+    }
+
+    @Test
+    public void shouldSetMixinTypes() throws Exception {
+        final ModelObject obj = modelObject();
+        assertThat( obj.mixinTypes().length, not( 0 ) );
+        obj.setMixinTypes();
+        assertThat( obj.mixinTypes().length, is( 0 ) );
+        obj.setMixinTypes( ClassFileSequencerLexicon.PACKAGE, ModelerLexicon.Model.MODEL_MIXIN );
+        assertThat( obj.mixinTypes().length, is( 2 ) );
+        obj.setMixinTypes( ( String ) null );
+        assertThat( obj.mixinTypes().length, is( 0 ) );
+    }
+
+    @Test
+    public void shouldSetPrimaryType() throws Exception {
+        final ModelObject obj = modelObject();
+        assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
+        obj.setPrimaryType( ClassFileSequencerLexicon.ANNOTATIONS );
+        assertThat( obj.primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
     }
 
     @Test

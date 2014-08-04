@@ -44,6 +44,7 @@ import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.extensions.Dependency;
+import org.modeshape.modeler.internal.task.TaskWithResult;
 
 class ModelImpl extends ModelObjectImpl implements Model {
 
@@ -78,7 +79,7 @@ class ModelImpl extends ModelObjectImpl implements Model {
     @Override
     public Set< Dependency > dependencies() throws ModelerException {
         if ( this.dependencies == null ) {
-            this.dependencies = modeler.run( new Task< Set< Dependency > >() {
+            this.dependencies = modeler.run( new TaskWithResult< Set< Dependency > >() {
 
                 @Override
                 public Set< Dependency > run( final Session session ) throws Exception {
@@ -137,7 +138,7 @@ class ModelImpl extends ModelObjectImpl implements Model {
      */
     @Override
     public URL externalLocation() throws ModelerException {
-        return modeler.run( new Task< URL >() {
+        return modeler.run( new TaskWithResult< URL >() {
 
             @Override
             public URL run( final Session session ) throws Exception {
@@ -156,7 +157,7 @@ class ModelImpl extends ModelObjectImpl implements Model {
      */
     @Override
     public Metamodel metamodel() throws ModelerException {
-        return modeler.run( new Task< Metamodel >() {
+        return modeler.run( new TaskWithResult< Metamodel >() {
 
             @Override
             public Metamodel run( final Session session ) throws Exception {
@@ -174,7 +175,7 @@ class ModelImpl extends ModelObjectImpl implements Model {
      */
     @Override
     public Set< Dependency > missingDependencies() throws ModelerException {
-        return modeler.run( new Task< Set< Dependency > >() {
+        return modeler.run( new TaskWithResult< Set< Dependency > >() {
 
             @Override
             public Set< Dependency > run( final Session session ) throws Exception {

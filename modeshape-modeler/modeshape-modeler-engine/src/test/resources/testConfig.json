@@ -1,7 +1,7 @@
 {
     "name" : "ModeShape Modeler Repository",
     "workspaces" : {
-        "predefined" : ["modeler"],
+        "predefined" : ["Modeler"],
         "default" : "default"
     },
     "node-types" : ["metamodel.cnd"]

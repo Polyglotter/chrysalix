@@ -62,7 +62,7 @@ public class ITJava extends JavaIntegrationTest {
     // public void shouldRecordExternalLocationIfImportArtifact() throws Exception {
     // final URL url = new URL( "File:src/test/resources/Books.xsd" );
     // final String path = modeler().importArtifact( url, null );
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -78,7 +78,7 @@ public class ITJava extends JavaIntegrationTest {
     // public void shouldRecordUrlIfImportFile() throws Exception {
     // final URI uri = getClass().getClassLoader().getResource( "Books.xsd" ).toURI();
     // final String path = modeler().importFile( new File( uri ), null );
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -91,7 +91,7 @@ public class ITJava extends JavaIntegrationTest {
     // }
     //
     // private void verifyPathExistsWithContent( final String path ) throws Exception {
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -105,7 +105,7 @@ public class ITJava extends JavaIntegrationTest {
     // }
     // @Test
     // public void shouldObtainDependencies() throws Exception {
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -145,7 +145,7 @@ public class ITJava extends JavaIntegrationTest {
     //
     // @Test
     // public void shouldObtainMissingDependencies() throws Exception {
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -168,7 +168,7 @@ public class ITJava extends JavaIntegrationTest {
     //
     // @Test
     // public void shouldVerifyDependenciesAllExist() throws Exception {
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -190,7 +190,7 @@ public class ITJava extends JavaIntegrationTest {
     //
     // @Test
     // public void shouldVerifyDependenciesDoNotAllExist() throws Exception {
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {
@@ -211,7 +211,7 @@ public class ITJava extends JavaIntegrationTest {
     //
     // @Test
     // public void shouldVerifyDependencyExists() throws Exception {
-    // modeler().run( new Task< Void >() {
+    // modeler().run( new TaskWithResult< Void >() {
     //
     // @Override
     // public Void run( final Session session ) throws Exception {

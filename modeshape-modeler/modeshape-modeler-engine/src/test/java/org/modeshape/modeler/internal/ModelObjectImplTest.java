@@ -197,6 +197,16 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetPrimaryTypeIfEmpty() throws Exception {
+        modelObject().setPrimaryType( " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetPrimaryTypeIfNull() throws Exception {
+        modelObject().setPrimaryType( null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToSetStringValueIfEmptyName() throws Exception {
         modelObject().setProperty( " ", " " );
     }

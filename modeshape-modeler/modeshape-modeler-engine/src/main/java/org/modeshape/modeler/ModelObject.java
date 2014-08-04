@@ -228,6 +228,22 @@ public interface ModelObject {
                       String... additionalNames ) throws ModelerException;
 
     /**
+     * @param types
+     *        one or more mixin types for this model object, or <code>null</code>
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setMixinTypes( String... types ) throws ModelerException;
+
+    /**
+     * @param type
+     *        the non-empty primary type of this model object
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setPrimaryType( String type ) throws ModelerException;
+
+    /**
      * @param propertyName
      *        the name of one of this model object's properties
      * @param value
