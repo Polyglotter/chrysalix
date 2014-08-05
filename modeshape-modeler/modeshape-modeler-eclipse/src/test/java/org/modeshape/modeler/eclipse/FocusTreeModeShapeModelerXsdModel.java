@@ -69,7 +69,7 @@ public final class FocusTreeModeShapeModelerXsdModel extends FocusTreeModel {
                         "dependencies",
                         "externalLocation",
                         "missingDependencies",
-                        "modelType"
+                        "metamodel"
         };
 
     /**
@@ -519,10 +519,10 @@ public final class FocusTreeModeShapeModelerXsdModel extends FocusTreeModel {
         private final Object value;
 
         ValueModel( final PropertyModel propertyModel,
-                    final Class< ? > modelType,
+                    final Class< ? > metamodel,
                     final Object modelValue ) {
             this.parent = propertyModel;
-            this.type = modelType;
+            this.type = metamodel;
             this.value = modelValue;
         }
 

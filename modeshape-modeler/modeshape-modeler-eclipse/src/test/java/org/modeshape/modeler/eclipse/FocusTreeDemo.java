@@ -44,19 +44,19 @@ public class FocusTreeDemo {
         // try ( final ModeShapeModeler modeler = new ModeShapeModeler( path.toString(), "testConfig.json" ) ) {
         // // jpav: remove
         // System.out.println( "Registering metamodel repository..." );
-        // modeler.modelTypeManager().registerModelTypeRepository( new URL( "file:resources" ) );
-        // final ModelTypeManager modelTypeManager = modeler.modelTypeManager();
+        // modeler.metamodelManager().registerMetamodelRepository( new URL( "file:resources" ) );
+        // final MetamodelManager metamodelManager = modeler.metamodelManager();
         // // jpav: remove
         // System.out.println( "Installing S-RAMP..." );
-        // modelTypeManager.install( "sramp" );
+        // metamodelManager.install( "sramp" );
         // // jpav: remove
         // System.out.println( "Installing XSD..." );
-        // modelTypeManager.install( "xsd" );
+        // metamodelManager.install( "xsd" );
         // // jpav: remove
         // System.out.println( "Generating Books.xsd model..." );
         // final File file = new File( "src/test/resources/Books.xsd" );
-        // final ModelType xsdModelType = modelTypeManager.modelType( "org.modeshape.modeler.xsd.Xsd" );
-        // final Model root = modeler.generateModel( file, "/test", xsdModelType );
+        // final Metamodel xsdMetamodel = metamodelManager.metamodel( "org.modeshape.modeler.xsd.Xsd" );
+        // final Model root = modeler.generateModel( file, "/test", xsdMetamodel );
         // // jpav: remove
         // System.out.println( "Creating FocusTree..." );
         // final FocusTree focusTree =

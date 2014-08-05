@@ -44,11 +44,13 @@ import javax.jcr.nodetype.NodeType;
 
 import org.modeshape.common.util.CheckArg;
 import org.modeshape.jcr.JcrLexicon;
+import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
+import org.modeshape.modeler.internal.task.Task;
 import org.modeshape.modeler.internal.task.TaskWithResult;
 import org.modeshape.modeler.internal.task.WriteTask;
 
@@ -482,6 +484,24 @@ class ModelObjectImpl implements ModelObject {
             @Override
             public String run( final Session session ) throws Exception {
                 return session.getNode( path ).getProperty( JcrLexicon.PRIMARY_TYPE.toString() ).getString();
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#print()
+     */
+    @Override
+    public void print() throws ModelerException {
+        modeler.run( new Task() {
+
+            @Override
+            public void run( final Session session ) throws Exception {
+                final JcrTools tools = new JcrTools();
+                tools.setDebug( true );
+                tools.printSubgraph( session.getNode( path ) );
             }
         } );
     }

@@ -43,8 +43,8 @@ import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
-import org.modeshape.modeler.extensions.Dependency;
 import org.modeshape.modeler.internal.task.TaskWithResult;
+import org.modeshape.modeler.spi.metamodel.Dependency;
 
 class ModelImpl extends ModelObjectImpl implements Model {
 

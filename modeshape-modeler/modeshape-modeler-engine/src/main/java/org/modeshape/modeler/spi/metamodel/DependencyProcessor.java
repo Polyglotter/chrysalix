@@ -21,7 +21,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.extensions;
+package org.modeshape.modeler.spi.metamodel;
 
 import javax.jcr.Node;
 
@@ -46,7 +46,7 @@ public interface DependencyProcessor {
     /**
      * @return the metamodel name (cannot be <code>null</code> or empty)
      */
-    String metamodel();
+    String metamodelId();
 
     /**
      * @param dataPath

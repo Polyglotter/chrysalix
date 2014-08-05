@@ -36,11 +36,11 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelType;
-import org.modeshape.modeler.ModelTypeManager;
+import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.MetamodelManager;
 import org.modeshape.modeler.TestUtil;
 import org.modeshape.modeler.internal.Manager;
-import org.modeshape.modeler.internal.ModelTypeManagerImpl;
+import org.modeshape.modeler.internal.MetamodelManagerImpl;
 import org.modeshape.modeler.internal.Task;
 import org.polyglotter.eclipse.GuiTestUtil;
 import org.polyglotter.eclipse.focustree.FocusTree;
@@ -69,17 +69,17 @@ public final class GuiTestModelContentProvider {
 
     public static void main( final String[] args ) {
         try {
-            final ModelTypeManager modelTypeManager = modelTypeManager();
+            final MetamodelManager metamodelManager = metamodelManager();
             final Model model = manager().run( new Task< Model >() {
 
                 @Override
                 public Model run( final Session session ) throws Exception {
-                    modelTypeManager.install( "sramp" );
-                    modelTypeManager.install( "xsd" );
+                    metamodelManager.install( "sramp" );
+                    metamodelManager.install( "xsd" );
 
                     final File file = new File( "resources/Books.xsd" );
-                    final ModelType xsdModelType = modelTypeManager.modelType( "org.modeshape.modeler.xsd.Xsd" );
-                    return modeler().generateModel( file, "/test", xsdModelType );
+                    final Metamodel xsdMetamodel = metamodelManager.metamodel( "org.modeshape.modeler.xsd.Xsd" );
+                    return modeler().generateModel( file, "/test", xsdMetamodel );
                 }
             } );
 
@@ -101,18 +101,18 @@ public final class GuiTestModelContentProvider {
             _modeler =
                 new ModeShapeModeler( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH );
 
-            for ( final URL url : _modeler.modelTypeManager().modelTypeRepositories() ) {
-                _modeler.modelTypeManager().unregisterModelTypeRepository( url );
+            for ( final URL url : _modeler.metamodelManager().metamodelRepositories() ) {
+                _modeler.metamodelManager().unregisterMetamodelRepository( url );
             }
 
-            _modeler.modelTypeManager().registerModelTypeRepository( MODEL_TYPE_REPOSITORY );
+            _modeler.metamodelManager().registerMetamodelRepository( MODEL_TYPE_REPOSITORY );
         }
 
         return _modeler;
     }
 
-    private static ModelTypeManagerImpl modelTypeManager() throws Exception {
-        return ( ModelTypeManagerImpl ) modeler().modelTypeManager();
+    private static MetamodelManagerImpl metamodelManager() throws Exception {
+        return ( MetamodelManagerImpl ) modeler().metamodelManager();
     }
 
     private static void setViewModel( final FocusTree focusTree ) {

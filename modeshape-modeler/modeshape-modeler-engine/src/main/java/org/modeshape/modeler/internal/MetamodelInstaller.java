@@ -43,22 +43,22 @@ import javax.jcr.RepositoryException;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.ModelerLexicon;
-import org.modeshape.modeler.extensions.DependencyProcessor;
-import org.modeshape.modeler.extensions.Desequencer;
 import org.modeshape.modeler.internal.MetamodelManagerImpl.LibraryClassLoader;
+import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
+import org.modeshape.modeler.spi.metamodel.Exporter;
 import org.polyglotter.common.Logger;
 
 /**
- * A class that installs metamodel dependency processors and desequencers.
+ * A class that installs metamodel dependency processors and exporters.
  */
-public class ExtensionInstaller {
+public class MetamodelInstaller {
 
     private static final String MODELER_PREFIX = "modeshape-modeler-";
 
     // pass in category then version
     private static final String ARCHIVE_NAME = MODELER_PREFIX + "%s-%s-module-with-dependencies.zip";
 
-    static final Logger LOGGER = Logger.getLogger( ExtensionInstaller.class );
+    static final Logger LOGGER = Logger.getLogger( MetamodelInstaller.class );
 
     // pass in category, version, name
     private static final String EXTENSION_PATH_PATTERN = MetamodelManagerImpl.MODESHAPE_GROUP + "/" + MODELER_PREFIX + "%s/%s/%s";
@@ -114,7 +114,7 @@ public class ExtensionInstaller {
                      final Collection< URL > metamodelRepositories,
                      final String version,
                      final Set< Metamodel > metamodels ) throws Exception {
-        // will not have metamodels if sequencer jar didn't have installable sequencer
+        // will not have metamodels if importer jar didn't have installable importer
         if ( metamodels.isEmpty() ) return false;
 
         final String category = categoryNode.getName();
@@ -173,7 +173,7 @@ public class ExtensionInstaller {
             }
 
             // Iterate through entries looking for appropriate extension classes
-            final Collection< String > desequencerNames = new ArrayList<>( 3 );
+            final Collection< String > exporterNames = new ArrayList<>( 3 );
             final Collection< String > dependencyProcessorNames = new ArrayList<>( 3 );
 
             try ( final ZipFile archive = new ZipFile( url.getFile() ) ) {
@@ -219,19 +219,19 @@ public class ExtensionInstaller {
 
                                     name = entry.getName();
 
-                                    // see if class is a possible desequencers or desequencer processors
-                                    if ( isDesequencerName( name ) ) {
-                                        desequencerNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                        LOGGER.debug( "Found potential desequencer '%s'", name );
+                                    // see if class is a possible exporter or dependency processor
+                                    if ( isExporterName( name ) ) {
+                                        exporterNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                                        LOGGER.debug( "Found potential exporter '%s'", name );
                                     } else if ( isDependencyProcessorName( name ) ) {
                                         dependencyProcessorNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
                                         LOGGER.debug( "Found potential dependency processor '%s'", name );
                                     }
                                 }
                             }
-                    } else if ( isDesequencerName( name ) ) {
-                        desequencerNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                        LOGGER.debug( "Found potential desequencer '%s'", name );
+                    } else if ( isExporterName( name ) ) {
+                        exporterNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
+                        LOGGER.debug( "Found potential exporter '%s'", name );
                     } else if ( isDependencyProcessorName( name ) ) {
                         dependencyProcessorNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
                         LOGGER.debug( "Found potential dependency processor '%s'", name );
@@ -239,28 +239,28 @@ public class ExtensionInstaller {
                 }
             }
 
-            // try and load potential desequencer classes
-            for ( final String className : desequencerNames ) {
+            // try and load potential exporter classes
+            for ( final String className : exporterNames ) {
                 Class< ? > clazz = null;
 
                 try {
                     clazz = libraryClassLoader.loadClass( className );
 
-                    if ( Desequencer.class.isAssignableFrom( clazz )
+                    if ( Exporter.class.isAssignableFrom( clazz )
                          && !Modifier.isAbstract( clazz.getModifiers() ) ) {
-                        final Desequencer desequencer = ( Desequencer ) clazz.newInstance();
-                        final String metamodelName = desequencer.metamodel();
-                        final Node metamodelNode = metamodelNode( categoryNode, metamodelName );
-                        metamodelNode.setProperty( ModelerLexicon.Metamodel.DESEQUENCER_CLASS_NAME, className );
+                        final Exporter exporter = ( Exporter ) clazz.newInstance();
+                        final String metamodelId = exporter.metamodelId();
+                        final Node metamodelNode = metamodelNode( categoryNode, metamodelId );
+                        metamodelNode.setProperty( ModelerLexicon.Metamodel.EXPORTER_CLASS_NAME, className );
 
-                        final MetamodelImpl metamodel = ( MetamodelImpl ) findMetamodel( desequencer.metamodel(), metamodels );
-                        metamodel.setDesequencer( desequencer );
+                        final MetamodelImpl metamodel = ( MetamodelImpl ) findMetamodel( metamodelId, metamodels );
+                        metamodel.setExporter( exporter );
 
                         extensionInstalled = true;
-                        LOGGER.debug( "Installed desequencer '%s' for metamodel '%s'", className, metamodelName );
+                        LOGGER.debug( "Installed exporter '%s' for metamodel '%s'", className, metamodelId );
                     }
                 } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
-                    LOGGER.debug( "Potential desequencer class '%s' cannot be loaded", clazz );
+                    LOGGER.debug( "Potential exporter class '%s' cannot be loaded", clazz );
                 }
             }
 
@@ -274,17 +274,16 @@ public class ExtensionInstaller {
                     if ( DependencyProcessor.class.isAssignableFrom( clazz )
                          && !Modifier.isAbstract( clazz.getModifiers() ) ) {
                         final DependencyProcessor dependencyProcessor = ( DependencyProcessor ) clazz.newInstance();
-                        final String metamodelName = dependencyProcessor.metamodel();
+                        final String metamodelId = dependencyProcessor.metamodelId();
 
-                        final Node metamodelNode = metamodelNode( categoryNode, metamodelName );
+                        final Node metamodelNode = metamodelNode( categoryNode, metamodelId );
                         metamodelNode.setProperty( ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME, className );
 
-                        final MetamodelImpl metamodel =
-                            ( MetamodelImpl ) findMetamodel( dependencyProcessor.metamodel(), metamodels );
+                        final MetamodelImpl metamodel = ( MetamodelImpl ) findMetamodel( metamodelId, metamodels );
                         metamodel.setDependencyProcessor( dependencyProcessor );
 
                         extensionInstalled = true;
-                        LOGGER.debug( "Installed dependency processor '%s' for metamodel '%s'", className, metamodelName );
+                        LOGGER.debug( "Installed dependency processor '%s' for metamodel '%s'", className, metamodelId );
                     }
                 } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
                     LOGGER.debug( "Potential dependency processor class '%s' cannot be loaded", className );
@@ -299,8 +298,8 @@ public class ExtensionInstaller {
         return name.endsWith( "DependencyProcessor.class" );
     }
 
-    private boolean isDesequencerName( final String name ) {
-        return name.endsWith( "Desequencer.class" );
+    private boolean isExporterName( final String name ) {
+        return name.endsWith( "Exporter.class" );
     }
 
     private boolean isJarFile( final String name ) {

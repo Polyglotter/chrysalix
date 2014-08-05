@@ -24,7 +24,7 @@
 package org.modeshape.modeler.xsd;
 
 import org.junit.Test;
-import org.modeshape.modeler.extensions.DependencyProcessor;
+import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 import org.modeshape.modeler.test.BaseTest;
 
 /**

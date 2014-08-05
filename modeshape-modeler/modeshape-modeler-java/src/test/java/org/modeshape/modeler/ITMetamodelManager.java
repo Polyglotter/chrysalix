@@ -38,14 +38,14 @@ import org.modeshape.modeler.test.JavaIntegrationTest;
 public class ITMetamodelManager extends JavaIntegrationTest {
 
     @Test
-    public void shouldGetApplicableModelTypeManager() throws Exception {
+    public void shouldGetApplicableMetamodelManager() throws Exception {
         final Metamodel[] metamodels = metamodelManager().metamodelsForArtifact( modeler().importData( MODEL_FILE, null ) );
         assertThat( metamodels, notNullValue() );
         assertThat( metamodels.length == 0, is( false ) );
     }
 
     @Test
-    public void shouldGetExistingRegisteredModelTypeRepositoriesIfRegisteringRegisteredUrl() throws Exception {
+    public void shouldGetExistingRegisteredMetamodelRepositoriesIfRegisteringRegisteredUrl() throws Exception {
         final URL[] origRepos = metamodelManager().metamodelRepositories();
         final URL[] repos = metamodelManager().registerMetamodelRepository( INTEGRATION_TEST_METAMODEL_REPOSITORY_URL );
         assertThat( repos, notNullValue() );
@@ -53,23 +53,23 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     }
 
     @Test
-    public void shouldGetIntallableModelTypeCategories() throws Exception {
+    public void shouldGetIntallableMetamodelCategories() throws Exception {
         assertThat( metamodelManager().installableMetamodelCategories().length == 0, is( false ) );
     }
 
     @Test
-    public void shouldGetModelType() throws Exception {
+    public void shouldGetMetamodel() throws Exception {
         metamodel();
     }
 
     @Test
-    public void shouldGetModelTypeCategories() throws Exception {
+    public void shouldGetMetamodelCategories() throws Exception {
         assertThat( metamodelManager().metamodelCategories().length, is( 1 ) );
         assertThat( metamodelManager().metamodelCategories()[ 0 ], is( "java" ) );
     }
 
     @Test
-    public void shouldIniitializeModelTypeRepositories() throws Exception {
+    public void shouldIniitializeMetamodelRepositories() throws Exception {
         modeler().close();
         try ( final Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) )
         {
@@ -81,14 +81,14 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     }
 
     @Test
-    public void shouldInstallModelTypes() throws Exception {
-        final Metamodel[] modelTypes = metamodelManager().metamodels();
-        assertThat( modelTypes, notNullValue() );
-        assertThat( modelTypes.length, not( 0 ) );
+    public void shouldInstallMetamodels() throws Exception {
+        final Metamodel[] metamodels = metamodelManager().metamodels();
+        assertThat( metamodels, notNullValue() );
+        assertThat( metamodels.length, not( 0 ) );
     }
 
     @Test
-    public void shouldMoveModelTypeRepositoryDown() throws Exception {
+    public void shouldMoveMetamodelRepositoryDown() throws Exception {
         modeler().close();
         try ( Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) ) {
             final URL url = new URL( MetamodelManager.JBOSS_METAMODEL_REPOSITORY );
@@ -101,7 +101,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     }
 
     @Test
-    public void shouldMoveModelTypeRepositoryUp() throws Exception {
+    public void shouldMoveMetamodelRepositoryUp() throws Exception {
         modeler().close();
         try ( Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) ) {
             final URL url = new URL( MetamodelManager.MAVEN_METAMODEL_REPOSITORY );
@@ -114,7 +114,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     }
 
     @Test
-    public void shouldNotInstallModelTypeCategoryIfAlreadyInstalled() throws Exception {
+    public void shouldNotInstallMetamodelCategoryIfAlreadyInstalled() throws Exception {
         assertThat( metamodelManager().metamodelCategories().length, is( 1 ) );
         assertThat( metamodelManager().metamodels().length, is( 2 ) );
         metamodelManager().install( CATEGORY );
@@ -123,7 +123,7 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     }
 
     @Test
-    public void shouldNotMoveModelTypeRepositoryDownIfUrlLast() throws Exception {
+    public void shouldNotMoveMetamodelRepositoryDownIfUrlLast() throws Exception {
         modeler().close();
         try ( Modeler modeler = Modeler.Factory.instance( TEST_REPOSITORY_STORE_PARENT_PATH, TEST_CONFIGURATION_PATH ) ) {
             final URL[] urls = modeler.metamodelManager().metamodelRepositories();
@@ -134,14 +134,14 @@ public class ITMetamodelManager extends JavaIntegrationTest {
     }
 
     @Test
-    public void shouldNotMoveModelTypeRepositoryUpIfUrlFirst() throws Exception {
+    public void shouldNotMoveMetamodelRepositoryUpIfUrlFirst() throws Exception {
         final URL[] urls = metamodelManager().metamodelRepositories();
         metamodelManager().moveMetamodelRepositoryUp( INTEGRATION_TEST_METAMODEL_REPOSITORY_URL );
         assertThat( metamodelManager().metamodelRepositories(), is( urls ) );
     }
 
     @Test
-    public void shouldOnlyInstallModelTypeCategoryOnce() throws Exception {
+    public void shouldOnlyInstallMetamodelCategoryOnce() throws Exception {
         metamodelManager().install( "java" );
         assertThat( metamodelManager().metamodels().length == 0, is( false ) );
         final int size = metamodelManager().metamodels().length;

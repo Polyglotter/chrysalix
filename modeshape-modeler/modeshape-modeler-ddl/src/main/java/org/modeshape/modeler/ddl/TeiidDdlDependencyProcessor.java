@@ -29,7 +29,7 @@ import javax.jcr.RepositoryException;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
-import org.modeshape.modeler.extensions.DependencyProcessor;
+import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 
 /**
  * 
@@ -39,17 +39,17 @@ public class TeiidDdlDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.DependencyProcessor#metamodel()
+     * @see org.modeshape.modeler.spi.metamodel.DependencyProcessor#metamodelId()
      */
     @Override
-    public String metamodel() {
+    public String metamodelId() {
         return TeiidDdlLexicon.DDL_METAMODEL_ID;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
+     * @see org.modeshape.modeler.spi.metamodel.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
      *      org.modeshape.modeler.Modeler, boolean)
      */
     @Override

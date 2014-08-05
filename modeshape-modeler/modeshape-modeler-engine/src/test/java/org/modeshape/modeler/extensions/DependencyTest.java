@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
+import org.modeshape.modeler.spi.metamodel.Dependency;
 
 /**
  * A test for the {@link Dependency} class.

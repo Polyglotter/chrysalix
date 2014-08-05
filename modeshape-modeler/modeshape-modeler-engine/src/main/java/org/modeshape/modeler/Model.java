@@ -26,7 +26,7 @@ package org.modeshape.modeler;
 import java.net.URL;
 import java.util.Set;
 
-import org.modeshape.modeler.extensions.Dependency;
+import org.modeshape.modeler.spi.metamodel.Dependency;
 
 /**
  * 

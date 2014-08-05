@@ -57,8 +57,6 @@ import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
-import org.modeshape.modeler.extensions.DependencyProcessor;
-import org.modeshape.modeler.extensions.Desequencer;
 import org.modeshape.modeler.internal.task.SystemTask;
 import org.modeshape.modeler.internal.task.SystemTaskWithResult;
 import org.modeshape.modeler.internal.task.Task;
@@ -66,6 +64,8 @@ import org.modeshape.modeler.internal.task.TaskWithResult;
 import org.modeshape.modeler.internal.task.WriteSystemTask;
 import org.modeshape.modeler.internal.task.WriteTask;
 import org.modeshape.modeler.internal.task.WriteTaskWithResult;
+import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
+import org.modeshape.modeler.spi.metamodel.Exporter;
 import org.polyglotter.common.CommonI18n;
 import org.polyglotter.common.Logger;
 
@@ -194,14 +194,14 @@ public class ModelerImpl implements Modeler {
         final Metamodel metamodel = model.metamodel();
 
         if ( metamodel != null ) {
-            final Desequencer desequencer = metamodel.desequencer();
+            final Exporter exporter = metamodel.exporter();
 
-            if ( desequencer != null ) {
-                desequencer.execute( model, stream );
+            if ( exporter != null ) {
+                exporter.execute( model, stream );
             }
         }
 
-        throw new ModelerException( ModelerI18n.modelExportDesequencerNotFound, model.name() );
+        throw new ModelerException( ModelerI18n.modelExporterNotFound, model.name() );
     }
 
     /**
@@ -287,22 +287,22 @@ public class ModelerImpl implements Modeler {
                     if ( dataNode.hasProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ) )
                         modelNode.setProperty( ModelerLexicon.Model.EXTERNAL_LOCATION,
                                                dataNode.getProperty( ModelerLexicon.Model.EXTERNAL_LOCATION ).getString() );
-                    final boolean save =
-                        actualMetamodel.sequencer().execute( dataNode.getNode( JcrLexicon.CONTENT.getString() )
-                                                                     .getProperty( JcrLexicon.DATA.getString() ),
-                                                             modelNode,
-                                                             new Sequencer.Context() {
+                    final SequencerImporter importer = ( SequencerImporter ) actualMetamodel.importer();
+                    final boolean save = importer.execute( dataNode.getNode( JcrLexicon.CONTENT.getString() )
+                                                                   .getProperty( JcrLexicon.DATA.getString() ),
+                                                           modelNode,
+                                                           new Sequencer.Context() {
 
-                                                                 @Override
-                                                                 public Calendar getTimestamp() {
-                                                                     return cal;
-                                                                 }
+                                                               @Override
+                                                               public Calendar getTimestamp() {
+                                                                   return cal;
+                                                               }
 
-                                                                 @Override
-                                                                 public ValueFactory valueFactory() {
-                                                                     return valueFactory;
-                                                                 }
-                                                             } );
+                                                               @Override
+                                                               public ValueFactory valueFactory() {
+                                                                   return valueFactory;
+                                                               }
+                                                           } );
 
                     if ( save ) {
                         modelNode.setProperty( ModelerLexicon.Model.METAMODEL, actualMetamodel.id() );

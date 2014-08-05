@@ -21,30 +21,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.xsd;
+package org.modeshape.modeler.spi.metamodel;
 
-import org.junit.Test;
-import org.modeshape.modeler.xsd.test.XsdIntegrationTest;
+import java.io.OutputStream;
 
-@SuppressWarnings( "javadoc" )
-public class ITXsdDesquencerTest extends XsdIntegrationTest {
+import org.modeshape.modeler.Model;
+import org.modeshape.modeler.ModelerException;
 
-    @Test
-    public void should() {}
+/**
+ * 
+ */
+public interface Exporter {
 
-    // @Test
-    // public void shouldExport() throws Exception {
-    // metamodelManager().install( SRAMP_METAMODEL_CATEGORY );
-    // metamodelManager().install( XSD_METAMODEL_CATEGORY );
-    // final Model model = modeler().generateModel( new File( "src/test/resources/Books/Books.xsd" ),
-    // null,
-    // metamodelManager().metamodel( XSD_METAMODEL_ID ) );
-    // final Exporter exporter = model.metamodel().exporter();
-    // assertThat( exporter, is( notNullValue() ) );
-    //
-    // try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {
-    // exporter.execute( model, stream );
-    // assertThat( stream.toString().startsWith( XML_DECLARATION + "\n<xsd:schema " ), is( true ) );
-    // }
-    // }
+    /**
+     * @param model
+     *        a model
+     * @param stream
+     *        the output stream to which the model will be exported
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void execute( Model model,
+                  OutputStream stream ) throws ModelerException;
+
+    /**
+     * @return the metamodel ID
+     */
+    String metamodelId();
+
+    /**
+     * @param mimeType
+     *        a MIME type
+     * @return <code>true</code> if this exporter supports data of the supplied MIME type
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    boolean supports( String mimeType ) throws ModelerException;
 }

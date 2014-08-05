@@ -31,22 +31,22 @@ import java.io.File;
 
 import org.junit.Test;
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.extensions.Desequencer;
+import org.modeshape.modeler.spi.metamodel.Exporter;
 
 @SuppressWarnings( "javadoc" )
-public class ITTeiidDdlDesequencer extends TeiidDdlIntegrationTest {
+public class ITTeiidDdlExporter extends TeiidDdlIntegrationTest {
 
     @Test
-    public void shouldDesequence() throws Exception {
+    public void shouldExport() throws Exception {
         metamodelManager().install( TeiidDdlLexicon.DDL_METAMODEL_CATEGORY );
         final Model model = modeler().importModel( new File( "src/test/resources/Teiid-MySQLAccounts.ddl" ),
-                                                     null,
-                                                     metamodelManager().metamodel( TeiidDdlLexicon.DDL_METAMODEL_ID ) );
-        final Desequencer desequencer = model.metamodel().desequencer();
-        assertThat( desequencer, is( notNullValue() ) );
+                                                   null,
+                                                   metamodelManager().metamodel( TeiidDdlLexicon.DDL_METAMODEL_ID ) );
+        final Exporter exporter = model.metamodel().exporter();
+        assertThat( exporter, is( notNullValue() ) );
 
         // try ( final ByteArrayOutputStream stream = new ByteArrayOutputStream() ) {
-        // desequencer.execute( model, stream );
+        // exporter.execute( model, stream );
         // assertThat( stream.toString().startsWith( XML_DECLARATION + "\n<xsd:schema " ), is( true ) );
         // }
     }

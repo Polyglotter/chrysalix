@@ -201,6 +201,14 @@ public interface ModelObject {
     String primaryType() throws ModelerException;
 
     /**
+     * Prints this object's subtree to standard out
+     * 
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void print() throws ModelerException;
+
+    /**
      * @param propertyName
      *        the name of one of this model object's properties
      * @return <code>true</code> if the supplied property exists and has multiple values
