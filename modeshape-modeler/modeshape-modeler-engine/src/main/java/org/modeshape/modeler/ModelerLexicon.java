@@ -86,19 +86,14 @@ public interface ModelerLexicon {
         String NODE_TYPE = NAMESPACE_PREFIX + ":metamodel";
 
         /**
-         * The name of the multi-valued property whose value is the file extensions processable by a metamodel.
+         * The name of the property whose value is the class name of the metamodel's importer.
          */
-        String FILE_EXTENSIONS = NAMESPACE_PREFIX + ":fileExtensions";
+        String IMPORTER_CLASS_NAME = NAMESPACE_PREFIX + ":importerClassName";
 
         /**
-         * The name of the property whose value is the class name of the metamodel's sequencer.
+         * The name of the property whose value is the class name of the metamodel's exporter.
          */
-        String SEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":sequencerClassName";
-
-        /**
-         * The name of the property whose value is the class name of the metamodel's desequencer.
-         */
-        String DESEQUENCER_CLASS_NAME = NAMESPACE_PREFIX + ":desequencerClassName";
+        String EXPORTER_CLASS_NAME = NAMESPACE_PREFIX + ":exporterClassName";
 
         /**
          * The name of the property whose value is the class name of the metamodel's dependency processor.
@@ -160,20 +155,20 @@ public interface ModelerLexicon {
             String DEPENDENCY_PROCESSOR_NODE_TYPE = NAMESPACE_PREFIX + ":dependencyProcessor";
 
             /**
-             * The name of the desequencer node type definition.
+             * The name of the exporter node type definition.
              */
-            String DESEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":desequencer";
+            String EXPORTER_NODE_TYPE = NAMESPACE_PREFIX + ":exporter";
+
+            /**
+             * The name of the importer node type definition.
+             */
+            String IMPORTER_NODE_TYPE = NAMESPACE_PREFIX + ":importer";
 
             /**
              * The name of the multi-valued property whose values are regular expressions used to mark file names as potential
              * extensions of this type.
              */
             String NAME_PATTERNS = NAMESPACE_PREFIX + ":namePatterns";
-
-            /**
-             * The name of the sequencer node type definition.
-             */
-            String SEQUENCER_NODE_TYPE = NAMESPACE_PREFIX + ":sequencer";
         }
     }
 

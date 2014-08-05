@@ -37,8 +37,7 @@ public final class ModelerI18n {
         new I18n( "Expected categories child node of '%s' was not found" );
     public static final I18n modelerStarted = new I18n( "Modeler started" );
     public static final I18n modelerStopped = new I18n( "Modeler stopped" );
-    public static final I18n modelExportDesequencerNotFound =
-        new I18n( "Model '%s' cannot be exported since a desequencer was not found" );
+    public static final I18n modelExporterNotFound = new I18n( "Model '%s' cannot be exported since an exporter was not found" );
     public static final I18n mustBeModelNode = new I18n( "Node '%s' is not a model node" );
     public static final I18n unableToCreateModel = new I18n( "Unable to create %s model \"%s\" from data at \"%s\"" );
     public static final I18n unableToDetermineDefaultMetamodel = new I18n( "Unable to determine default metamodel for file %s" );

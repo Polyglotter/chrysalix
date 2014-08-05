@@ -59,8 +59,7 @@
   
 // node name is the metamodel name
 [mm:metamodel] > nt:unstructured, mix:referenceable
-  - mm:fileExtensions (string) multiple
-  - mm:sequencerClassName (string)
-  - mm:desequencerClassName (string)
+  - mm:importerClassName (string)
+  - mm:exporterClassName (string)
   - mm:dependencyProcessorClassName (string)  
   

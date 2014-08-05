@@ -21,31 +21,57 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.extensions;
+package org.modeshape.modeler.ddl;
 
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.jcr.Node;
 
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelerException;
+import org.modeshape.modeler.spi.metamodel.Exporter;
 
 /**
  * 
  */
-public interface Desequencer {
+public class TeiidDdlExporter implements Exporter {
+
+    PrintWriter writer;
+    String xsdPrefix;
+    final Map< String, String > namespacePrefixByUri = new HashMap<>();
+    final Map< String, Node > complexTypeByName = new HashMap<>();
+    String targetNamespace;
 
     /**
-     * @param model
-     *        a model (cannot be <code>null</code>)
-     * @param stream
-     *        the output stream to which the model will be desequenced (cannot be <code>null</code>)
-     * @throws ModelerException
-     *         if any error occurs
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.spi.metamodel.Exporter#execute(org.modeshape.modeler.Model, java.io.OutputStream)
      */
-    void execute( Model model,
-                  OutputStream stream ) throws ModelerException;
+    @Override
+    public void execute( final Model model,
+                         final OutputStream stream ) {
+        // TODO: BML
+    }
 
     /**
-     * @return the metamodel name (cannot be <code>null</code> or empty)
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.spi.metamodel.Exporter#metamodelId()
      */
-    String metamodel();
+    @Override
+    public String metamodelId() {
+        return TeiidDdlLexicon.DDL_METAMODEL_ID;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.spi.metamodel.Exporter#supports(java.lang.String)
+     */
+    @Override
+    public boolean supports( final String mimeType ) {
+        return true;
+    }
 }

@@ -21,47 +21,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.ddl;
-
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.jcr.Node;
-
-import org.modeshape.modeler.Model;
-import org.modeshape.modeler.extensions.Desequencer;
+package org.modeshape.modeler;
 
 /**
  * 
  */
-public class TeiidDdlDesequencer implements Desequencer {
+public interface Data {
 
-    PrintWriter writer;
-    String xsdPrefix;
-    final Map< String, String > namespacePrefixByUri = new HashMap<>();
-    final Map< String, Node > complexTypeByName = new HashMap<>();
-    String targetNamespace;
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.extensions.Desequencer#execute(org.modeshape.modeler.Model, java.io.OutputStream)
-     */
-    @Override
-    public void execute( final Model model,
-                         final OutputStream stream ) {
-        // TODO: BML
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.extensions.Desequencer#metamodel()
-     */
-    @Override
-    public String metamodel() {
-        return TeiidDdlLexicon.DDL_METAMODEL_ID;
-    }
 }

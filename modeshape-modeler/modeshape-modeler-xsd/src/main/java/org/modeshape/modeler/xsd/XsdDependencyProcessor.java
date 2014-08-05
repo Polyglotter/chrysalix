@@ -37,8 +37,8 @@ import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerLexicon;
-import org.modeshape.modeler.extensions.DependencyProcessor;
 import org.modeshape.modeler.internal.ModelerImpl;
+import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 import org.modeshape.sequencer.xsd.XsdLexicon;
 import org.polyglotter.common.Logger;
 
@@ -94,17 +94,17 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.DependencyProcessor#metamodel()
+     * @see org.modeshape.modeler.spi.metamodel.DependencyProcessor#metamodelId()
      */
     @Override
-    public String metamodel() {
+    public String metamodelId() {
         return "org.modeshape.modeler.xsd.Xsd";
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
+     * @see org.modeshape.modeler.spi.metamodel.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
      *      org.modeshape.modeler.Modeler, boolean)
      */
     @Override

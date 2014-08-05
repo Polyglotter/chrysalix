@@ -70,7 +70,7 @@ public final class ModelContentProvider extends FocusTree.Model {
                         "dependencies",
                         "externalLocation",
                         "missingDependencies",
-                        "modelType"
+                        "metamodel"
         };
 
     /**
@@ -530,10 +530,10 @@ public final class ModelContentProvider extends FocusTree.Model {
         private final Object value;
 
         ValueModel( final PropertyModel propertyModel,
-                    final Class< ? > modelType,
+                    final Class< ? > metamode,
                     final Object modelValue ) {
             this.parent = propertyModel;
-            this.type = modelType;
+            this.type = metamodel;
             this.value = modelValue;
         }
 

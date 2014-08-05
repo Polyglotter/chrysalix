@@ -23,9 +23,9 @@
  */
 package org.modeshape.modeler;
 
-import org.modeshape.jcr.api.sequencer.Sequencer;
-import org.modeshape.modeler.extensions.DependencyProcessor;
-import org.modeshape.modeler.extensions.Desequencer;
+import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
+import org.modeshape.modeler.spi.metamodel.Exporter;
+import org.modeshape.modeler.spi.metamodel.Importer;
 
 /**
  * 
@@ -39,17 +39,13 @@ public interface Metamodel {
 
     /**
      * @return the dependency processor or <code>null</code> if one does not exist
-     * @throws ModelerException
-     *         if a problem occurs
      */
-    DependencyProcessor dependencyProcessor() throws ModelerException;
+    DependencyProcessor dependencyProcessor();
 
     /**
-     * @return this metamodel's desequencer or <code>null</code> if one does not exist
-     * @throws ModelerException
-     *         if a problem occurs
+     * @return this metamodel's exporter or <code>null</code> if one does not exist
      */
-    Desequencer desequencer() throws ModelerException;
+    Exporter exporter();
 
     /**
      * @return the ID of this metamodel
@@ -57,25 +53,12 @@ public interface Metamodel {
     String id();
 
     /**
+     * @return this metamodel's importer (never <code>null</code>)
+     */
+    Importer importer();
+
+    /**
      * @return the name of this metamodel
      */
     String name();
-
-    /**
-     * @return this metamodel's sequencer (never <code>null</code>)
-     * @throws ModelerException
-     *         if any problem occurs
-     */
-    Sequencer sequencer() throws ModelerException;
-
-    /**
-     * @param name
-     *        the name of this metamodel
-     */
-    void setName( String name );
-
-    /**
-     * @return the source file extensions associated with this metamodel
-     */
-    String[] sourceFileExtensions();
 }

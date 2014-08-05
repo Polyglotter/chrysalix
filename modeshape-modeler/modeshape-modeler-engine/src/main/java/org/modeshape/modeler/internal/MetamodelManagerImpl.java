@@ -47,13 +47,16 @@ import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.jcr.Value;
 
+import org.infinispan.commons.util.ReflectionUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.modeshape.common.util.CheckArg;
+import org.modeshape.jcr.ExtensionLogger;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.jcr.api.JcrTools;
+import org.modeshape.jcr.api.nodetype.NodeTypeManager;
 import org.modeshape.jcr.api.sequencer.Sequencer;
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.MetamodelManager;
@@ -63,6 +66,9 @@ import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.internal.task.TaskWithResult;
 import org.modeshape.modeler.internal.task.WriteSystemTask;
+import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
+import org.modeshape.modeler.spi.metamodel.Exporter;
+import org.modeshape.modeler.spi.metamodel.Importer;
 import org.polyglotter.common.Logger;
 
 /**
@@ -82,7 +88,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
     // pass in category, version
     private static final String SEQUENCER_ZIP_PATTERN = SEQUENCER_PREFIX + "%s-%s-module-with-dependencies.zip";
 
-    private final ExtensionInstaller extensionInstaller;
+    private final MetamodelInstaller metamodelInstaller;
     final ModelerImpl modeler;
     final LinkedList< URL > metamodelRepositories = new LinkedList<>();
     final Set< Metamodel > metamodels = new HashSet<>();
@@ -91,7 +97,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
 
     MetamodelManagerImpl( final ModelerImpl modeler ) throws ModelerException {
         this.modeler = modeler;
-        this.extensionInstaller = new ExtensionInstaller();
+        this.metamodelInstaller = new MetamodelInstaller();
 
         // setup classpath area for metamodel archives
         try {
@@ -160,10 +166,6 @@ final class MetamodelManagerImpl implements MetamodelManager {
      */
     public Metamodel defaultMetamodel( final Node fileNode,
                                        final Metamodel[] metamodels ) throws Exception {
-        final String ext = fileNode.getName().substring( fileNode.getName().lastIndexOf( '.' ) + 1 );
-        for ( final Metamodel metamodel : metamodels )
-            for ( final String fileExt : metamodel.sourceFileExtensions() )
-                if ( fileExt.equals( ext ) ) return metamodel;
         return metamodels.length == 0 ? null : metamodels[ 0 ];
     }
 
@@ -200,11 +202,11 @@ final class MetamodelManagerImpl implements MetamodelManager {
             @Override
             public void run( final Session session,
                              final Node systemNode ) throws Exception {
-                LOGGER.debug( "Installing sequencer for category '%s'", category );
-                installSequencer( category, session, systemNode );
+                LOGGER.debug( "Installing importer for category '%s'", category );
+                installImporter( category, session, systemNode );
 
-                LOGGER.debug( "Installing extensions for category '%s'", category );
-                installExtensions( category, session, systemNode );
+                LOGGER.debug( "Installing metamodel for category '%s'", category );
+                installMetamodel( category, session, systemNode );
             }
         } );
     }
@@ -236,7 +238,8 @@ final class MetamodelManagerImpl implements MetamodelManager {
                     final Elements elements = doc.getElementsMatchingOwnText( "sequencer-" );
                     for ( final Element element : elements ) {
                         final String href = element.attr( "href" );
-                        categories.add( href.substring( href.indexOf( "sequencer-" ) + "sequencer-".length(), href.lastIndexOf( '/' ) ) );
+                        categories.add( href.substring( href.indexOf( "sequencer-" ) + "sequencer-".length(),
+                                                        href.lastIndexOf( '/' ) ) );
                     }
                 }
             } catch ( final IOException e ) {
@@ -246,27 +249,10 @@ final class MetamodelManagerImpl implements MetamodelManager {
         return categories.toArray( new String[ categories.size() ] );
     }
 
-    void installExtensions( final String category,
-                            final Session session,
-                            final Node systemNode ) throws Exception {
-        final Node categoryNode = categoryNode( category, systemNode, false );
-
-        if ( extensionInstaller.install( categoryNode,
-                                         libraryClassLoader,
-                                         library,
-                                         metamodelRepositories,
-                                         version(),
-                                         metamodels ) ) {
-            LOGGER.debug( "Installed extensions for category '%s'", category );
-        } else {
-            LOGGER.debug( "No extensions installed for category '%s'", category );
-        }
-    }
-
-    void installSequencer( final String category,
-                           final Session session,
-                           final Node systemNode ) throws Exception {
-        // don't install sequencer if already installed
+    void installImporter( final String category,
+                          final Session session,
+                          final Node systemNode ) throws Exception {
+        // don't install importer if already installed
         if ( categoryNode( category, systemNode, false ) != null ) {
             return;
         }
@@ -381,15 +367,15 @@ final class MetamodelManagerImpl implements MetamodelManager {
 
                             // add metamodel to MS repository
                             final Node metamodelNode = metamodelsNode.addNode( id, ModelerLexicon.Metamodel.NODE_TYPE );
-                            metamodelNode.setProperty( ModelerLexicon.Metamodel.SEQUENCER_CLASS_NAME, sequencerClass.getName() );
+                            metamodelNode.setProperty( ModelerLexicon.Metamodel.IMPORTER_CLASS_NAME, sequencerClass.getName() );
 
                             // add to cache
-                            @SuppressWarnings( "unchecked" ) final MetamodelImpl metamodel =
-                                new MetamodelImpl( modeler, category, id, ( Class< Sequencer > ) sequencerClass );
+                            final MetamodelImpl metamodel = new MetamodelImpl( category, id );
+                            metamodel.setImporter( sequencerImporter( session, sequencerClass ) );
                             metamodels.add( metamodel );
                         }
                     } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
-                        LOGGER.debug( "Potential sequencer class '%s' cannot be loaded", sequencerClass );
+                        LOGGER.debug( "Potential importer class '%s' cannot be loaded", sequencerClass );
                     }
                 }
             }
@@ -399,6 +385,23 @@ final class MetamodelManagerImpl implements MetamodelManager {
 
         if ( !sequencerArchiveFound ) {
             throw new IllegalArgumentException( ModelerI18n.unableToFindMetamodelCategory.text( category ) );
+        }
+    }
+
+    void installMetamodel( final String category,
+                           final Session session,
+                           final Node systemNode ) throws Exception {
+        final Node categoryNode = categoryNode( category, systemNode, false );
+
+        if ( metamodelInstaller.install( categoryNode,
+                                         libraryClassLoader,
+                                         library,
+                                         metamodelRepositories,
+                                         version(),
+                                         metamodels ) ) {
+            LOGGER.debug( "Installed extensions for category '%s'", category );
+        } else {
+            LOGGER.debug( "No extensions installed for category '%s'", category );
         }
     }
 
@@ -467,38 +470,25 @@ final class MetamodelManagerImpl implements MetamodelManager {
 
             for ( final NodeIterator iter = metamodelsNode.getNodes(); iter.hasNext(); ) {
                 final Node metamodelNode = iter.nextNode();
-                String sequencerClassName = null;
-                String desequencerClassName = null;
-                String dependencyProcessorClassName = null;
-
-                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.SEQUENCER_CLASS_NAME ) ) {
-                    sequencerClassName = JcrUtil.value( metamodelNode,
-                                                        ModelerLexicon.Metamodel.SEQUENCER_CLASS_NAME );
+                final MetamodelImpl metamodel = new MetamodelImpl( category, metamodelNode.getName() );
+                metamodels.add( metamodel );
+                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.IMPORTER_CLASS_NAME ) ) {
+                    final String className = JcrUtil.value( metamodelNode,
+                                                            ModelerLexicon.Metamodel.IMPORTER_CLASS_NAME );
+                    metamodel.setImporter( sequencerImporter( session, libraryClassLoader.loadClass( className ) ) );
                 }
 
-                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.DESEQUENCER_CLASS_NAME ) ) {
-                    desequencerClassName = JcrUtil.value( metamodelNode,
-                                                          ModelerLexicon.Metamodel.DESEQUENCER_CLASS_NAME );
+                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.EXPORTER_CLASS_NAME ) ) {
+                    final String className = JcrUtil.value( metamodelNode,
+                                                            ModelerLexicon.Metamodel.EXPORTER_CLASS_NAME );
+                    metamodel.setExporter( ( Exporter ) libraryClassLoader.loadClass( className ).newInstance() );
                 }
 
                 if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME ) ) {
-                    dependencyProcessorClassName = JcrUtil.value( metamodelNode,
-                                                                  ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME );
+                    final String className = JcrUtil.value( metamodelNode,
+                                                            ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME );
+                    metamodel.setDependencyProcessor( ( DependencyProcessor ) libraryClassLoader.loadClass( className ).newInstance() );
                 }
-
-                final MetamodelImpl metamodel = new MetamodelImpl( modeler,
-                                                                   category,
-                                                                   metamodelNode.getName(),
-                                                                   sequencerClassName,
-                                                                   desequencerClassName,
-                                                                   dependencyProcessorClassName );
-
-                if ( metamodelNode.hasProperty( ModelerLexicon.Metamodel.FILE_EXTENSIONS ) ) {
-                    final String[] fileExtensions = JcrUtil.values( metamodelNode, ModelerLexicon.Metamodel.FILE_EXTENSIONS );
-                    metamodel.setSourceFileExtensions( fileExtensions );
-                }
-
-                metamodels.add( metamodel );
                 LOGGER.debug( "Loaded metamodel: %s", metamodel.id() );
             }
         }
@@ -563,7 +553,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                                                JcrLexicon.MIMETYPE.getString() );
 
         for ( final Metamodel metamodel : metamodels() ) {
-            if ( ( ( MetamodelImpl ) metamodel ).sequencer().isAccepted( mimeType ) ) applicableMetamodels.add( metamodel );
+            if ( ( ( MetamodelImpl ) metamodel ).importer().supports( mimeType ) ) applicableMetamodels.add( metamodel );
         }
 
         return applicableMetamodels.toArray( new Metamodel[ applicableMetamodels.size() ] );
@@ -667,6 +657,18 @@ final class MetamodelManagerImpl implements MetamodelManager {
                 systemNode.setProperty( ModelerLexicon.METAMODEL_REPOSITORIES, vals );
             }
         } );
+    }
+
+    Importer sequencerImporter( final Session session,
+                                final Class< ? > sequencerClass ) throws Exception {
+        final Sequencer sequencer = ( Sequencer ) sequencerClass.newInstance();
+        ReflectionUtil.setValue( sequencer, "logger", ExtensionLogger.getLogger( sequencerClass ) );
+        ReflectionUtil.setValue( sequencer, "repositoryName",
+                                 session.getRepository().getDescriptor( org.modeshape.jcr.api.Repository.REPOSITORY_NAME ) );
+        ReflectionUtil.setValue( sequencer, "name", sequencerClass.getSimpleName() );
+        sequencer.initialize( session.getWorkspace().getNamespaceRegistry(),
+                              ( NodeTypeManager ) session.getWorkspace().getNodeTypeManager() );
+        return new SequencerImporter( sequencer );
     }
 
     /**

@@ -35,14 +35,14 @@ import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.extensions.Desequencer;
+import org.modeshape.modeler.spi.metamodel.Exporter;
 import org.modeshape.sequencer.sramp.SrampLexicon;
 import org.modeshape.sequencer.xsd.XsdLexicon;
 
 /**
  * 
  */
-public class XsdDesequencer implements Desequencer {
+public class XsdExporter implements Exporter {
 
     PrintWriter writer;
     String xsdPrefix;
@@ -53,7 +53,7 @@ public class XsdDesequencer implements Desequencer {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.Desequencer#execute(org.modeshape.modeler.Model, java.io.OutputStream)
+     * @see org.modeshape.modeler.spi.metamodel.Exporter#execute(org.modeshape.modeler.Model, java.io.OutputStream)
      */
     @Override
     public void execute( final Model model,
@@ -89,10 +89,10 @@ public class XsdDesequencer implements Desequencer {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.extensions.Desequencer#metamodel()
+     * @see org.modeshape.modeler.spi.metamodel.Exporter#metamodelId()
      */
     @Override
-    public String metamodel() {
+    public String metamodelId() {
         return "org.modeshape.modeler.xsd.Xsd";
     }
 
@@ -202,5 +202,15 @@ public class XsdDesequencer implements Desequencer {
     private void printIndent( final int indentLevel ) {
         for ( int ndx = indentLevel; --ndx >= 0; )
             writer.print( "  " );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.spi.metamodel.Exporter#supports(java.lang.String)
+     */
+    @Override
+    public boolean supports( final String mimeType ) {
+        return true;
     }
 }

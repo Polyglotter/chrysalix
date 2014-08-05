@@ -35,8 +35,8 @@ import org.junit.Test;
 import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
-import org.modeshape.modeler.ModelType;
-import org.modeshape.modeler.ModelTypeManager;
+import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.MetamodelManager;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.test.BaseTest;
 import org.polyglotter.eclipse.view.ModelContentProvider.ModelContent;
@@ -58,27 +58,27 @@ public final class ModelContentProviderTest extends BaseTest {
     }
 
     private ModelContentProvider provider;
-    private ModelType xsdModelType;
+    private Metamodel xsdMetamodel;
 
     @Before
     public void beforeEach() throws Exception {
         super.before();
 
-        final ModelTypeManager modelTypeManager = modelTypeManager();
-        modelTypeManager.install( "sramp" );
-        modelTypeManager.install( "xsd" );
+        final MetamodelManager metamodelManager = metamodelManager();
+        metamodelManager.install( "sramp" );
+        metamodelManager.install( "xsd" );
 
-        this.xsdModelType = modelTypeManager.modelType( "org.modeshape.modeler.xsd.Xsd" );
+        this.xsdMetamodel = metamodelManager.metamodel( "org.modeshape.modeler.xsd.Xsd" );
         this.provider = new ModelContentProvider();
     }
 
     @Override
-    protected URL modelTypeRepository() throws Exception {
-        if ( modelTypeRepository == null ) {
-            modelTypeRepository = new URL( "file:target/test-classes" );
+    protected URL metamodelRepository() throws Exception {
+        if ( metamodelRepository == null ) {
+            metamodelRepository = new URL( "file:target/test-classes" );
         }
 
-        return modelTypeRepository;
+        return metamodelRepository;
     }
 
     void report( final Object[] nodes ) throws Exception {
@@ -107,7 +107,7 @@ public final class ModelContentProviderTest extends BaseTest {
 
     @Test
     public void shouldProvideModelContents() throws Exception {
-        final Model model = modeler().generateModel( new URL( "file:resources/Books.xsd" ), "/test", this.xsdModelType );
+        final Model model = modeler().generateModel( new URL( "file:resources/Books.xsd" ), "/test", this.xsdMetamodel );
         /*
         /test/Books.xsd/xs:import
         /test/Books.xsd/bibliography
@@ -135,7 +135,7 @@ public final class ModelContentProviderTest extends BaseTest {
         dependencies
         externalLocation
         missingDependencies
-        modelType
+        metamodel
         sramp:contentEncoding
         xmlns:BookTypesNS
         xmlns:xsd

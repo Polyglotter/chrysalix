@@ -21,48 +21,51 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.java;
+package org.modeshape.modeler.internal;
+
+import java.io.InputStream;
 
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
+import javax.jcr.Property;
 
-import org.modeshape.jcr.api.JcrTools;
-import org.modeshape.modeler.Modeler;
-import org.modeshape.modeler.ModelerException;
-import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
+import org.modeshape.jcr.api.sequencer.Sequencer;
+import org.modeshape.jcr.api.sequencer.Sequencer.Context;
+import org.modeshape.modeler.Data;
+import org.modeshape.modeler.spi.metamodel.Importer;
 
-/**
- * 
- */
-public class JavaDependencyProcessor implements DependencyProcessor {
+class SequencerImporter implements Importer {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.spi.metamodel.DependencyProcessor#metamodelId()
-     */
-    @Override
-    public String metamodelId() {
-        return "org.modeshape.modeler.java.JavaFile";
+    final Sequencer sequencer;
+
+    SequencerImporter( final Sequencer sequencer ) {
+        this.sequencer = sequencer;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.spi.metamodel.DependencyProcessor#process(java.lang.String, javax.jcr.Node,
-     *      org.modeshape.modeler.Modeler, boolean)
+     * @see org.modeshape.modeler.spi.metamodel.Importer#execute(java.io.InputStream, org.modeshape.modeler.Data)
      */
     @Override
-    public String process( final String dataPath,
-                           final Node modelNode,
-                           final Modeler modeler,
-                           final boolean persistArtifacts ) throws ModelerException {
-        try {
-            new JcrTools().printSubgraph( modelNode );
-            return null;
-        } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
-        }
+    public void execute( final InputStream stream,
+                         final Data data ) {
+        // TODO Complete once Data is supported
+    }
+
+    boolean execute( final Property property,
+                     final Node node,
+                     final Context context ) throws Exception {
+        return sequencer.execute( property, node, context );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.spi.metamodel.Importer#supports(java.lang.String)
+     */
+    @Override
+    public boolean supports( final String mimeType ) {
+        return sequencer.isAccepted( mimeType );
     }
 
 }
