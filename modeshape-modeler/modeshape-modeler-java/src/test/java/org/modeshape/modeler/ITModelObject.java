@@ -41,8 +41,21 @@ import org.modeshape.sequencer.classfile.ClassFileSequencerLexicon;
 @SuppressWarnings( "javadoc" )
 public class ITModelObject extends JavaIntegrationTest {
 
+    Map< String, ? > NULL_VALUES_BY_PROPERTY = null;
+
     private ModelObject modelObject() throws Exception {
         return importModel().child( "org" );
+    }
+
+    Map< String, ? > primaryTypeProperties() {
+        final Map< String, Object > props = new HashMap<>();
+        props.put( ClassFileSequencerLexicon.FINAL, "blah" );
+        props.put( ClassFileSequencerLexicon.INTERFACE, "blah" );
+        props.put( ClassFileSequencerLexicon.ABSTRACT, "blah" );
+        props.put( ClassFileSequencerLexicon.NAME, "blah" );
+        props.put( ClassFileSequencerLexicon.STRICT_FP, "blah" );
+        props.put( ClassFileSequencerLexicon.VISIBILITY, "public" );
+        return props;
     }
 
     @Test
@@ -84,25 +97,19 @@ public class ITModelObject extends JavaIntegrationTest {
     @Test
     public void shouldAddChildOfTypeWithProperties() throws Exception {
         final ModelObject obj = modelObject();
-        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blah", ( Map< String, ? > ) null );
+        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blah", NULL_VALUES_BY_PROPERTY );
         assertThat( obj.hasChild( "blah" ), is( true ) );
         assertThat( obj.child( "blah" ).primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
 
-        final Map< String, Object > props = new HashMap<>();
-        props.put( ClassFileSequencerLexicon.FINAL, "blah" );
-        props.put( ClassFileSequencerLexicon.INTERFACE, "blah" );
-        props.put( ClassFileSequencerLexicon.ABSTRACT, "blah" );
-        props.put( ClassFileSequencerLexicon.NAME, "blah" );
-        props.put( ClassFileSequencerLexicon.STRICT_FP, "blah" );
-        props.put( ClassFileSequencerLexicon.VISIBILITY, "public" );
+        final Map< String, ? > props = primaryTypeProperties();
         obj.addChildOfType( ClassFileSequencerLexicon.CLASS, "blahblah", props );
         final ModelObject child = obj.child( "blahblah" );
         assertThat( child, notNullValue() );
         assertThat( child.hasProperty( ClassFileSequencerLexicon.VISIBILITY ), is( true ) );
         assertThat( child.stringValue( ClassFileSequencerLexicon.VISIBILITY ), is( "public" ) );
 
-        obj.addChildOfType( null, "blahblahblah", ( Map< String, ? > ) null );
-        obj.addChildOfType( " ", "blahblahblah", ( Map< String, ? > ) null );
+        obj.addChildOfType( null, "blahblahblah", props );
+        obj.addChildOfType( " ", "blahblahblah", props );
         final ModelObject[] children = obj.children( "blahblahblah" );
         assertThat( children, notNullValue() );
         assertThat( children.length, is( 2 ) );
@@ -110,19 +117,28 @@ public class ITModelObject extends JavaIntegrationTest {
             assertThat( child2.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
     }
 
+    @Test
+    public void shouldAddMixinType() throws Exception {
+        final ModelObject obj = modelObject();
+        final int mixins = obj.mixinTypes().length;
+        obj.addMixinType( ModelerLexicon.UNSTRUCTURED_MIXIN, ModelerLexicon.Model.MODEL_MIXIN );
+        assertThat( obj.mixinTypes().length, is( mixins + 2 ) );
+    }
+
+    @Test
+    public void shouldAddMixinTypeWithProperties() throws Exception {
+        final ModelObject obj = modelObject();
+        final int mixins = obj.mixinTypes().length;
+        final Map< String, ? > props = primaryTypeProperties();
+        obj.addMixinType( ModelerLexicon.UNSTRUCTURED_MIXIN, props );
+        assertThat( obj.mixinTypes().length, is( mixins + 1 ) );
+        assertThat( obj.hasProperty( ClassFileSequencerLexicon.VISIBILITY ), is( true ) );
+        assertThat( obj.stringValue( ClassFileSequencerLexicon.VISIBILITY ), is( "public" ) );
+    }
+
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildIfEmptyAdditionalName() throws Exception {
         modelObject().addChild( "blah", " " );
-    }
-
-    @Test
-    public void shouldFailToAddChildIfInvalidType() throws Exception {
-        modelObject().addChild( "blah", "blah" );
-    }
-
-    @Test
-    public void shouldFailToAddChildIfMissingMandatoryProperties() throws Exception {
-        modelObject().addChild( ClassFileSequencerLexicon.CLASS, "blah" );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -152,12 +168,42 @@ public class ITModelObject extends JavaIntegrationTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildOfTypeWithPropertiesIfInvalidType() throws Exception {
-        modelObject().addChildOfType( "blah", "blah", ( Map< String, ? > ) null );
+        modelObject().addChildOfType( "blah", "blah", NULL_VALUES_BY_PROPERTY );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildOfTypeWithPropertiesIfMissingMandatoryProperties() throws Exception {
-        modelObject().addChildOfType( ClassFileSequencerLexicon.CLASS, "blah", ( Map< String, ? > ) null );
+        modelObject().addChildOfType( ClassFileSequencerLexicon.CLASS, "blah", NULL_VALUES_BY_PROPERTY );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeIfEmptyAdditionalName() throws Exception {
+        modelObject().addMixinType( "blah", " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeIfInvalidType() throws Exception {
+        modelObject().addMixinType( "blah" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeIfMissingMandatoryProperties() throws Exception {
+        modelObject().addMixinType( ClassFileSequencerLexicon.CLASS );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeIfNullAdditionalName() throws Exception {
+        modelObject().addMixinType( "blah", ( String ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeWithPropertiesIfInvalidType() throws Exception {
+        modelObject().addMixinType( "blah", NULL_VALUES_BY_PROPERTY );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeWithPropertiesIfMissingMandatoryProperties() throws Exception {
+        modelObject().addMixinType( ClassFileSequencerLexicon.CLASS, NULL_VALUES_BY_PROPERTY );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -210,8 +256,29 @@ public class ITModelObject extends JavaIntegrationTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToRemoveMixinTypeIfEmptyAdditionalName() throws Exception {
+        modelObject().removeMixinType( "blah", " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToRemoveMixinTypeIfNullAdditionalName() throws Exception {
+        modelObject().removeMixinType( "blah", ( String ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetMixinTypeIfInvalidType() throws Exception {
+        modelObject().setMixinType( ClassFileSequencerLexicon.CLASS, NULL_VALUES_BY_PROPERTY );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToSetMixinTypesIfInvalidType() throws Exception {
         modelObject().setMixinTypes( ClassFileSequencerLexicon.CLASS );
+    }
+
+    @Test
+    public void shouldFailToSetMixinTypesIfMissingMandatoryProperties() {
+        // TODO The Java CND doesn't define any mixin types with mandatory properties
+        // modelObject().setMixinTypes( ClassFileSequencerLexicon.? );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -225,8 +292,18 @@ public class ITModelObject extends JavaIntegrationTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetPrimaryTypeIfMissingMandatoryProperties() throws Exception {
+        modelObject().setPrimaryType( ClassFileSequencerLexicon.CLASS );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToSetPrimaryTypeIfNonExistingType() throws Exception {
         modelObject().setPrimaryType( "blah" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToSetPrimaryTypeWithPropertiesIfInvalidType() throws Exception {
+        modelObject().setPrimaryType( ClassFileSequencerLexicon.PACKAGE, NULL_VALUES_BY_PROPERTY );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -406,6 +483,16 @@ public class ITModelObject extends JavaIntegrationTest {
     }
 
     @Test
+    public void shouldRemoveMixinType() throws Exception {
+        final ModelObject obj = modelObject();
+        assertThat( obj.mixinTypes().length, is( 1 ) );
+        obj.addMixinType( ModelerLexicon.UNSTRUCTURED_MIXIN );
+        assertThat( obj.mixinTypes().length, is( 2 ) );
+        obj.removeMixinType( ClassFileSequencerLexicon.PACKAGE, ModelerLexicon.UNSTRUCTURED_MIXIN );
+        assertThat( obj.mixinTypes().length, is( 0 ) );
+    }
+
+    @Test
     public void shouldSetMixinTypes() throws Exception {
         final ModelObject obj = modelObject();
         assertThat( obj.mixinTypes().length, not( 0 ) );
@@ -413,8 +500,30 @@ public class ITModelObject extends JavaIntegrationTest {
         assertThat( obj.mixinTypes().length, is( 0 ) );
         obj.setMixinTypes( ClassFileSequencerLexicon.PACKAGE, ModelerLexicon.Model.MODEL_MIXIN );
         assertThat( obj.mixinTypes().length, is( 2 ) );
-        obj.setMixinTypes( ( String ) null );
+        obj.setMixinTypes();
         assertThat( obj.mixinTypes().length, is( 0 ) );
+    }
+
+    @Test
+    public void shouldSetMixinTypeWithProperties() throws Exception {
+        final ModelObject obj = modelObject();
+        assertThat( obj.mixinTypes().length, not( 0 ) );
+        obj.setMixinType( null, NULL_VALUES_BY_PROPERTY );
+        assertThat( obj.mixinTypes().length, is( 0 ) );
+        final Map< String, ? > props = primaryTypeProperties();
+        obj.setMixinType( ClassFileSequencerLexicon.PACKAGE, props );
+        String[] mixinTypes = obj.mixinTypes();
+        assertThat( mixinTypes.length, not( 0 ) );
+        assertThat( mixinTypes[ 0 ], is( ClassFileSequencerLexicon.PACKAGE ) );
+        assertThat( obj.hasProperty( ClassFileSequencerLexicon.VISIBILITY ), is( true ) );
+        assertThat( obj.stringValue( ClassFileSequencerLexicon.VISIBILITY ), is( "public" ) );
+        final ModelObject child = obj.child( "modeshape" );
+        child.setMixinType( null, props );
+        assertThat( child.mixinTypes().length, is( 0 ) );
+        mixinTypes = child.mixinTypes();
+        assertThat( mixinTypes.length, is( 0 ) );
+        assertThat( obj.hasProperty( ClassFileSequencerLexicon.VISIBILITY ), is( true ) );
+        assertThat( obj.stringValue( ClassFileSequencerLexicon.VISIBILITY ), is( "public" ) );
     }
 
     @Test
@@ -426,6 +535,22 @@ public class ITModelObject extends JavaIntegrationTest {
         obj.setPrimaryType( null );
         assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
         obj.setPrimaryType( " " );
+        assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
+    }
+
+    @Test
+    public void shouldSetPrimaryTypeWithProperties() throws Exception {
+        final ModelObject obj = modelObject();
+        assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
+        final Map< String, ? > props = primaryTypeProperties();
+        obj.setPrimaryType( ClassFileSequencerLexicon.CLASS, props );
+        assertThat( obj.primaryType(), is( ClassFileSequencerLexicon.CLASS ) );
+        assertThat( obj.hasProperty( ClassFileSequencerLexicon.VISIBILITY ), is( true ) );
+        assertThat( obj.stringValue( ClassFileSequencerLexicon.VISIBILITY ), is( "public" ) );
+
+        obj.setPrimaryType( null, props );
+        assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
+        obj.setPrimaryType( " ", props );
         assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
     }
 

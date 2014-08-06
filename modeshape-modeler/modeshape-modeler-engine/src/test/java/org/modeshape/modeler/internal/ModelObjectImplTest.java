@@ -34,6 +34,8 @@ import org.modeshape.modeler.test.BaseTest;
 @SuppressWarnings( "javadoc" )
 public class ModelObjectImplTest extends BaseTest {
 
+    Map< String, ? > NULL_VALUES_BY_PROPERTY = null;
+
     protected ModelObject modelObject() {
         return new ModelObjectImpl( mock( ModelerImpl.class ), "object", 0 );
     }
@@ -60,12 +62,32 @@ public class ModelObjectImplTest extends BaseTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildOfTypeWithPropertiesIfEmptyName() throws Exception {
-        modelObject().addChildOfType( null, " ", ( Map< String, ? > ) null );
+        modelObject().addChildOfType( null, " ", NULL_VALUES_BY_PROPERTY );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildOfTypeWithPropertiesIfNullName() throws Exception {
-        modelObject().addChildOfType( null, null, ( Map< String, ? > ) null );
+        modelObject().addChildOfType( null, null, NULL_VALUES_BY_PROPERTY );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixingTypeIfNullName() throws Exception {
+        modelObject().addMixinType( null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixingTypeWithPropertiesIfNullName() throws Exception {
+        modelObject().addMixinType( null, NULL_VALUES_BY_PROPERTY );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeIfEmptyName() throws Exception {
+        modelObject().addMixinType( " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddMixinTypeWithPropertiesIfEmptyName() throws Exception {
+        modelObject().addMixinType( " ", NULL_VALUES_BY_PROPERTY );
     }
 
     @Test( expected = IllegalArgumentException.class )
