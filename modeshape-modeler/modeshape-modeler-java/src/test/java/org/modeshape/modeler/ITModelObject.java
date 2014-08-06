@@ -29,6 +29,9 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.jcr.JcrNtLexicon;
@@ -49,19 +52,62 @@ public class ITModelObject extends JavaIntegrationTest {
         obj.addChild( "blah" );
         assertThat( obj.hasChild( "blah" ), is( true ) );
         obj.addChild( "blah", "blah" );
-        ModelObject[] children = obj.children( "blah" );
+        final ModelObject[] children = obj.children( "blah" );
         assertThat( children, notNullValue() );
         assertThat( children.length, is( 3 ) );
+    }
 
-        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blahblah" );
-        assertThat( obj.hasChild( "blahblah" ), is( true ) );
-        assertThat( obj.child( "blahblah" ).primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
-        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blahblah", "blahblah" );
-        children = obj.children( "blahblah" );
+    @Test
+    public void shouldAddChildOfType() throws Exception {
+        final ModelObject obj = modelObject();
+        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blah" );
+        assertThat( obj.hasChild( "blah" ), is( true ) );
+        assertThat( obj.child( "blah" ).primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
+
+        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blah", "blah" );
+        final ModelObject[] children = obj.children( "blah" );
         assertThat( children, notNullValue() );
         assertThat( children.length, is( 3 ) );
         for ( final ModelObject child : children )
             assertThat( child.primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
+
+        obj.addChildOfType( null, "blahblah" );
+        ModelObject child = obj.child( "blahblah" );
+        assertThat( child, notNullValue() );
+        assertThat( child.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
+        obj.addChildOfType( " ", "blahblahblah" );
+        child = obj.child( "blahblahblah" );
+        assertThat( child, notNullValue() );
+        assertThat( child.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
+    }
+
+    @Test
+    public void shouldAddChildOfTypeWithProperties() throws Exception {
+        final ModelObject obj = modelObject();
+        obj.addChildOfType( ClassFileSequencerLexicon.ANNOTATIONS, "blah", ( Map< String, ? > ) null );
+        assertThat( obj.hasChild( "blah" ), is( true ) );
+        assertThat( obj.child( "blah" ).primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
+
+        final Map< String, Object > props = new HashMap<>();
+        props.put( ClassFileSequencerLexicon.FINAL, "blah" );
+        props.put( ClassFileSequencerLexicon.INTERFACE, "blah" );
+        props.put( ClassFileSequencerLexicon.ABSTRACT, "blah" );
+        props.put( ClassFileSequencerLexicon.NAME, "blah" );
+        props.put( ClassFileSequencerLexicon.STRICT_FP, "blah" );
+        props.put( ClassFileSequencerLexicon.VISIBILITY, "public" );
+        obj.addChildOfType( ClassFileSequencerLexicon.CLASS, "blahblah", props );
+        final ModelObject child = obj.child( "blahblah" );
+        assertThat( child, notNullValue() );
+        assertThat( child.hasProperty( ClassFileSequencerLexicon.VISIBILITY ), is( true ) );
+        assertThat( child.stringValue( ClassFileSequencerLexicon.VISIBILITY ), is( "public" ) );
+
+        obj.addChildOfType( null, "blahblahblah", ( Map< String, ? > ) null );
+        obj.addChildOfType( " ", "blahblahblah", ( Map< String, ? > ) null );
+        final ModelObject[] children = obj.children( "blahblahblah" );
+        assertThat( children, notNullValue() );
+        assertThat( children.length, is( 2 ) );
+        for ( final ModelObject child2 : children )
+            assertThat( child2.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -69,14 +115,49 @@ public class ITModelObject extends JavaIntegrationTest {
         modelObject().addChild( "blah", " " );
     }
 
-    @Test( expected = IllegalArgumentException.class )
+    @Test
     public void shouldFailToAddChildIfInvalidType() throws Exception {
-        modelObject().addChildOfType( "blah", "name" );
+        modelObject().addChild( "blah", "blah" );
+    }
+
+    @Test
+    public void shouldFailToAddChildIfMissingMandatoryProperties() throws Exception {
+        modelObject().addChild( ClassFileSequencerLexicon.CLASS, "blah" );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildIfNullAdditionalName() throws Exception {
         modelObject().addChild( "blah", ( String ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeIfEmptyAdditionalName() throws Exception {
+        modelObject().addChildOfType( null, "blah", " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeIfInvalidType() throws Exception {
+        modelObject().addChildOfType( "blah", "blah" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeIfMissingMandatoryProperties() throws Exception {
+        modelObject().addChildOfType( ClassFileSequencerLexicon.CLASS, "blah" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeIfNullAdditionalName() throws Exception {
+        modelObject().addChildOfType( null, "blah", ( String ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeWithPropertiesIfInvalidType() throws Exception {
+        modelObject().addChildOfType( "blah", "blah", ( Map< String, ? > ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeWithPropertiesIfMissingMandatoryProperties() throws Exception {
+        modelObject().addChildOfType( ClassFileSequencerLexicon.CLASS, "blah", ( Map< String, ? > ) null );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -129,16 +210,6 @@ public class ITModelObject extends JavaIntegrationTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetBooleanValuesIfAdditionalValuesNullArray() throws Exception {
-        modelObject().setProperty( "blah", null, ( Boolean[] ) null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetLongValuesIfAdditionalValuesNullArray() throws Exception {
-        modelObject().setProperty( "blah", null, ( Long[] ) null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToSetMixinTypesIfInvalidType() throws Exception {
         modelObject().setMixinTypes( ClassFileSequencerLexicon.CLASS );
     }
@@ -159,12 +230,12 @@ public class ITModelObject extends JavaIntegrationTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetStringValuesIfAdditionalValuesNullArray() throws Exception {
-        modelObject().setProperty( "blah", null, ( String[] ) null );
+    public void shouldFailToSetPropertyIfAdditionalValuesNullArray() throws Exception {
+        modelObject().setProperty( "blah", null, ( Object[] ) null );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetStringValuesIfNotMultiValuedProperty() throws Exception {
+    public void shouldFailToSetPropertyIfNotMultiValuedProperty() throws Exception {
         importModel().setProperty( ModelerLexicon.Model.EXTERNAL_LOCATION, " ", " " );
     }
 
@@ -352,10 +423,14 @@ public class ITModelObject extends JavaIntegrationTest {
         assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
         obj.setPrimaryType( ClassFileSequencerLexicon.ANNOTATIONS );
         assertThat( obj.primaryType(), is( ClassFileSequencerLexicon.ANNOTATIONS ) );
+        obj.setPrimaryType( null );
+        assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
+        obj.setPrimaryType( " " );
+        assertThat( obj.primaryType(), is( JcrNtLexicon.UNSTRUCTURED.getString() ) );
     }
 
     @Test
-    public void shouldSetValues() throws Exception {
+    public void shouldSetProperty() throws Exception {
         final ModelObject obj = modelObject();
 
         obj.setProperty( JcrLexicon.MIXIN_TYPES.getString(), ClassFileSequencerLexicon.PACKAGE, ClassFileSequencerLexicon.PACKAGE );
@@ -397,12 +472,6 @@ public class ITModelObject extends JavaIntegrationTest {
         assertThat( obj.hasProperty( "blah" ), is( true ) );
         assertThat( obj.longValue( "blah" ), is( 0L ) );
         assertThat( obj.longValues( "blah" ), is( new Long[] { 0L } ) );
-        // obj.setValue( "blah", 0 );
-        // assertThat( obj.longValue( "blah" ), is( 0L ) );
-        // obj.setValue( "blah", '\0' );
-        // assertThat( obj.longValue( "blah" ), is( 0L ) );
-        // obj.setValue( "blah", false );
-        // assertThat( obj.longValue( "blah" ), is( 0L ) );
         obj.setProperty( "blah", ( Long ) null );
         assertThat( obj.hasProperty( "blah" ), is( false ) );
         obj.setProperty( "blah", 0L, 0L );

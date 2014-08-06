@@ -38,7 +38,7 @@ public final class TextUtil {
      *        the text being checked (can be <code>null</code> or empty)
      * @return <code>true</code> if the text is <code>null</code> or empty
      */
-    public static boolean isEmpty( final String text ) {
-        return text == null || text.isEmpty();
+    public static boolean empty( final String text ) {
+        return text == null || text.trim().isEmpty();
     }
 }

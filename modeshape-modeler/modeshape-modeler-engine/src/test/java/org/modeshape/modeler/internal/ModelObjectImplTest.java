@@ -25,6 +25,8 @@ package org.modeshape.modeler.internal;
 
 import static org.mockito.Mockito.mock;
 
+import java.util.Map;
+
 import org.junit.Test;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.test.BaseTest;
@@ -44,6 +46,26 @@ public class ModelObjectImplTest extends BaseTest {
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildIfNullName() throws Exception {
         modelObject().addChild( null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeIfEmptyName() throws Exception {
+        modelObject().addChildOfType( null, " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeIfNullName() throws Exception {
+        modelObject().addChildOfType( null, null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeWithPropertiesIfEmptyName() throws Exception {
+        modelObject().addChildOfType( null, " ", ( Map< String, ? > ) null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToAddChildOfTypeWithPropertiesIfNullName() throws Exception {
+        modelObject().addChildOfType( null, null, ( Map< String, ? > ) null );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -177,42 +199,12 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetBooleanValueIfEmptyName() throws Exception {
+    public void shouldFailToSetPropertyIfEmptyName() throws Exception {
         modelObject().setProperty( " ", false );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetBooleanValueIfNullName() throws Exception {
+    public void shouldFailToSetPropertyIfNullName() throws Exception {
         modelObject().setProperty( null, false );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetLongValueIfEmptyName() throws Exception {
-        modelObject().setProperty( " ", 0L );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetLongValueIfNullName() throws Exception {
-        modelObject().setProperty( null, 0L );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetPrimaryTypeIfEmpty() throws Exception {
-        modelObject().setPrimaryType( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetPrimaryTypeIfNull() throws Exception {
-        modelObject().setPrimaryType( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetStringValueIfEmptyName() throws Exception {
-        modelObject().setProperty( " ", " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetStringValueIfNullName() throws Exception {
-        modelObject().setProperty( null, " " );
     }
 }
