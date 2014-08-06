@@ -54,14 +54,14 @@ public interface ModelObject {
      *        the primary type ID of the child, or <code>null</code>
      * @param name
      *        the name of the new child to be added to this object
-     * @param valuesByproperty
+     * @param valuesByProperty
      *        values identified by their (possibly mandatory) properties to be set on the new child
      * @throws ModelerException
      *         if any error occurs
      */
     void addChildOfType( String primaryTypeId,
                          String name,
-                         Map< String, ? > valuesByproperty ) throws ModelerException;
+                         Map< String, ? > valuesByProperty ) throws ModelerException;
 
     /**
      * Adds a child with the supplied name and primary type. If the primary type has mandatory properties, use
@@ -79,6 +79,28 @@ public interface ModelObject {
     void addChildOfType( String primaryTypeId,
                          String name,
                          String... additionalNames ) throws ModelerException;
+
+    /**
+     * @param typeId
+     *        the type ID of a mixin type to set on this model object
+     * @param valuesByProperty
+     *        values identified by their (possibly mandatory) properties to be set on the new child
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void addMixinType( String typeId,
+                       Map< String, ? > valuesByProperty ) throws ModelerException;
+
+    /**
+     * @param typeId
+     *        the ID of the first mixin type to be added to this object
+     * @param additionalTypeIds
+     *        the IDs of additional mixin types to be added to this object
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void addMixinType( String typeId,
+                       String... additionalTypeIds ) throws ModelerException;
 
     /**
      * @param propertyName
@@ -258,6 +280,28 @@ public interface ModelObject {
                       String... additionalNames ) throws ModelerException;
 
     /**
+     * @param typeId
+     *        the ID of the first mixin type to be removed from this object
+     * @param additionalTypeIds
+     *        the IDs of additional mixin types to be removed from this object
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void removeMixinType( String typeId,
+                          String... additionalTypeIds ) throws ModelerException;
+
+    /**
+     * @param typeId
+     *        the type ID of a mixin type to set on this model object, or <code>null</code>
+     * @param valuesByProperty
+     *        values identified by their (possibly mandatory) properties to be set on the new child
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setMixinType( String typeId,
+                       Map< String, ? > valuesByProperty ) throws ModelerException;
+
+    /**
      * @param typeIds
      *        one or more mixin type IDs for this model object, or <code>null</code>
      * @throws ModelerException
@@ -272,6 +316,17 @@ public interface ModelObject {
      *         if any error occurs
      */
     void setPrimaryType( String typeId ) throws ModelerException;
+
+    /**
+     * @param typeId
+     *        the primary type ID of this model object, or <code>null</code>
+     * @param valuesByProperty
+     *        values identified by their (possibly mandatory) properties to be set on the new child
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    void setPrimaryType( String typeId,
+                         Map< String, ? > valuesByProperty ) throws ModelerException;
 
     /**
      * @param propertyName

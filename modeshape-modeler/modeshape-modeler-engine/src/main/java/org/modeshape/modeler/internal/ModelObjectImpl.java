@@ -121,23 +121,10 @@ class ModelObjectImpl implements ModelObject {
 
             @Override
             public void run( final Session session ) throws Exception {
+                final String id = TextUtil.empty( primaryTypeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryTypeId;
                 try {
-                    final String id = TextUtil.empty( primaryTypeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryTypeId;
                     final Node node = session.getNode( path ).addNode( name, id );
-                    if ( valuesByProperty != null )
-                        for ( final Entry< String, ? > entry : valuesByProperty.entrySet() ) {
-                            if ( entry.getValue().getClass().isArray() ) {
-                                final Object[] array = ( Object[] ) entry.getValue();
-                                final Object value = array.length == 0 ? null : array[ 0 ];
-                                Object[] additionalValues = null;
-                                if ( array.length > 1 ) {
-                                    additionalValues = new Object[ array.length - 1 ];
-                                    for ( int ndx = 1; ndx < array.length; ndx++ )
-                                        additionalValues[ ndx - 1 ] = array[ ndx ];
-                                }
-                                setProperty( session, node, entry.getKey(), value, additionalValues );
-                            } else setProperty( session, node, entry.getKey(), entry.getValue(), null );
-                        }
+                    setProperty( session, node, valuesByProperty );
                     session.save(); // To catch possible constraint violation due to invalid type
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
                     throw new IllegalArgumentException( e );
@@ -164,10 +151,65 @@ class ModelObjectImpl implements ModelObject {
                 final String id = TextUtil.empty( primaryTypeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryTypeId;
                 try {
                     node.addNode( name, id );
-                    for ( final String additionalName : additionalNames ) {
-                        CheckArg.isNotEmpty( additionalName, "additionalName" );
-                        node.addNode( additionalName, id );
-                    }
+                    if ( additionalNames != null )
+                        for ( final String additionalName : additionalNames ) {
+                            CheckArg.isNotEmpty( additionalName, "additionalName" );
+                            node.addNode( additionalName, id );
+                        }
+                    session.save(); // To catch possible constraint violation due to invalid type
+                } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
+                    throw new IllegalArgumentException( e );
+                }
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#addMixinType(java.lang.String, java.util.Map)
+     */
+    @Override
+    public void addMixinType( final String typeId,
+                              final Map< String, ? > valuesByProperty ) throws ModelerException {
+        CheckArg.isNotEmpty( typeId, "typeId" );
+        modeler.run( new WriteTask() {
+
+            @Override
+            public void run( final Session session ) throws Exception {
+                final Node node = session.getNode( path );
+                try {
+                    node.addMixin( typeId );
+                    setProperty( session, node, valuesByProperty );
+                    session.save(); // To catch possible constraint violation due to invalid type
+                } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
+                    throw new IllegalArgumentException( e );
+                }
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#addMixinType(java.lang.String, java.lang.String[])
+     */
+    @Override
+    public void addMixinType( final String typeId,
+                              final String... additionalTypeIds ) throws ModelerException {
+        CheckArg.isNotEmpty( typeId, "typeId" );
+        modeler.run( new WriteTask() {
+
+            @Override
+            public void run( final Session session ) throws Exception {
+                final Node node = session.getNode( path );
+                try {
+                    node.addMixin( typeId );
+                    if ( additionalTypeIds != null )
+                        for ( final String additionalTypeId : additionalTypeIds ) {
+                            CheckArg.isNotEmpty( additionalTypeId, "additionalName" );
+                            node.addMixin( additionalTypeId );
+                        }
                     session.save(); // To catch possible constraint violation due to invalid type
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
                     throw new IllegalArgumentException( e );
@@ -299,6 +341,11 @@ class ModelObjectImpl implements ModelObject {
                 return children( session.getNode( path ).getNodes( childName ) );
             }
         } );
+    }
+
+    void clearMixinTypes( final Node node ) throws RepositoryException {
+        for ( final NodeType type : node.getMixinNodeTypes() )
+            node.removeMixin( type.getName() );
     }
 
     Value createValue( final ValueFactory factory,
@@ -633,25 +680,71 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
+     * @see org.modeshape.modeler.ModelObject#removeMixinType(java.lang.String, java.lang.String[])
+     */
+    @Override
+    public void removeMixinType( final String typeId,
+                                 final String... additionalTypeIds ) throws ModelerException {
+        CheckArg.isNotEmpty( typeId, "typeId" );
+        modeler.run( new WriteTask() {
+
+            @Override
+            public void run( final Session session ) throws Exception {
+                final Node node = session.getNode( path );
+                final NodeType[] mixinTypes = node.getMixinNodeTypes();
+                for ( final NodeType mixinType : mixinTypes )
+                    if ( mixinType.getName().equals( typeId ) ) node.removeMixin( typeId );
+                for ( final String additionalTypeId : additionalTypeIds ) {
+                    CheckArg.isNotEmpty( additionalTypeId, "additionalTypeIds" );
+                    for ( final NodeType mixinType : mixinTypes )
+                        if ( mixinType.getName().equals( additionalTypeId ) ) node.removeMixin( additionalTypeId );
+                }
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#setMixinType(java.lang.String, java.util.Map)
+     */
+    @Override
+    public void setMixinType( final String typeId,
+                              final Map< String, ? > valuesByProperty ) throws ModelerException {
+        modeler.run( new WriteTask() {
+
+            @Override
+            public void run( final Session session ) throws Exception {
+                try {
+                    final Node node = session.getNode( path );
+                    clearMixinTypes( node );
+                    if ( typeId != null ) node.addMixin( typeId );
+                    setProperty( session, node, valuesByProperty );
+                    session.save(); // To catch possible constraint violation due to invalid type
+                } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
+                    throw new IllegalArgumentException( e );
+                }
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.modeshape.modeler.ModelObject#setMixinTypes(java.lang.String[])
      */
     @Override
     public void setMixinTypes( final String... typeIds ) throws ModelerException {
         modeler.run( new WriteTask() {
 
-            private void clearMixins( final Node node ) throws RepositoryException {
-                for ( final NodeType type : node.getMixinNodeTypes() )
-                    node.removeMixin( type.getName() );
-            }
-
             @Override
             public void run( final Session session ) throws Exception {
                 try {
                     final Node node = session.getNode( path );
-                    clearMixins( node );
-                    if ( typeIds != null ) for ( final String type : typeIds ) {
-                        if ( type == null ) clearMixins( node );
-                        else node.addMixin( type );
+                    clearMixinTypes( node );
+                    if ( typeIds != null ) for ( final String typeId : typeIds ) {
+                        if ( typeId == null ) clearMixinTypes( node );
+                        else node.addMixin( typeId );
                     }
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
                     throw new IllegalArgumentException( e );
@@ -691,11 +784,56 @@ class ModelObjectImpl implements ModelObject {
                 try {
                     final String id = TextUtil.empty( typeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : typeId;
                     session.getNode( path ).setPrimaryType( id );
+                    session.save(); // To catch possible constraint violation due to invalid type
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
                     throw new IllegalArgumentException( e );
                 }
             }
         } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#setPrimaryType(java.lang.String, java.util.Map)
+     */
+    @Override
+    public void setPrimaryType( final String typeId,
+                                final Map< String, ? > valuesByProperty ) throws ModelerException {
+        modeler.run( new WriteTask() {
+
+            @Override
+            public void run( final Session session ) throws Exception {
+                try {
+                    final Node node = session.getNode( path );
+                    final String id = TextUtil.empty( typeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : typeId;
+                    node.setPrimaryType( id );
+                    setProperty( session, node, valuesByProperty );
+                    session.save(); // To catch possible constraint violation due to invalid type
+                } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
+                    throw new IllegalArgumentException( e );
+                }
+            }
+        } );
+    }
+
+    void setProperty( final Session session,
+                      final Node node,
+                      final Map< String, ? > valuesByProperty ) throws RepositoryException {
+        if ( valuesByProperty != null )
+            for ( final Entry< String, ? > entry : valuesByProperty.entrySet() ) {
+                if ( entry.getValue().getClass().isArray() ) {
+                    final Object[] array = ( Object[] ) entry.getValue();
+                    final Object value = array.length == 0 ? null : array[ 0 ];
+                    Object[] additionalValues = null;
+                    if ( array.length > 1 ) {
+                        additionalValues = new Object[ array.length - 1 ];
+                        for ( int ndx = 1; ndx < array.length; ndx++ )
+                            additionalValues[ ndx - 1 ] = array[ ndx ];
+                    }
+                    setProperty( session, node, entry.getKey(), value, additionalValues );
+                } else setProperty( session, node, entry.getKey(), entry.getValue(), null );
+            }
     }
 
     void setProperty( final Session session,
