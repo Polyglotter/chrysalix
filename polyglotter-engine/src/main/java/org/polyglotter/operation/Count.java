@@ -23,10 +23,15 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
+import java.util.Collections;
+import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.grammar.Operation;
+import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Counts the number of terms.
@@ -34,63 +39,42 @@ import org.polyglotter.grammar.Operation;
 public final class Count extends AbstractOperation< Integer > {
 
     /**
-     * The operation descriptor.
+     * The output descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "count";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.countOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.countOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Integer > DESCRIPTOR =
+        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Count.class.getSimpleName() ),
+                                                                       PolyglotterI18n.countOperationDescription.text(),
+                                                                       PolyglotterI18n.countOperationName.text(),
+                                                                       Integer.class );
 
     /**
-     * @param id
-     *        the count operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The input descriptors.
      */
-    Count( final QName id,
-           final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    private static final List< ValueDescriptor< Object >> INPUT_DESCRIPTORS =
+        // TODO id, description, name
+        Collections.singletonList(
+                   TransformationFactory.createValueDescriptor( TransformationFactory.createId( Count.class.getSimpleName() ),
+                                                                PolyglotterI18n.countOperationDescription.text(),
+                                                                PolyglotterI18n.countOperationName.text(),
+                                                                Object.class,
+                                                                true,
+                                                                0,
+                                                                true ) );
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Count( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -101,36 +85,26 @@ public final class Count extends AbstractOperation< Integer > {
     @Override
     protected Integer calculate() {
         assert !problems().isError();
-        return terms().size();
+        return inputs().size();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.transformation.Operation#inputDescriptors()
      */
     @Override
-    public int maxTerms() {
-        return Operation.UNLIMITED;
+    public List< ValueDescriptor< ? >> inputDescriptors() {
+        return INPUT_DESCRIPTORS;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int minTerms() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // nothing to do
     }
 

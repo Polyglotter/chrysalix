@@ -26,11 +26,14 @@ package org.polyglotter.grammar;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.polyglotter.transformation.TransformationEvent;
+import org.polyglotter.transformation.TransformationListener;
+
 @SuppressWarnings( "javadoc" )
-public class TestGrammarListener implements GrammarListener {
+public class TestGrammarListener implements TransformationListener {
     
     private int count;
-    private final List< GrammarEvent > events = new ArrayList<>();
+    private final List< TransformationEvent > events = new ArrayList<>();
     
     public void clear() {
         this.count = 0;
@@ -41,11 +44,11 @@ public class TestGrammarListener implements GrammarListener {
         return this.count;
     }
     
-    public List< GrammarEvent > events() {
+    public List< TransformationEvent > events() {
         return this.events;
     }
     
-    public GrammarEvent lastEvent() {
+    public TransformationEvent lastEvent() {
         if ( this.events.isEmpty() ) {
             return null;
         }
@@ -56,10 +59,10 @@ public class TestGrammarListener implements GrammarListener {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarListener#notify(org.polyglotter.grammar.GrammarEvent)
+     * @see org.polyglotter.transformation.TransformationListener#notify(org.polyglotter.transformation.TransformationEvent)
      */
     @Override
-    public void notify( final GrammarEvent event ) {
+    public void notify( final TransformationEvent event ) {
         ++this.count;
         this.events.add( event );
     }

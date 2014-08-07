@@ -29,11 +29,11 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class MaxTest {
@@ -42,47 +42,43 @@ public final class MaxTest {
 
     @Before
     public void beforeEach() {
-        this.operation = new Max( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Max( TestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms().size(), is( 1 ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        assertThat( this.operation.inputs().size(), is( 1 ) );
         assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
     }
 
     @Test
     public void shouldCalculateIntegerResult() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
-        assertThat( this.operation.result().intValue(), is( TestConstants.INT_2_VALUE ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.INT_2_TERM );
+        assertThat( this.operation.get().intValue(), is( TestConstants.INT_2_VALUE ) );
     }
 
     @Test
     public void shouldFindMaxOfIntegerAndDouble() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.terms(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.result(), is( ( Number ) TestConstants.DOUBLE_1_VALUE ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
+        assertThat( this.operation.inputs(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.DOUBLE_1_TERM } ) );
+        assertThat( this.operation.get(), is( ( Number ) TestConstants.DOUBLE_1_VALUE ) );
     }
 
     @Test
-    public void shouldFindMaxOfMultipleTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.terms().size(), is( 3 ) );
-        assertThat( this.operation.terms(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.result(), is( ( Number ) Integer.valueOf( TestConstants.INT_2_VALUE ).doubleValue() ) );
-    }
-
-    @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "max" ) );
+    public void shouldFindMaxOfMultipleinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
+        assertThat( this.operation.inputs().size(), is( 3 ) );
+        assertThat( this.operation.inputs(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM } ) );
+        assertThat( this.operation.get(), is( ( Number ) Integer.valueOf( TestConstants.INT_2_VALUE ).doubleValue() ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -92,8 +88,8 @@ public final class MaxTest {
 
     @Test
     public void shouldHaveErrorWhenFindingMaxUsingStringTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -105,30 +101,30 @@ public final class MaxTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultWithOnlyOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.result();
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( TestConstants.INT_1_TERM );
     }
 
     @Test
     public void shouldNotHaveProblemsWithTwoTermsOfCorrectType() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM );
+        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM );
         assertThat( this.operation.problems().isEmpty(), is( true ) );
         assertThat( this.operation.problems().isOk(), is( true ) );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test

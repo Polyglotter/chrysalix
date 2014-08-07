@@ -23,17 +23,18 @@ AbstractOperation * Polyglotter (http://polyglotter.org)
  */
 package org.polyglotter.operation;
 
+import java.util.Collections;
 import java.util.List;
-
-import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.Logger;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Computes the average value of a collection of number terms.
@@ -41,63 +42,42 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Average extends AbstractOperation< Number > {
 
     /**
-     * The operation descriptor.
+     * The output descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "avg";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.averageOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.averageOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Number > DESCRIPTOR =
+        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Average.class.getSimpleName() ),
+                                                                       PolyglotterI18n.averageOperationDescription.text(),
+                                                                       PolyglotterI18n.averageOperationName.text(),
+                                                                       Number.class );
 
     /**
-     * @param id
-     *        the average operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The input descriptors.
      */
-    Average( final QName id,
-             final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    private static final List< ValueDescriptor< Number >> INPUT_DESCRIPTORS =
+        // TODO id, description, name
+        Collections.singletonList(
+                   TransformationFactory.createValueDescriptor( TransformationFactory.createId( Average.class.getSimpleName() ),
+                                                                PolyglotterI18n.averageOperationDescription.text(),
+                                                                PolyglotterI18n.averageOperationName.text(),
+                                                                Number.class,
+                                                                true,
+                                                                2,
+                                                                true ) );
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Average( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -109,30 +89,27 @@ public final class Average extends AbstractOperation< Number > {
     protected Number calculate() throws PolyglotterException {
         assert !problems().isError();
 
-        final QName tempId1 = new QName( "temp1" );
-        final QName tempId2 = new QName( "temp2" );
-
-        final Add addOp = new Add( tempId1, id() );
-        final List< Term< ? >> terms = terms();
+        final List< Value< ? >> terms = inputs();
 
         if ( terms.size() == 1 ) {
-            return ( Number ) terms.get( 0 ).value();
+            return ( Number ) terms.get( 0 ).get();
         }
 
         try {
-            addOp.add( terms().toArray( new Term< ? >[ terms().size() ] ) );
-            final Number total = addOp.calculate();
+            final Add addOp = new Add( TEMP_TRANSFORMATION );
+            addOp.addInput( Add.TERM_DESCRIPTOR.id(), ( Object[] ) terms.toArray( new Value< ? >[ terms.size() ] ) );
+            final Number total = addOp.get();
 
-            final Divide divideOp = new Divide( id(), transformId() );
-            divideOp.add( GrammarFactory.createNumberTerm( tempId1, total ) );
-            divideOp.add( GrammarFactory.createNumberTerm( tempId2, terms.size() ) );
+            final Divide divideOp = new Divide( TEMP_TRANSFORMATION );
+            divideOp.addInput( Divide.TERM_DESCRIPTOR.id(), total, terms.size() );
 
-            return divideOp.calculate();
+            return divideOp.get();
         } catch ( final PolyglotterException e ) {
-            final ValidationProblem problem = GrammarFactory.createError( id(),
-                                                                          PolyglotterI18n.averageOperationError.text( id() ) );
+            final ValidationProblem problem =
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.averageOperationError.text( transformationId() ) );
             problems().add( problem );
-            Logger.getLogger( getClass() ).error( e, PolyglotterI18n.averageOperationError, id() );
+            Logger.getLogger( getClass() ).error( e, PolyglotterI18n.averageOperationError, transformationId() );
 
             return null;
         }
@@ -141,57 +118,55 @@ public final class Average extends AbstractOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.transformation.Operation#inputDescriptors()
      */
     @Override
-    public int maxTerms() {
-        return Operation.UNLIMITED;
+    public List< ValueDescriptor< ? >> inputDescriptors() {
+        return INPUT_DESCRIPTORS;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int minTerms() {
-        return 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there are terms
-        if ( terms().isEmpty() ) {
+        if ( inputs().isEmpty() ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.averageOperationHasNoTerms.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.averageOperationHasNoTerms.text( transformationId() ) );
             problems().add( problem );
         } else {
-            if ( terms().size() < minTerms() ) {
+            if ( inputs().size() < INPUT_DESCRIPTORS.get( 0 ).requiredValueCount() ) {
                 final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
+                    TransformationFactory.createError( transformationId(),
+                                                       PolyglotterI18n.invalidTermCount.text( name(),
+                                                                                              transformationId(),
+                                                                                              inputs().size() ) );
                 problems().add( problem );
             }
 
             // make sure all the terms have types of Number
-            for ( final Term< ? > term : terms() ) {
+            for ( final Value< ? > term : inputs() ) {
                 Object value;
 
                 try {
-                    value = term.value();
+                    value = term.get();
 
                     if ( !( value instanceof Number ) ) {
                         final ValidationProblem problem =
-                            GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
+                            TransformationFactory.createError( transformationId(),
+                                                               PolyglotterI18n.invalidTermType.text( name(),
+                                                                                                     transformationId() ) );
                         problems().add( problem );
                     }
                 } catch ( final PolyglotterException e ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                          transformationId() ) );
                     problems().add( problem );
                     this.logger.error( e, PolyglotterI18n.message, problem.message() );
                 }

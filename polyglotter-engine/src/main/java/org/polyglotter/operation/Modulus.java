@@ -23,13 +23,17 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
+import java.util.Arrays;
+import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Calculates the modulus (remainder) of the first term divided by the second term.
@@ -37,63 +41,60 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Modulus extends AbstractOperation< Double > {
 
     /**
-     * The operation descriptor.
+     * The output descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "mod";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.modulusOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.modulusOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Double > DESCRIPTOR =
+        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
+                                                                       PolyglotterI18n.modulusOperationDescription.text(),
+                                                                       PolyglotterI18n.modulusOperationName.text(),
+                                                                       Double.class );
 
     /**
-     * @param id
-     *        the modulus operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The dividend descriptor.
      */
-    Modulus( final QName id,
-             final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    // TODO id, description, name
+    public static final ValueDescriptor< Number > DIVIDEND_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
+                                                     PolyglotterI18n.modulusOperationDescription.text(),
+                                                     PolyglotterI18n.modulusOperationName.text(),
+                                                     Number.class,
+                                                     true,
+                                                     1,
+                                                     false );
+
+    /**
+     * The dividend descriptor.
+     */
+    // TODO id, description, name
+    public static final ValueDescriptor< Number > DIVISOR_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
+                                                     PolyglotterI18n.modulusOperationDescription.text(),
+                                                     PolyglotterI18n.modulusOperationName.text(),
+                                                     Number.class,
+                                                     true,
+                                                     1,
+                                                     false );
+
+    /**
+     * The input descriptors.
+     */
+    private static final List< ValueDescriptor< ? >> INPUT_DESCRIPTORS =
+        Arrays.asList( new ValueDescriptor< ? >[] { DIVIDEND_DESCRIPTOR, DIVISOR_DESCRIPTOR } );
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Modulus( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -105,8 +106,8 @@ public final class Modulus extends AbstractOperation< Double > {
     protected Double calculate() throws PolyglotterException {
         assert !problems().isError();
 
-        final Number dividend = ( Number ) terms().get( 0 ).value();
-        final Number divisor = ( Number ) terms().get( 1 ).value();
+        final Number dividend = ( Number ) inputs( DIVIDEND_DESCRIPTOR.id() ).get( 0 ).get();
+        final Number divisor = ( Number ) inputs( DIVISOR_DESCRIPTOR.id() ).get( 0 ).get();
 
         return ( dividend.doubleValue() % divisor.doubleValue() );
     }
@@ -114,77 +115,87 @@ public final class Modulus extends AbstractOperation< Double > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.transformation.Operation#inputDescriptors()
      */
     @Override
-    public int maxTerms() {
-        return 2;
+    public List< ValueDescriptor< ? >> inputDescriptors() {
+        return INPUT_DESCRIPTORS;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int minTerms() {
-        return 2;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there are terms
-        if ( terms().size() != 2 ) {
+        if ( inputs().size() != 2 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.modulusOperationInvalidTermCount.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.modulusOperationInvalidTermCount.text( transformationId() ) );
             problems().add( problem );
         } else {
-            { // make sure first term is a number
-                final Term< ? > term = terms().get( 0 );
-                Object x;
+            { // dividend
+                final List< Value< ? >> dividendValues = inputs( DIVIDEND_DESCRIPTOR.id() );
 
-                try {
-                    x = term.value();
-
-                    if ( !( x instanceof Number ) ) {
-                        final ValidationProblem problem =
-                            GrammarFactory.createError( id(),
-                                                        PolyglotterI18n.modulusOperationInvalidDividendTermType.text( term.id(),
-                                                                                                                      id() ) );
-                        problems().add( problem );
-                    }
-                } catch ( final PolyglotterException e ) {
+                if ( dividendValues.size() != 1 ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.modulusOperationInvalidDividendCount.text( transformationId() ) );
                     problems().add( problem );
-                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                } else {
+                    final Value< ? > term = dividendValues.get( 0 );
+                    Object x;
+
+                    try {
+                        x = term.get();
+
+                        if ( !( x instanceof Number ) ) {
+                            final ValidationProblem problem =
+                                TransformationFactory.createError( transformationId(),
+                                                                   PolyglotterI18n.modulusOperationInvalidDividendTermType.text( transformationId() ) );
+                            problems().add( problem );
+                        }
+                    } catch ( final PolyglotterException e ) {
+                        final ValidationProblem problem =
+                            TransformationFactory.createError( transformationId(),
+                                                               PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                              transformationId() ) );
+                        problems().add( problem );
+                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                    }
                 }
             }
 
-            { // make sure second term is a number
-                final Term< ? > term = terms().get( 1 );
-                Object y;
+            { // divisor
+                final List< Value< ? >> divisorValues = inputs( DIVISOR_DESCRIPTOR.id() );
 
-                try {
-                    y = term.value();
-
-                    if ( !( y instanceof Number ) ) {
-                        final ValidationProblem problem =
-                            GrammarFactory.createError( id(),
-                                                        PolyglotterI18n.modulusOperationInvalidDivisorTermType.text( term.id(),
-                                                                                                                     id() ) );
-                        problems().add( problem );
-                    }
-                } catch ( final PolyglotterException e ) {
+                if ( divisorValues.size() != 1 ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.modulusOperationInvalidDivisorCount.text( transformationId() ) );
                     problems().add( problem );
-                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                } else {
+                    final Value< ? > term = divisorValues.get( 0 );
+                    Object y;
+
+                    try {
+                        y = term.get();
+
+                        if ( !( y instanceof Number ) ) {
+                            final ValidationProblem problem =
+                                TransformationFactory.createError( transformationId(),
+                                                                   PolyglotterI18n.modulusOperationInvalidDivisorTermType.text( transformationId() ) );
+                            problems().add( problem );
+                        }
+                    } catch ( final PolyglotterException e ) {
+                        final ValidationProblem problem =
+                            TransformationFactory.createError( transformationId(), PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                                                  transformationId() ) );
+                        problems().add( problem );
+                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                    }
                 }
             }
         }

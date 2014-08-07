@@ -21,71 +21,79 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.polyglotter.transformation;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarEvent.EventType;
+import org.polyglotter.transformation.TransformationEvent.EventType;
 
 /**
- * A value used as an input to, or output of, an {@link Operation operation}.
+ * An input or output {@link Value value}.
  * 
  * @param <T>
- *        the type of term
+ *        the type of value
  */
-public interface Term< T > extends GrammarPart, GrammarEventSource {
+public interface Value< T > extends TransformationSource {
 
     /**
-     * An empty list of terms.
+     * An empty list of values.
      */
-    List< Term< ? > > NO_TERMS = Collections.emptyList();
+    List< Value< ? > > NO_VALUES = Collections.emptyList();
 
     /**
-     * @return <code>true</code> if the term's value is modifiable
+     * @return the descriptor (never <code>null</code>)
      */
-    boolean modifiable();
+    ValueDescriptor< T > descriptor();
 
     /**
-     * Modifies the term value with the specified new value.
-     * 
+     * @return the value (can be <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is an error
+     */
+    T get() throws PolyglotterException;
+
+    /**
      * @param newValue
-     *        the new term value (can be <code>null</code>)
+     *        the new value (can be <code>null</code>)
      * @throws PolyglotterException
-     *         if there is a problem setting the new value
+     *         if an error occurs
      * @throws UnsupportedOperationException
-     *         if called when the term is not modifiable
-     * @see #modifiable()
+     *         if the value is not modifiable
+     * @see ValueDescriptor#modifiable()
      */
-    void setValue( final T newValue ) throws PolyglotterException, UnsupportedOperationException;
-
-    /**
-     * Obtains the current term value.
-     * 
-     * @return the current value (can be <code>null</code>)
-     * @throws PolyglotterException
-     *         if there is a problem obtaining the value
-     */
-    T value() throws PolyglotterException;
+    void set( final T newValue ) throws PolyglotterException;
 
     /**
      * Keys used when constructing the data part of an event.
      */
     interface EventTag {
 
-        String OLD_VALUE = "term.oldValue";
-        String NEW_VALUE = "term.newValue";
+        /**
+         * The key for the old value of the property that was changed.
+         */
+        String OLD = "old";
+
+        /**
+         * The key for the new value of the property that was changed.
+         */
+        String NEW = "new";
 
     }
 
     /**
-     * The event types pertaining to terms.
+     * The event types pertaining to a value.
      */
-    enum TermEventType implements EventType {
+    enum ValueEventType implements EventType {
 
         /**
-         * The term value has changed.
+         * The value's name has changed.
+         */
+        NAME_CHANGED,
+
+        /**
+         * The value's value has changed.
          */
         VALUE_CHANGED;
 

@@ -31,68 +31,81 @@ import org.polyglotter.common.I18n;
 @SuppressWarnings( "javadoc" )
 public class PolyglotterI18n {
 
+    public static I18n errorAddingBuiltInCategory = new I18n( "An error occurred adding a built-in category to operation '%s'" );
+
     public static I18n absoluteValueOperationDescription = new I18n( "Finds the absolute value of a number" );
     public static I18n absoluteValueOperationInvalidTermType =
-        new I18n( "Absolute value operation '%s' has term '%s' that is not a number" );
+        new I18n( "Absolute value operation in transformation '%s' has a term that is not a number" );
     public static I18n absoluteValueOperationMustHaveOneTerm =
-        new I18n( "Absolute value operation '%s' requires one and only one term" );
+        new I18n( "Absolute value operation in transformation '%s' requires one and only one term" );
     public static I18n absoluteValueOperationName = new I18n( "Absolute Value" );
 
     public static I18n addOperationDescription = new I18n( "Adds two or more numbers together" );
-    public static I18n addOperationHasNoTerms = new I18n( "Add operation '%s' has no terms" );
+    public static I18n addOperationHasNoTerms = new I18n( "Add operation in transformation '%s' has no terms" );
     public static I18n addOperationName = new I18n( "Add" );
 
     public static I18n arcCosineOperationDescription = new I18n( "Calculates the arc cosine of a numeric term" );
     public static I18n arcCosineOperationInvalidTermType =
-        new I18n( "Arc Cosine operation '%s' has term '%s' that is not a number" );
-    public static I18n arcCosineOperationMustHaveOneTerm = new I18n( "Arc Cosine operation '%s' requires one and only one term" );
+        new I18n( "Arc Cosine operation in transformation '%s' has a term that is not a number" );
+    public static I18n arcCosineOperationMustHaveOneTerm =
+        new I18n( "Arc Cosine operation in transformation '%s' requires one and only one term" );
     public static I18n arcCosineOperationName = new I18n( "Arc Cosine" );
 
     public static I18n arcSineOperationDescription = new I18n( "Calculates the arc sine of a numeric term" );
-    public static I18n arcSineOperationInvalidTermType = new I18n( "Arc Sine operation '%s' has term '%s' that is not a number" );
-    public static I18n arcSineOperationMustHaveOneTerm = new I18n( "Arc Sine operation '%s' requires one and only one term" );
+    public static I18n arcSineOperationInvalidTermType =
+        new I18n( "Arc Sine operation in transformation '%s' has a term that is not a number" );
+    public static I18n arcSineOperationMustHaveOneTerm =
+        new I18n( "Arc Sine operation in transformation '%s' requires one and only one term" );
     public static I18n arcSineOperationName = new I18n( "Arc Sine" );
 
     public static I18n arcTangentOperationDescription = new I18n( "Calculates the arc tangent of a numeric term" );
     public static I18n arcTangentOperationInvalidTermType =
-        new I18n( "Arc Tangent operation '%s' has term '%s' that is not a number" );
-    public static I18n arcTangentOperationMustHaveOneTerm = new I18n( "Arc Tangent operation '%s' requires one and only one term" );
+        new I18n( "Arc Tangent operation in transformation '%s' has a term that is not a number" );
+    public static I18n arcTangentOperationMustHaveOneTerm =
+        new I18n( "Arc Tangent operation in transformation '%s' requires one and only one term" );
     public static I18n arcTangentOperationName = new I18n( "Arc Tangent" );
 
     public static I18n averageOperationDescription = new I18n( "Computes the average value of a collection of numeric terms" );
-    public static I18n averageOperationError = new I18n( "Average operation '%s' failed to calculate" );
-    public static I18n averageOperationHasNoTerms = new I18n( "Average operation '%s' has no terms" );
+    public static I18n averageOperationError = new I18n( "Average operation in transformation '%s' failed to calculate" );
+    public static I18n averageOperationHasNoTerms = new I18n( "Average operation in transformation '%s' has no terms" );
     public static I18n averageOperationName = new I18n( "Average" );
 
     public static I18n ceilingOperationDescription = new I18n( "Find the closest integer greater than or equal to the term" );
-    public static I18n ceilingOperationInvalidTermType = new I18n( "Ceiling operation '%s' has term '%s' that is not a number" );
-    public static I18n ceilingOperationMustHaveOneTerm = new I18n( "Ceiling operation '%s' requires one and only one term" );
+    public static I18n ceilingOperationInvalidTermType =
+        new I18n( "Ceiling operation in transformation '%s' has a term that is not a number" );
+    public static I18n ceilingOperationMustHaveOneTerm =
+        new I18n( "Ceiling operation in transformation '%s' requires one and only one term" );
     public static I18n ceilingOperationName = new I18n( "Floor" );
 
-    public static I18n concatOperationDescription =
-        new I18n( "Concatenates the string representaion of two or more terms together" );
+    public static I18n concatOperationDescription = new I18n( "Concatenates the string representation of two or more terms" );
     public static I18n concatOperationName = new I18n( "Concat" );
 
     public static I18n cosineOperationDescription = new I18n( "Calculates the cosine of a numeric term" );
-    public static I18n cosineOperationInvalidTermType = new I18n( "Cosine operation '%s' has term '%s' that is not a number" );
-    public static I18n cosineOperationMustHaveOneTerm = new I18n( "Cosine operation '%s' requires one and only one term" );
+    public static I18n cosineOperationInvalidTermType =
+        new I18n( "Cosine operation in transformation '%s' has a term that is not a number" );
+    public static I18n cosineOperationMustHaveOneTerm =
+        new I18n( "Cosine operation in transformation '%s' requires one and only one term" );
     public static I18n cosineOperationName = new I18n( "Cosine" );
 
     public static I18n countOperationDescription = new I18n( "Counts the number of terms" );
     public static I18n countOperationName = new I18n( "Count" );
 
     public static I18n cubeRootOperationDescription = new I18n( "Calculates the cube root of a numeric term" );
-    public static I18n cubeRootOperationInvalidTermType = new I18n( "Cube root operation '%s' has term '%s' that is not a number" );
-    public static I18n cubeRootOperationMustHaveOneTerm = new I18n( "Cube root operation '%s' requires one and only one term" );
+    public static I18n cubeRootOperationInvalidTermType =
+        new I18n( "Cube root operation in transformation '%s' has a term that is not a number" );
+    public static I18n cubeRootOperationMustHaveOneTerm =
+        new I18n( "Cube root operation in transformation '%s' requires one and only one term" );
     public static I18n cubeRootOperationName = new I18n( "Cube Root" );
 
     public static I18n decrementOperationDescription = new I18n( "Decrements its integer term" );
-    public static I18n decrementOperationInvalidTermType = new I18n( "Decrement operation '%s' has term '%s' that is not a number" );
-    public static I18n decrementOperationMustHaveOneTerm = new I18n( "Decrement operation '%s' requires one and only one term" );
+    public static I18n decrementOperationInvalidTermType =
+        new I18n( "Decrement operation in transformation '%s' has term that is not an integer" );
+    public static I18n decrementOperationMustHaveOneTerm =
+        new I18n( "Decrement operation in transformation '%s' requires one and only one term" );
     public static I18n decrementOperationName = new I18n( "Decrement" );
 
     public static I18n divideOperationDescription = new I18n( "Divides two or more numbers together" );
-    public static I18n divideOperationHasNoTerms = new I18n( "Divide operation '%s' has no terms" );
+    public static I18n divideOperationHasNoTerms = new I18n( "Divide operation in transformation '%s' has no terms" );
     public static I18n divideOperationName = new I18n( "Divide" );
 
     public static I18n errorComparingTerms =
@@ -100,88 +113,97 @@ public class PolyglotterI18n {
     public static I18n errorOnTermChanged = new I18n( "Error setting term to '%s' in operation '%s'" );
 
     public static I18n floorOperationDescription = new I18n( "Find the closest integer less than or equal to the term" );
-    public static I18n floorOperationInvalidTermType = new I18n( "Floor operation '%s' has term '%s' that is not a number" );
-    public static I18n floorOperationMustHaveOneTerm = new I18n( "Floor operation '%s' requires one and only one term" );
+    public static I18n floorOperationInvalidTermType =
+        new I18n( "Floor operation in transformation '%s' has a term that is not a number" );
+    public static I18n floorOperationMustHaveOneTerm =
+        new I18n( "Floor operation in transformation '%s' requires one and only one term" );
     public static I18n floorOperationName = new I18n( "Floor" );
 
     public static I18n hyperbolicCosineOperationDescription = new I18n( "Calculates the hyperbolic cosine of a numeric term" );
     public static I18n hyperbolicCosineOperationInvalidTermType =
-        new I18n( "Hyperbolic Cosine operation '%s' has term '%s' that is not a number" );
+        new I18n( "Hyperbolic Cosine operation in transformation '%s' has a term that is not a number" );
     public static I18n hyperbolicCosineOperationMustHaveOneTerm =
-        new I18n( "Hyperbolic Cosine operation '%s' requires one and only one term" );
+        new I18n( "Hyperbolic Cosine operation in transformation '%s' requires one and only one term" );
     public static I18n hyperbolicCosineOperationName = new I18n( "Hyperbolic Cosine" );
 
     public static I18n hyperbolicSineOperationDescription = new I18n( "Calculates the hyperbolic sine of a numeric term" );
     public static I18n hyperbolicSineOperationInvalidTermType =
-        new I18n( "Hyperbolic Sine operation '%s' has term '%s' that is not a number" );
+        new I18n( "Hyperbolic Sine operation in transformation '%s' has a term that is not a number" );
     public static I18n hyperbolicSineOperationMustHaveOneTerm =
-        new I18n( "Hyperbolic Sine operation '%s' requires one and only one term" );
+        new I18n( "Hyperbolic Sine operation in transformation '%s' requires one and only one term" );
     public static I18n hyperbolicSineOperationName = new I18n( "Hyperbolic Sine" );
 
     public static I18n hyperbolicTangentOperationDescription = new I18n( "Calculates the hyperbolic tangent of a numeric term" );
     public static I18n hyperbolicTangentOperationInvalidTermType =
-        new I18n( "Hyperbolic Tangent operation '%s' has term '%s' that is not a number" );
+        new I18n( "Hyperbolic Tangent operation in transformation '%s' has a term that is not a number" );
     public static I18n hyperbolicTangentOperationMustHaveOneTerm =
-        new I18n( "Hyperbolic Tangent operation '%s' requires one and only one term" );
+        new I18n( "Hyperbolic Tangent operation in transformation '%s' requires one and only one term" );
     public static I18n hyperbolicTangentOperationName = new I18n( "Hyperbolic Tangent" );
 
     public static I18n incrementOperationDescription = new I18n( "Increments its integer term" );
     public static I18n incrementOperationInvalidTermType =
-        new I18n( "Increment operation '%s' has term '%s' that is not an integer" );
-    public static I18n incrementOperationMustHaveOneTerm = new I18n( "Increment operation '%s' requires one and only one term" );
+        new I18n( "Increment operation in transformation '%s' has a term that is not an integer" );
+    public static I18n incrementOperationMustHaveOneTerm =
+        new I18n( "Increment operation in transformation '%s' requires one and only one term" );
     public static I18n incrementOperationName = new I18n( "Increment" );
 
-    public static I18n invalidTermCount = new I18n( "The operation '%s' has an invalid term count of '%s.'" );
-    public static I18n invalidTermType = new I18n( "The term '%s' in operation '%s' is not a number or is null" );
+    public static I18n invalidTermCount = new I18n( "The operation '%s' in transformation '%s' has an invalid term count of '%s.'" );
+    public static I18n invalidTermType =
+        new I18n( "The operation '%s' in transformation '%s' has a term with an invalid type or has a term that is null" );
 
     public static I18n listenerAlreadyRegistered = new I18n( "The listener is already registered" );
     public static I18n listenerError = new I18n( "The listener '%s' is being unregistered. Event: '%s'" );
     public static I18n listenerNotFoundToUnregister = new I18n( "The listener being unregistered was not a registered listener" );
 
     public static I18n logOperationDescription = new I18n( "Calculates natural logarithm of a term" );
-    public static I18n logOperationInvalidTermType = new I18n( "Log operation '%s' has term '%s' that is not a number" );
-    public static I18n logOperationMustHaveOneTerm = new I18n( "Log operation '%s' requires one and only one term" );
+    public static I18n logOperationInvalidTermType =
+        new I18n( "Log operation in transformation '%s' has a term that is not a number" );
+    public static I18n logOperationMustHaveOneTerm =
+        new I18n( "Log operation in transformation '%s' requires one and only one term" );
     public static I18n logOperationName = new I18n( "Natural Logarithm" );
 
     public static I18n log10OperationDescription = new I18n( "Calculates base 10 logarithm of a term" );
-    public static I18n log10OperationInvalidTermType = new I18n( "Log 10 operation '%s' has term '%s' that is not a number" );
-    public static I18n log10OperationMustHaveOneTerm = new I18n( "Log 10 operation '%s' requires one and only one term" );
+    public static I18n log10OperationInvalidTermType =
+        new I18n( "Log 10 operation in transformation '%s' has a term that is not a number" );
+    public static I18n log10OperationMustHaveOneTerm =
+        new I18n( "Log 10 operation in transformation '%s' requires one and only one term" );
     public static I18n log10OperationName = new I18n( "Logarithm Base 10" );
 
     public static I18n maxOperationDescription = new I18n( "Finds the maximum value of two or more numbers" );
-    public static I18n maxOperationHasNoTerms = new I18n( "Max operation '%s' has no terms" );
+    public static I18n maxOperationHasNoTerms = new I18n( "Max operation in transformation '%s' has no terms" );
     public static I18n maxOperationName = new I18n( "Max" );
 
     public static I18n medianOperationDescription = new I18n( "Computes the median value of a collection of numeric terms" );
-    public static I18n medianOperationError = new I18n( "Median operation '%s' failed to calculate" );
-    public static I18n medianOperationHasNoTerms = new I18n( "Median operation '%s' has no terms" );
+    public static I18n medianOperationError = new I18n( "Median operation in transformation '%s' failed to calculate" );
+    public static I18n medianOperationHasNoTerms = new I18n( "Median operation in transformation '%s' has no terms" );
     public static I18n medianOperationName = new I18n( "Median" );
 
     public static I18n message = new I18n( "%s" );
 
     public static I18n minOperationDescription = new I18n( "Finds the minimum value of two or more numbers" );
-    public static I18n minOperationHasNoTerms = new I18n( "Min operation '%s' has no terms" );
+    public static I18n minOperationHasNoTerms = new I18n( "Min operation in transformation '%s' has no terms" );
     public static I18n minOperationName = new I18n( "Min" );
 
     public static I18n modeOperationDescription = new I18n( "Finds the mode of two or more numbers" );
-    public static I18n modeOperationHasNoTerms = new I18n( "Mode operation '%s' has no terms" );
+    public static I18n modeOperationHasNoTerms = new I18n( "Mode operation in transformation '%s' has no terms" );
     public static I18n modeOperationName = new I18n( "Mode" );
 
     public static I18n modulusOperationDescription =
         new I18n( "Calculates the remainder of the first term divided by the second term" );
     public static I18n modulusOperationInvalidDividendTermType =
-        new I18n( "The dividend term '%s' of modulus operation '%s' must be a number" );
+        new I18n( "The dividend term of modulus operation in transformation '%s' must be a number" );
     public static I18n modulusOperationInvalidDivisorTermType =
-        new I18n( "The divisor term '%s' of modulus operation '%s' must be a number" );
-    public static I18n modulusOperationInvalidTermCount = new I18n( "Modulus operation '%s' must have 2 terms" );
+        new I18n( "The divisor term of modulus operation in transformation '%s' must be a number" );
+    public static I18n modulusOperationInvalidDividendCount =
+        new I18n( "Modulus operation in transformation '%s' must have exactly one dividend term" );
+    public static I18n modulusOperationInvalidDivisorCount =
+        new I18n( "Modulus operation in transformation '%s' must have exactly one divisor term" );
+    public static I18n modulusOperationInvalidTermCount = new I18n( "Modulus operation in transformation '%s' must have 2 terms" );
     public static I18n modulusOperationName = new I18n( "Modulus" );
 
     public static I18n multiplyOperationDescription = new I18n( "Multiplies two or more numbers together" );
-    public static I18n multiplyOperationHasNoTerms = new I18n( "Multiply operation '%s' has no terms" );
+    public static I18n multiplyOperationHasNoTerms = new I18n( "Multiply operation in transformation '%s' has no terms" );
     public static I18n multiplyOperationName = new I18n( "Multiply" );
-
-    public static I18n nullTerm = new I18n( "The null term was passed to operation '%s.'" );
-    public static I18n nullTermId = new I18n( "The null term identifier was passed to operation '%s.'" );
 
     public static I18n opCatArithmeticLabel = new I18n( "Arithmetic" );
     public static I18n opCatArithmeticDescription = new I18n( "Perform their operation on numbers" );
@@ -200,93 +222,123 @@ public class PolyglotterI18n {
     public static I18n opCatStringLabel = new I18n( "String" );
     public static I18n opCatStringDescription = new I18n( "Perform their operation on strings" );
 
-    public static I18n operationHasErrors = new I18n( "The operation '%s' has errors and a result cannot be calculated" );
-    public static I18n operationResultNotModifiable = new I18n( "The '%s' operation's result is not directly modifiable" );
-    public static I18n operationTermNotAdded = new I18n( "The term '%s' was not added to operation '%s'" );
-    public static I18n operationTermNotRemoved = new I18n( "The term '%s' was not removed from operation '%s'" );
-    public static I18n operationValidationError = new I18n( "An exception occurred when validating term '%s' of operation '%s'" );
+    public static I18n errorAddingOrRemovingOperationCategory =
+        new I18n( "There was an error adding or removing categories for operation '%s' in transformation '%s'" );
+    public static I18n errorAddingOrRemovingOperationInput =
+        new I18n( "There was an error adding or removing terms for operation '%s' in transformation '%s'" );
+    public static I18n operationHasErrors =
+        new I18n( "The operation '%s' in transformation '%s' has errors and a result cannot be calculated" );
+    public static I18n operationResultNotModifiable =
+        new I18n( "The '%s' operation's result in transformation '%s' is not directly modifiable" );
+    public static I18n operationValidationError =
+        new I18n( "An exception occurred when validating the input of operation '%s' in transformation '%s'" );
 
     public static I18n parseDoubleOperationDescription = new I18n( "Parses the string term into a double value" );
     public static I18n parseDoubleOperationInvalidTermType =
-        new I18n( "Parse Double operation '%s' has term '%s' that is not a number" );
+        new I18n( "Parse Double operation in transformation '%s' has a term that is not a number" );
     public static I18n parseDoubleOperationMustHaveOneTerm =
-        new I18n( "Parse Double operation '%s' requires one and only one term" );
+        new I18n( "Parse Double operation in transformation '%s' requires one and only one term" );
     public static I18n parseDoubleOperationName = new I18n( "Parse Double" );
 
     public static I18n powerOfEOperationDescription = new I18n( "Calculates Euler's number raised to a power" );
-    public static I18n powerOfEOperationInvalidTermType = new I18n( "Power of E operation '%s' has term '%s' that is not a number" );
-    public static I18n powerOfEOperationMustHaveOneTerm = new I18n( "Power of E operation '%s' requires one and only one term" );
+    public static I18n powerOfEOperationInvalidTermType =
+        new I18n( "Power of E operation in transformation '%s' has a term that is not a number" );
+    public static I18n powerOfEOperationMustHaveOneTerm =
+        new I18n( "Power of E operation in transformation '%s' requires one and only one term" );
     public static I18n powerOfEOperationName = new I18n( "Power Of E" );
 
     public static I18n powerOfEMinus1OperationDescription =
         new I18n( "Calculates Euler's number raised to a power and then minus one" );
     public static I18n powerOfEMinus1OperationInvalidTermType =
-        new I18n( "Power of E minus 1 operation '%s' has term '%s' that is not a number" );
+        new I18n( "Power of E minus 1 operation in transformation '%s' has a term that is not a number" );
     public static I18n powerOfEMinus1OperationMustHaveOneTerm =
-        new I18n( "Power of E minus 1 operation '%s' requires one and only one term" );
+        new I18n( "Power of E minus 1 operation in transformation '%s' requires one and only one term" );
     public static I18n powerOfEMinus1OperationName = new I18n( "Power Of E Minus 1" );
 
     public static I18n powerOperationDescription =
         new I18n( "Calculates the value of the first term raised to the power of the second term" );
-    public static I18n powerOperationInvalidBaseTermType = new I18n( "The base term '%s' of power operation '%s' must be a number" );
+    public static I18n powerOperationInvalidBaseTermType =
+        new I18n( "The base term '%s' of power operation in transformation '%s' must be a number" );
     public static I18n powerOperationInvalidExponentTermType =
-        new I18n( "The exponent term '%s' of power operation '%s' must be a number" );
-    public static I18n powerOperationInvalidTermCount = new I18n( "Power operation '%s' must have 2 terms" );
+        new I18n( "The exponent term '%s' of power operation in transformation '%s' must be a number" );
+    public static I18n powerOperationInvalidBaseCount =
+        new I18n( "Power operation in transformation '%s' must have exactly one base term" );
+    public static I18n powerOperationInvalidExponentCount =
+        new I18n( "Power operation in transformation '%s' must have exactly one exponent term" );
+    public static I18n powerOperationInvalidTermCount = new I18n( "Power operation in transformation '%s' must have 2 terms" );
     public static I18n powerOperationName = new I18n( "Power" );
 
     public static I18n randomOperationDescription =
         new I18n( "Provides a random number with a positive sign, greater than or equal to 0.0 and less than 1.0." );
-    public static I18n randomOperationInvalidNumberOfTerms = new I18n( "Random operation '%s' cannot have more than 1 term" );
-    public static I18n randomOperationInvalidTermType = new I18n( "Random operation '%s' seed term must be a number" );
+    public static I18n randomOperationInvalidNumberOfTerms =
+        new I18n( "Random operation in transformation '%s' cannot have any terms" );
     public static I18n randomOperationName = new I18n( "Random" );
 
     public static I18n roundOperationDescription = new I18n( "Calculates the nearest number" );
-    public static I18n roundOperationInvalidTermType = new I18n( "Round operation '%s' has term '%s' that is not a number" );
-    public static I18n roundOperationMustHaveOneTerm = new I18n( "Round operation '%s' requires one and only one term" );
+    public static I18n roundOperationInvalidTermType =
+        new I18n( "Round operation in transformation '%s' has a term that is not a number" );
+    public static I18n roundOperationMustHaveOneTerm =
+        new I18n( "Round operation in transformation '%s' requires one and only one term" );
     public static I18n roundOperationName = new I18n( "Round" );
 
     public static I18n signOperationDescription = new I18n( "Determines the sign (0, 1, -1) of a number" );
-    public static I18n signOperationInvalidTermType = new I18n( "Sign operation '%s' has term '%s' that is not a number" );
-    public static I18n signOperationMustHaveOneTerm = new I18n( "Sign operation '%s' requires one and only one term" );
+    public static I18n signOperationInvalidTermType =
+        new I18n( "Sign operation in transformation '%s' has a term that is not a number" );
+    public static I18n signOperationMustHaveOneTerm =
+        new I18n( "Sign operation in transformation '%s' requires one and only one term" );
     public static I18n signOperationName = new I18n( "Sign" );
 
     public static I18n sineOperationDescription = new I18n( "Calculates the sine of a numeric term" );
-    public static I18n sineOperationInvalidTermType = new I18n( "Sine operation '%s' has term '%s' that is not a number" );
-    public static I18n sineOperationMustHaveOneTerm = new I18n( "Sine operation '%s' requires one and only one term" );
+    public static I18n sineOperationInvalidTermType =
+        new I18n( "Sine operation in transformation '%s' has a term that is not a number" );
+    public static I18n sineOperationMustHaveOneTerm =
+        new I18n( "Sine operation in transformation '%s' requires one and only one term" );
     public static I18n sineOperationName = new I18n( "Sine" );
 
     public static I18n squareRootOperationDescription = new I18n( "Calculates the square root of a numeric term" );
     public static I18n squareRootOperationInvalidTermType =
-        new I18n( "Square root operation '%s' has term '%s' that is not a number" );
-    public static I18n squareRootOperationMustHaveOneTerm = new I18n( "Square root operation '%s' requires one and only one term" );
+        new I18n( "Square root operation in transformation '%s' has a term that is not a number" );
+    public static I18n squareRootOperationMustHaveOneTerm =
+        new I18n( "Square root operation in transformation '%s' requires one and only one term" );
     public static I18n squareRootOperationName = new I18n( "Square Root" );
 
     public static I18n subtractOperationDescription = new I18n( "Subtracts two or more numbers together" );
-    public static I18n subtractOperationHasNoTerms = new I18n( "Subtract operation '%s' has no terms" );
+    public static I18n subtractOperationHasNoTerms = new I18n( "Subtract operation in transformation '%s' has no terms" );
     public static I18n subtractOperationName = new I18n( "Subtract" );
 
     public static I18n tangentOperationDescription = new I18n( "Calculates the tangent of a numeric term" );
-    public static I18n tangentOperationInvalidTermType = new I18n( "Tangent operation '%s' has term '%s' that is not a number" );
-    public static I18n tangentOperationMustHaveOneTerm = new I18n( "Tangent operation '%s' requires one and only one term" );
+    public static I18n tangentOperationInvalidTermType =
+        new I18n( "Tangent operation in transformation '%s' has a term that is not a number" );
+    public static I18n tangentOperationMustHaveOneTerm =
+        new I18n( "Tangent operation in transformation '%s' requires one and only one term" );
     public static I18n tangentOperationName = new I18n( "Tangent" );
 
     public static I18n toDegreesOperationDescription =
         new I18n( "Converts an angle measured in radians to an approximately equivalent angle measured in degrees" );
     public static I18n toDegreesOperationInvalidTermType =
-        new I18n( "To Degrees operation '%s' has term '%s' that is not a number" );
-    public static I18n toDegreesOperationMustHaveOneTerm = new I18n( "To Degrees operation '%s' requires one and only one term" );
+        new I18n( "To Degrees operation in transformation '%s' has a term that is not a number" );
+    public static I18n toDegreesOperationMustHaveOneTerm =
+        new I18n( "To Degrees operation in transformation '%s' requires one and only one term" );
     public static I18n toDegreesOperationName = new I18n( "To Degrees" );
 
     public static I18n toRadiansOperationDescription =
         new I18n( "Converts an angle measured in degrees to an approximately equivalent angle measured in radians" );
     public static I18n toRadiansOperationInvalidTermType =
-        new I18n( "To Radians operation '%s' has term '%s' that is not a number" );
-    public static I18n toRadiansOperationMustHaveOneTerm = new I18n( "To Radians operation '%s' requires one and only one term" );
+        new I18n( "To Radians operation in transformation '%s' has a term that is not a number" );
+    public static I18n toRadiansOperationMustHaveOneTerm =
+        new I18n( "To Radians operation in transformation '%s' requires one and only one term" );
     public static I18n toRadiansOperationName = new I18n( "To Radians" );
 
-    public static I18n termExists = new I18n( "The term '%s' in operation '%s' already exists" );
-    public static I18n termNotFound = new I18n( "The term '%s' in operation '%s' could not be found" );
-    public static I18n termNotModifiable = new I18n( "The term '%s' is not modifiable" );
+    public static I18n valueNotModifiable = new I18n( "The value '%s' is not modifiable" );
+
+    public static I18n nullOperationBeingAddedToTransformation =
+        new I18n( "Null operation cannot be added to transformation '%s'" );
+    public static I18n nullOperationBeingRemovedFromTransformation =
+        new I18n( "Null operation cannot be removed from transformation '%s'" );
+    public static I18n operationCouldNotBeRemovedFromTransformation =
+        new I18n( "Operation '%s' was not found in transformation '%s' and could not be removed" );
+    public static I18n operationWasNotAddedToTransformation =
+        new I18n( "Operation '%s' was not added to transformation '%s'" );
 
     public static I18n unhandledOperationDescriptor = new I18n( "Descriptor '%s' was not handled by the operation factory" );
 

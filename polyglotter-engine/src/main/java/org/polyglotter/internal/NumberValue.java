@@ -25,35 +25,27 @@ package org.polyglotter.internal;
 
 import java.util.Comparator;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.operation.AbstractTerm;
+import org.polyglotter.operation.ValueImpl;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
- * A term with a number value.
+ * A number value.
  */
-public class NumberTerm extends AbstractTerm< Number > {
+public class NumberValue extends ValueImpl< Number > {
 
     /**
      * A {@link Number number} term sorter that sorts the term values in ascending order. If there is an error accessing either
      * term's value a zero is returned.
      */
-    public static final Comparator< Term< Number > > ASCENDING_SORTER = new Comparator< Term< Number > >() {
+    public static final Comparator< Value< Number > > ASCENDING_SORTER = new Comparator< Value< Number > >() {
 
         @Override
-        public int compare( final Term< Number > thisNumber,
-                            final Term< Number > thatNumber ) {
-            Number thisValue = null;
-            Number thatValue = null;
-
-            try {
-                thisValue = thisNumber.value();
-                thatValue = thatNumber.value();
-            } catch ( final PolyglotterException e ) {
-                return 0;
-            }
+        public int compare( final Value< Number > thisNumber,
+                            final Value< Number > thatNumber ) {
+            final Number thisValue = thisNumber.get();
+            final Number thatValue = thatNumber.get();
 
             if ( thisValue == null ) {
                 return ( ( thatValue == null ) ? 0 : -1 );
@@ -69,39 +61,39 @@ public class NumberTerm extends AbstractTerm< Number > {
     };
 
     /**
-     * A {@link Number number} term sorter that sorts the term values in descending order. If there is an error accessing either
-     * term's value a zero is returned.
+     * A {@link Number number} value sorter that sorts in descending order. If there is an error accessing either value a zero is
+     * returned.
      */
-    public static final Comparator< Term< Number > > DESCENDING_SORTER = new Comparator< Term< Number > >() {
+    public static final Comparator< Value< Number > > DESCENDING_SORTER = new Comparator< Value< Number > >() {
 
         @Override
-        public int compare( final Term< Number > thisNumber,
-                            final Term< Number > thatNumber ) {
+        public int compare( final Value< Number > thisNumber,
+                            final Value< Number > thatNumber ) {
             return ASCENDING_SORTER.compare( thatNumber, thisNumber );
         }
 
     };
 
     /**
-     * @param id
-     *        the term identifier (cannot be <code>null</code>)
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
      */
-    public NumberTerm( final QName id ) {
-        super( id );
+    public NumberValue( final ValueDescriptor< Number > descriptor ) {
+        super( descriptor );
     }
 
     /**
-     * @param id
-     *        the term identifier (cannot be <code>null</code>)
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
      * @param initialValue
      *        the initial value (can be <code>null</code>)
      * @throws PolyglotterException
      *         if there is a problem setting the initial value
      */
-    public NumberTerm( final QName id,
+    public NumberValue( final ValueDescriptor< Number > descriptor,
                        final Number initialValue ) throws PolyglotterException {
-        this( id );
-        setValue( initialValue );
+        this( descriptor );
+        set( initialValue );
     }
 
 }

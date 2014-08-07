@@ -29,11 +29,11 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class MedianTest {
@@ -42,45 +42,41 @@ public final class MedianTest {
 
     @Before
     public void beforeEach() {
-        this.operation = new Median( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Median( TestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms().size(), is( 1 ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        assertThat( this.operation.inputs().size(), is( 1 ) );
         assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
     }
 
     @Test
-    public void shouldCalculateWithEvenNumberOfTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM,
-                            TestConstants.INT_2_TERM,
-                            TestConstants.DOUBLE_1_TERM,
-                            TestConstants.DOUBLE_2_TERM );
-        assertThat( this.operation.terms(),
+    public void shouldCalculateWithEvenNumberOfinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.INT_1_TERM,
+                                 TestConstants.INT_2_TERM,
+                                 TestConstants.DOUBLE_1_TERM,
+                                 TestConstants.DOUBLE_2_TERM );
+        assertThat( this.operation.inputs(),
                     hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM, TestConstants.DOUBLE_2_TERM } ) );
 
         // average of middle 2 values
-        assertThat( this.operation.result(), is( ( Number ) ( ( TestConstants.DOUBLE_1_VALUE + TestConstants.INT_2_VALUE ) / 2 ) ) );
+        assertThat( this.operation.get(), is( ( Number ) ( ( TestConstants.DOUBLE_1_VALUE + TestConstants.INT_2_VALUE ) / 2 ) ) );
     }
 
     @Test
-    public void shouldCalculateWithOddNumberOfTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.terms(),
+    public void shouldCalculateWithOddNumberOfinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
+        assertThat( this.operation.inputs(),
                     hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.result(), is( ( Number ) ( TestConstants.DOUBLE_1_VALUE ) ) ); // middle value
-    }
-
-    @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "median" ) );
+        assertThat( this.operation.get(), is( ( Number ) ( TestConstants.DOUBLE_1_VALUE ) ) ); // middle value
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -90,8 +86,8 @@ public final class MedianTest {
 
     @Test
     public void shouldHaveErrorWhenStringTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -103,23 +99,23 @@ public final class MedianTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotAllowResultWhenOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.result();
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.get();
     }
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( TestConstants.INT_1_TERM );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test

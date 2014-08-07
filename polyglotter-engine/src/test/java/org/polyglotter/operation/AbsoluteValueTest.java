@@ -28,11 +28,11 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class AbsoluteValueTest {
@@ -41,56 +41,56 @@ public final class AbsoluteValueTest {
 
     @Before
     public void beforeEach() {
-        this.operation = new AbsoluteValue( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new AbsoluteValue( TestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms().size(), is( 1 ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        assertThat( this.operation.inputs().size(), is( 1 ) );
         assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
     }
 
     @Test
     public void shouldCalculateDoubleTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.result(), is( ( Number ) TestConstants.DOUBLE_1_VALUE ) );
+        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
+        assertThat( this.operation.get(), is( ( Number ) TestConstants.DOUBLE_1_VALUE ) );
     }
 
     @Test
     public void shouldCalculateFloatTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.FLOAT_1_TERM );
-        assertThat( ( TestConstants.FLOAT_1_VALUE - ( Float ) this.operation.result() ) < Math.ulp( TestConstants.FLOAT_1_VALUE ), is( true ) );
-        assertThat( this.operation.result(), is( ( Number ) Math.abs( TestConstants.FLOAT_1_VALUE ) ) );
+        this.operation.addInput( TestConstants.FLOAT_1_TERM );
+        assertThat( ( TestConstants.FLOAT_1_VALUE - ( Float ) this.operation.get() ) < Math.ulp( TestConstants.FLOAT_1_VALUE ), is( true ) );
+        assertThat( this.operation.get(), is( ( Number ) Math.abs( TestConstants.FLOAT_1_VALUE ) ) );
     }
 
     @Test
     public void shouldCalculateIntegerTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.result(), is( ( Number ) TestConstants.INT_1_VALUE ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        assertThat( this.operation.get(), is( ( Number ) TestConstants.INT_1_VALUE ) );
     }
 
     @Test
     public void shouldCalculateLongTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.LONG_1_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.abs( TestConstants.LONG_1_VALUE ) ) );
+        this.operation.addInput( TestConstants.LONG_1_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.abs( TestConstants.LONG_1_VALUE ) ) );
 
         this.operation.remove( TestConstants.LONG_1_ID );
 
-        this.operation.add( TestConstants.LONG_2_TERM );
-        assertThat( this.operation.result(), is( ( Number ) TestConstants.LONG_2_VALUE ) );
+        this.operation.addInput( TestConstants.LONG_2_TERM );
+        assertThat( this.operation.get(), is( ( Number ) TestConstants.LONG_2_VALUE ) );
     }
 
     @Test
     public void shouldCalculateNegativeDoubleTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.DOUBLE_4_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.abs( TestConstants.DOUBLE_4_VALUE ) ) );
+        this.operation.addInput( TestConstants.DOUBLE_4_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.abs( TestConstants.DOUBLE_4_VALUE ) ) );
     }
 
     @Test
     public void shouldCalculateNegativeIntegerTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_4_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.abs( TestConstants.INT_4_VALUE ) ) );
+        this.operation.addInput( TestConstants.INT_4_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.abs( TestConstants.INT_4_VALUE ) ) );
     }
 
     @Test
@@ -100,7 +100,7 @@ public final class AbsoluteValueTest {
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -110,15 +110,15 @@ public final class AbsoluteValueTest {
 
     @Test
     public void shouldHaveErrorWhenMoreThanOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.INT_2_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotANumber() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -130,17 +130,17 @@ public final class AbsoluteValueTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( TestConstants.INT_1_TERM );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test

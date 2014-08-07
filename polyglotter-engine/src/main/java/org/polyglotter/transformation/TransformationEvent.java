@@ -21,30 +21,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.polyglotter.transformation;
 
+import java.util.Map;
 
 /**
- * A {@link GrammarPart grammar part} that broadcasts events to registered listeners.
+ * A class defining an event related to a {@link Transformation transformation}.
  */
-public interface GrammarEventSource {
-    
+public interface TransformationEvent {
+
     /**
-     * A listener will only be registered once.
-     * 
-     * @param listener
-     *        the listener being registered to receive events (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the listener is <code>null</code>
+     * @return a collection of data related to the event (can be <code>null</code> or empty)
      */
-    void add( final GrammarListener listener );
-    
+    Map< String, ? > data();
+
     /**
-     * @param listener
-     *        the listener being unregistered from receiving events (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the listener is <code>null</code> or is not registered
+     * @return the object that sourced this event (never <code>null</code>)
      */
-    void remove( final GrammarListener listener );
-    
+    Object source();
+
+    /**
+     * @return the event type (never <code>null</code>)
+     */
+    EventType type();
+
+    /**
+     * The type of the event.
+     */
+    interface EventType {
+        // nothing to do
+    }
+
 }

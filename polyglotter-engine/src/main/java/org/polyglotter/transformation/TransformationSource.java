@@ -21,37 +21,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
-
-import java.util.List;
-
-import org.polyglotter.grammar.ValidationProblem.Severity;
+package org.polyglotter.transformation;
 
 /**
- * A collection of {@link ValidationProblem validation problems}.
+ * A {@link Transformation transformation-related object} that broadcasts events to registered listeners.
  */
-public interface ValidationProblems extends List< ValidationProblem > {
-    
+public interface TransformationSource {
+
     /**
-     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#ERROR error} severity
+     * A listener will only be registered once.
+     * 
+     * @param listener
+     *        the listener being registered to receive events (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the listener is <code>null</code>
      */
-    boolean isError();
-    
+    void add( final TransformationListener listener );
+
     /**
-     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#INFO info} severity and does not
-     *         contain problems with {@link Severity#ERROR error} or {@link Severity#WARNING warning} severity
+     * @param listener
+     *        the listener being unregistered from receiving events (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the listener is <code>null</code> or is not registered
      */
-    boolean isInfo();
-    
-    /**
-     * @return <code>true</code> if all the problems in the collection have an {@link Severity#OK OK} severity
-     */
-    boolean isOk();
-    
-    /**
-     * @return <code>true</code> if the collection contains a problem that has a {@link Severity#WARNING warning} severity and does
-     *         not contain a problem with an {@link Severity#ERROR error} severity
-     */
-    boolean isWarning();
-    
+    void remove( final TransformationListener listener );
+
 }

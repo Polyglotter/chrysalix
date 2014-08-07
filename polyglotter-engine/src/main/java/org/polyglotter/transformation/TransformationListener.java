@@ -21,23 +21,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter;
-
-import org.polyglotter.common.PolyglotterException;
+package org.polyglotter.transformation;
 
 /**
- * 
+ * A class that processes {@link TransformationEvent events} related to {@link Transformation transformations}.
  */
-public interface Operation {
-    
+public interface TransformationListener {
+
     /**
-     * @throws PolyglotterException
-     *         if any error occurs
+     * @param event
+     *        the event being broadcast (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the event is <code>null</code>
      */
-    void execute() throws PolyglotterException;
-    
-    /**
-     * @return this operation's name
-     */
-    String name();
+    void notify( final TransformationEvent event );
+
 }

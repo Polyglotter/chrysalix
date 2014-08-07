@@ -30,8 +30,8 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.polyglotter.TestConstants;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Operation.Category;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.Operation.Category;
 
 @SuppressWarnings( "javadoc" )
 public final class OperationFactoryTest {
@@ -41,7 +41,7 @@ public final class OperationFactoryTest {
     private void assertOperation( final Operation< ? > operation,
                                   final Class< ? extends Operation< ? >> operationClass ) {
         assertThat( operation, is( instanceOf( operationClass ) ) );
-        assertThat( operation.id(), is( TestConstants.ID ) );
+        assertThat( operation.transformationId(), is( TestConstants.ID ) );
         assertThat( operation.transformId(), is( TestConstants.TRANSFORM_ID ) );
     }
 
@@ -52,7 +52,7 @@ public final class OperationFactoryTest {
 
     @Test
     public void shouldCreateAbsoluteValueOperation() {
-        assertOperation( this.factory.create( AbsoluteValue.DESCRIPTOR, TestConstants.ID, TestConstants.TRANSFORM_ID ),
+        assertOperation( this.factory.create( AbsoluteValue.OUTPUT, TestConstants.ID, TestConstants.TRANSFORM_ID ),
                          AbsoluteValue.class );
     }
 
@@ -296,12 +296,12 @@ public final class OperationFactoryTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullId() {
-        this.factory.create( AbsoluteValue.DESCRIPTOR, null, TestConstants.TRANSFORM_ID );
+        this.factory.create( AbsoluteValue.OUTPUT, null, TestConstants.TRANSFORM_ID );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullTransformId() {
-        this.factory.create( AbsoluteValue.DESCRIPTOR, TestConstants.ID, null );
+        this.factory.create( AbsoluteValue.OUTPUT, TestConstants.ID, null );
     }
 
     @Test( expected = IllegalStateException.class )

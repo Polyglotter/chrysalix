@@ -21,35 +21,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter;
+package org.polyglotter.internal;
 
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.operation.ValueImpl;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
- * 
+ * A text value.
  */
-public interface ModelTransform {
+public class StringValue extends ValueImpl< String > {
 
     /**
-     * @param transform
-     *        a transform
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
      */
-    void add( Transform transform );
+    public StringValue( final ValueDescriptor< String > descriptor ) {
+        super( descriptor );
+    }
 
     /**
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
+     * @param initialValue
+     *        the initial value (can be <code>null</code>)
      * @throws PolyglotterException
-     *         if any error occurs
+     *         if there is a problem setting the initial value
      */
-    void execute() throws PolyglotterException;
+    public StringValue( final ValueDescriptor< String > descriptor,
+                       final String initialValue ) throws PolyglotterException {
+        this( descriptor );
+        set( initialValue );
+    }
 
-    /**
-     * @param transform
-     *        a transform
-     */
-    void remove( Transform transform );
-
-    /**
-     * @return a list of transforms
-     */
-    Transform[] transforms();
 }

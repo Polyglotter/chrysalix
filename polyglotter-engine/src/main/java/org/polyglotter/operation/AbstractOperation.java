@@ -25,6 +25,7 @@ package org.polyglotter.operation;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,17 +36,19 @@ import javax.xml.namespace.QName;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
-import org.polyglotter.common.Logger;
 import org.polyglotter.common.ObjectUtil;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarEvent;
-import org.polyglotter.grammar.GrammarEvent.EventType;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.GrammarListener;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
-import org.polyglotter.grammar.ValidationProblems;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.OperationCategory;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationEvent;
+import org.polyglotter.transformation.TransformationEvent.EventType;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.TransformationListener;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.ValidationProblems;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * The base class for {@link Operation operations}.
@@ -53,92 +56,167 @@ import org.polyglotter.grammar.ValidationProblems;
  * @param <T>
  *        the operation's result type
  */
-public abstract class AbstractOperation< T > implements GrammarListener, Operation< T > {
-
-    private final Descriptor descriptor;
-    private final QName id;
-    private final Set< GrammarListener > listeners;
-    private final ValidationProblems problems;
-    private T result;
-    private final List< Term< ? > > terms;
-    private final QName transformId;
+public abstract class AbstractOperation< T > extends ValueImpl< T > implements TransformationListener, Operation< T > {
 
     /**
-     * The logger.
+     * A transformation that can be used for intermediate results. It does not do anything.
      */
-    protected final Logger logger;
+    protected static final Transformation TEMP_TRANSFORMATION = new Transformation() {
 
-    /**
-     * @param id
-     *        the term identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the operation identifier that owns this term (cannot be <code>null</code>)
-     * @param descriptor
-     *        the operation {@link org.polyglotter.grammar.Operation.Descriptor descriptor} (cannot be <code>null</code>)
-     */
-    protected AbstractOperation( final QName id,
-                                 final QName transformId,
-                                 final Descriptor descriptor ) {
-        CheckArg.notNull( id, "id" );
-        CheckArg.notNull( transformId, "transformId" );
-        CheckArg.notNull( descriptor, "descriptor" );
-
-        this.descriptor = descriptor;
-        this.id = id;
-        this.listeners = new HashSet<>( 5 );
-        this.logger = Logger.getLogger( getClass() );
-        this.problems = GrammarFactory.createValidationProblems();
-        this.transformId = transformId;
-        this.terms = new ArrayList<>( 5 );
-
-        termChanged();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarEventSource#add(org.polyglotter.grammar.GrammarListener)
-     */
-    @Override
-    public void add( final GrammarListener listener ) {
-        assert ( this.listeners != null );
-        CheckArg.notNull( listener, "listener" );
-        this.listeners.add( listener );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#add(org.polyglotter.grammar.Term[])
-     */
-    @Override
-    public void add( final Term< ? >... termsBeingAdded ) throws PolyglotterException {
-        CheckArg.isNotEmpty( termsBeingAdded, "termsBeingAdded" );
-        assert ( this.terms != null );
-
-        for ( final Term< ? > term : termsBeingAdded ) {
-            if ( term == null ) {
-                throw new IllegalArgumentException( PolyglotterI18n.nullTerm.text( this.id ) );
-            }
-
-            // check to see if already added
-            for ( final Term< ? > existingTerm : this.terms ) {
-                if ( existingTerm.id().equals( term.id() ) ) {
-                    throw new PolyglotterException( PolyglotterI18n.termExists, term.id(), this.id );
-                }
-            }
-
-            if ( this.terms.add( term ) ) {
-                term.add( this ); // register to receive grammar events
-            } else {
-                throw new PolyglotterException( PolyglotterI18n.operationTermNotAdded, term.id(), id() );
-            }
-
-            // fire event
-            notifyObservers( OperationEventType.TERM_ADDED, OperationEventType.TERM_ADDED.toString(), term.id() );
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#add(org.polyglotter.transformation.Operation[])
+         */
+        @Override
+        public void add( final Operation< ? >... operations ) {
+            // does nothing
         }
 
-        termChanged();
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#execute()
+         */
+        @Override
+        public void execute() {
+            // does nothing
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#id()
+         */
+        @Override
+        public QName id() {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see java.lang.Iterable#iterator()
+         */
+        @Override
+        public Iterator< Operation< ? >> iterator() {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#operations()
+         */
+        @Override
+        public List< Operation< ? >> operations() {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#remove(org.polyglotter.transformation.Operation[])
+         */
+        @Override
+        public void remove( final Operation< ? >... operations ) {
+            // does nothing
+        }
+
+    };
+
+    private final Set< OperationCategory > categories;
+    private final ValidationProblems problems;
+    private final Map< QName, List< Value< ? > >> inputs;
+    private final Transformation transformation;
+
+    /**
+     * @param operationDescriptor
+     *        the operation descriptor (cannot be <code>null</code>) for the output value
+     * @param operationTransformation
+     *        the transformation that owns this operation (cannot be <code>null</code>)
+     */
+    protected AbstractOperation( final ValueDescriptor< T > operationDescriptor,
+                                 final Transformation operationTransformation ) {
+        super( operationDescriptor );
+        CheckArg.notNull( operationTransformation, "operationTransformation" );
+
+        this.categories = new HashSet<>( 5 );
+        this.problems = TransformationFactory.createValidationProblems();
+        this.transformation = operationTransformation;
+        this.inputs = new HashMap<>( 5 );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.transformation.Operation#addCategory(org.polyglotter.transformation.OperationCategory[])
+     */
+    @Override
+    public void addCategory( final OperationCategory... categoriesToAdd ) throws PolyglotterException {
+        CheckArg.isNotEmpty( categoriesToAdd, "categoriesToAdd" );
+
+        for ( final OperationCategory category : categoriesToAdd ) {
+            if ( ( category == null ) || !this.categories.add( category ) ) {
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationCategory,
+                                                name(),
+                                                transformationId() );
+            }
+        }
+
+        if ( categoriesToAdd.length == 1 ) {
+            notifyObservers( OperationEventType.CATEGORY_ADDED, EventTag.NEW, categoriesToAdd[ 0 ] );
+        } else {
+            notifyObservers( OperationEventType.CATEGORIES_ADDED, EventTag.NEW, categoriesToAdd );
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.transformation.Operation#addInput(javax.xml.namespace.QName, java.lang.Object[])
+     */
+    @Override
+    public void addInput( final QName descriptorId,
+                          final Object... valuesBeingAdded ) throws PolyglotterException {
+        CheckArg.notNull( descriptorId, "descriptorId" );
+        CheckArg.isNotEmpty( valuesBeingAdded, "valuesBeingAdded" );
+
+        if ( !isValidInputDescriptorId( descriptorId ) ) {
+            throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                            name(),
+                                            transformationId() );
+        }
+
+        List< Value< ? >> values = this.inputs.get( descriptorId );
+
+        if ( values == null ) {
+            values = new ArrayList<>();
+        }
+
+        final ValueDescriptor< ? > descriptor = descriptor( descriptorId );
+
+        for ( final Object value : valuesBeingAdded ) {
+            if ( value == null ) {
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput, descriptor().id() );
+            }
+
+            if ( value instanceof Value< ? > ) {
+                // TODO
+            } else {
+                values.add( TransformationFactory.createValue( descriptor, value ) );
+            }
+        }
+
+        if ( !this.inputs.containsKey( descriptorId ) ) {
+            this.inputs.put( descriptorId, values );
+        }
+
+        if ( valuesBeingAdded.length == 1 ) {
+            notifyObservers( OperationEventType.VALUE_ADDED, EventTag.NEW, valuesBeingAdded[ 0 ] );
+        } else {
+            notifyObservers( OperationEventType.VALUES_ADDED, EventTag.NEW, valuesBeingAdded );
+        }
     }
 
     /**
@@ -152,56 +230,101 @@ public abstract class AbstractOperation< T > implements GrammarListener, Operati
     protected abstract T calculate() throws PolyglotterException;
 
     /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarPart#description()
+     * @param categoryBeingChecked
+     *        the category being checked (cannot be <code>null</code>)
+     * @return <code>true</code> if the category can be removed
      */
-    @Override
-    public final String description() {
-        assert ( this.descriptor != null );
-        return this.descriptor.description();
+    public boolean canRemoveCategory( final OperationCategory categoryBeingChecked ) {
+        CheckArg.notNull( categoryBeingChecked, "categoryToRemove" );
+        return this.categories.contains( categoryBeingChecked )
+               && !( categoryBeingChecked instanceof OperationCategory.BuiltInCategory );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#descriptor()
+     * @see org.polyglotter.transformation.Operation#categories()
      */
     @Override
-    public final Descriptor descriptor() {
-        assert ( this.descriptor != null );
-        return this.descriptor;
+    public Set< OperationCategory > categories() {
+        return Collections.unmodifiableSet( this.categories );
     }
 
     /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#get(javax.xml.namespace.QName)
+     * @return the descriptor description for this value (never <code>null</code>)
      */
-    @Override
-    public Term< ? > get( final QName termId ) throws PolyglotterException {
-        CheckArg.notNull( termId, "termId" );
-        assert ( this.terms != null );
+    protected String description() {
+        return descriptor().description();
+    }
 
-        if ( !this.terms.isEmpty() ) {
-            for ( final Term< ? > term : this.terms ) {
-                if ( termId.equals( term.id() ) ) {
-                    return term;
-                }
+    private ValueDescriptor< ? > descriptor( final QName id ) {
+        for ( final ValueDescriptor< ? > descriptor : inputDescriptors() ) {
+            if ( descriptor.id().equals( id ) ) {
+                return descriptor;
             }
         }
 
-        throw new PolyglotterException( PolyglotterI18n.termNotFound, termId, this.id );
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <strong>Do not call if there are validation errors as this will throw an exception.</strong>
+     * 
+     * @see org.polyglotter.operation.ValueImpl#get()
+     */
+    @Override
+    public T get() throws PolyglotterException {
+        if ( !this.problems.isError() ) {
+            return super.get();
+        }
+
+        throw new PolyglotterException( PolyglotterI18n.operationHasErrors, name(), transformationId() );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#id()
+     * @see org.polyglotter.transformation.Operation#inputs()
      */
     @Override
-    public QName id() {
-        return this.id;
+    public List< Value< ? >> inputs() {
+        if ( this.inputs.isEmpty() ) {
+            return Value.NO_VALUES;
+        }
+
+        final List< Value< ? >> result = new ArrayList<>();
+
+        for ( final List< Value< ? >> values : this.inputs.values() ) {
+            result.addAll( values );
+        }
+
+        return result;
+    }
+
+    /**
+     * @param descriptorId
+     *        the identifier of the {@link ValueDescriptor descriptor} whose inputs are being requested (cannot be <code>null</code>
+     *        or invalid)
+     * @return the values (never <code>null</code> but can be empty)
+     * @see #isValidInputDescriptorId(QName)
+     * @throws IllegalArgumentException
+     *         if the descriptor is not found
+     */
+    protected List< Value< ? >> inputs( final QName descriptorId ) {
+        CheckArg.notNull( descriptor( descriptorId ), "descriptorId" );
+        final List< Value< ? > > values = this.inputs.get( descriptorId );
+
+        if ( values == null ) {
+            return Value.NO_VALUES;
+        }
+
+        return values;
+    }
+
+    private boolean isValidInputDescriptorId( final QName id ) {
+        return ( descriptor( id ) != null );
     }
 
     /**
@@ -210,54 +333,29 @@ public abstract class AbstractOperation< T > implements GrammarListener, Operati
      * @see java.lang.Iterable#iterator()
      */
     @Override
-    public Iterator< Term< ? >> iterator() {
-        assert ( this.terms != null );
-        return Collections.unmodifiableList( this.terms ).iterator();
+    public Iterator< Value< ? >> iterator() {
+        return inputs().iterator();
     }
 
     /**
-     * @return the maximum number of terms allowed or {@link #UNLIMITED unlimited}
+     * @return the descriptor name for this value (never <code>null</code>)
      */
-    public abstract int maxTerms();
-
-    /**
-     * @return the minimum number of terms allowed (never smaller than zero)
-     */
-    public abstract int minTerms();
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Term#modifiable()
-     */
-    @Override
-    public boolean modifiable() {
-        return false;
+    protected String name() {
+        return descriptor().name();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarPart#name()
+     * @see org.polyglotter.transformation.TransformationListener#notify(org.polyglotter.transformation.TransformationEvent)
      */
     @Override
-    public final String name() {
-        assert ( this.descriptor != null );
-        return this.descriptor.name();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarListener#notify(org.polyglotter.grammar.GrammarEvent)
-     */
-    @Override
-    public void notify( final GrammarEvent event ) {
+    public void notify( final TransformationEvent event ) {
         CheckArg.notNull( event, "event" );
 
-        // recalculate as a term value changed
-        if ( event.type() == TermEventType.VALUE_CHANGED ) {
-            termChanged();
+        // recalculate as a value changed
+        if ( event.type() == ValueEventType.VALUE_CHANGED ) {
+            valueChanged();
         }
     }
 
@@ -282,13 +380,12 @@ public abstract class AbstractOperation< T > implements GrammarListener, Operati
     protected void notifyObservers( final EventType type,
                                     final Map< String, Object > eventData ) {
         CheckArg.notNull( type, "type" );
-        assert ( this.listeners != null );
 
         if ( !this.listeners.isEmpty() ) {
-            final GrammarEvent event = GrammarFactory.createEvent( type, this.id, eventData );
-            List< GrammarListener > remove = null;
+            final TransformationEvent event = TransformationFactory.createEvent( type, this, eventData );
+            List< TransformationListener > remove = null;
 
-            for ( final GrammarListener listener : this.listeners ) {
+            for ( final TransformationListener listener : this.listeners ) {
                 try {
                     listener.notify( event );
                 } catch ( final Exception e ) {
@@ -303,7 +400,7 @@ public abstract class AbstractOperation< T > implements GrammarListener, Operati
             }
 
             if ( remove != null ) {
-                for ( final GrammarListener listenerToRemove : remove ) {
+                for ( final TransformationListener listenerToRemove : remove ) {
                     remove( listenerToRemove );
                 }
             }
@@ -335,123 +432,121 @@ public abstract class AbstractOperation< T > implements GrammarListener, Operati
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#problems()
+     * @see org.polyglotter.transformation.Operation#problems()
      */
     @Override
     public ValidationProblems problems() {
-        assert ( this.problems != null );
         return this.problems;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.GrammarEventSource#remove(org.polyglotter.grammar.GrammarListener)
+     * @see org.polyglotter.transformation.Operation#removeCategory(org.polyglotter.transformation.OperationCategory[])
      */
     @Override
-    public void remove( final GrammarListener listener ) {
-        assert ( this.listeners != null );
-        CheckArg.notNull( listener, "listener" );
+    public void removeCategory( final OperationCategory... categoriesToRemove ) throws PolyglotterException {
+        CheckArg.isNotEmpty( categoriesToRemove, "categoriesToRemove" );
 
-        if ( !this.listeners.remove( listener ) ) {
-            throw new IllegalArgumentException( PolyglotterI18n.listenerNotFoundToUnregister.text() );
+        for ( final OperationCategory category : categoriesToRemove ) {
+            if ( ( category == null )
+                 || ( category instanceof OperationCategory.BuiltInCategory )
+                 || !this.categories.remove( category ) ) {
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationCategory,
+                                                name(),
+                                                transformationId() );
+            }
+        }
+
+        if ( categoriesToRemove.length == 1 ) {
+            notifyObservers( OperationEventType.CATEGORY_REMOVED, EventTag.OLD, categoriesToRemove[ 0 ] );
+        } else {
+            notifyObservers( OperationEventType.CATEGORIES_REMOVED, EventTag.OLD, categoriesToRemove );
         }
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#remove(javax.xml.namespace.QName[])
+     * @see org.polyglotter.transformation.Operation#removeInput(org.polyglotter.transformation.Value[])
      */
     @Override
-    public void remove( final QName... termIds ) throws PolyglotterException {
-        CheckArg.isNotEmpty( termIds, "termIds" );
-        assert ( this.terms != null );
+    public void removeInput( final Value< ? >... inputsToRemove ) throws PolyglotterException {
+        CheckArg.isNotEmpty( inputsToRemove, "inputsToRemove" );
 
-        for ( final QName termId : termIds ) {
-            if ( termId == null ) {
-                throw new IllegalArgumentException( PolyglotterI18n.nullTermId.text() );
+        for ( final Value< ? > term : inputsToRemove ) {
+            if ( term == null ) {
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                                name(),
+                                                transformationId() );
             }
 
-            final Term< ? > term = get( termId ); // throws exception if term not found
-            term.remove( this ); // unregister from receiving grammar events
+            final QName descriptorId = term.descriptor().id();
+            final List< Value< ? >> values = inputs( descriptorId );
 
-            if ( !this.terms.remove( term ) ) {
-                throw new PolyglotterException( PolyglotterI18n.operationTermNotRemoved, term.id(), id() );
+            if ( ( values == null ) || !values.remove( term ) ) {
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                                name(),
+                                                transformationId() );
             }
 
-            // fire event
-            notifyObservers( OperationEventType.TERM_REMOVED, OperationEventType.TERM_REMOVED.toString(), term.id() );
+            if ( values.isEmpty() ) {
+                this.inputs.remove( descriptorId );
+            }
         }
 
-        termChanged();
+        if ( inputsToRemove.length == 1 ) {
+            notifyObservers( OperationEventType.VALUE_REMOVED, EventTag.OLD, inputsToRemove[ 0 ] );
+        } else {
+            notifyObservers( OperationEventType.VALUES_REMOVED, EventTag.OLD, inputsToRemove );
+        }
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#result()
+     * @see org.polyglotter.operation.ValueImpl#set(java.lang.Object)
      */
     @Override
-    public T result() throws PolyglotterException {
-        assert ( this.problems != null );
-
-        if ( !this.problems.isError() ) {
-            return this.result;
-        }
-
-        throw new PolyglotterException( PolyglotterI18n.operationHasErrors, this.id );
+    public void set( final T newValue ) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException( PolyglotterI18n.operationResultNotModifiable.text( name(),
+                                                                                                    transformation().id() ) );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Term#setValue(java.lang.Object)
-     * @throws UnsupportedOperationException
-     *         if method is called
+     * @see org.polyglotter.transformation.Operation#setInput(javax.xml.namespace.QName, java.lang.Object[])
      */
     @Override
-    public void setValue( final T newValue ) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException( PolyglotterI18n.operationResultNotModifiable.text( id() ) );
-    }
+    public void setInput( final QName descriptorId,
+                          final Object... value ) throws PolyglotterException {
+        if ( ( ( valuesBeingAdded == null ) || ( valuesBeingAdded.length == 0 ) ) && isValidInputDescriptorId( descriptorId ) ) {
+            this.inputs.remove( descriptorId );
+            this.logger.debug( "Input values for descriptor '%s' were removed", descriptorId );
+        } else if ( !isValidInputDescriptorId( descriptorId ) ) {
+            throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                            name(),
+                                            transformationId() );
+        }
+        CheckArg.notNull( descriptorId, "descriptorId" );
+        int index = 0;
 
-    /**
-     * Called after a change to the terms.
-     */
-    protected void termChanged() {
-        assert ( this.problems != null );
+        for ( final ValueDescriptor< ? > descriptor : inputDescriptors() ) {
+            final int numRequired = descriptor.requiredValueCount();
 
-        this.problems.clear();
-        validate();
+            if ( descriptor.id().equals( descriptorId ) ) {
+                // TODO process
 
-        if ( !this.problems.isError() ) {
-            final T oldValue = this.result;
-            T newValue = null;
-
-            try {
-                newValue = calculate();
-
-                if ( !ObjectUtil.equals( oldValue, newValue ) ) {
-                    this.result = newValue;
-                    notifyObservers( OperationEventType.RESULT_CHANGED );
+                break;
+            } else {
+                if ( descriptor().unbounded() ) {
+                    // TODO error finding unbounded means we could not find matching descriptor
                 }
-            } catch ( final PolyglotterException e ) {
-                final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.errorOnTermChanged.text( newValue, id() ) );
-                problems().add( problem );
+
+                index += numRequired;
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#terms()
-     */
-    @Override
-    public List< Term< ? >> terms() {
-        assert ( this.terms != null );
-        return Collections.unmodifiableList( this.terms );
     }
 
     /**
@@ -461,15 +556,12 @@ public abstract class AbstractOperation< T > implements GrammarListener, Operati
      */
     @Override
     public String toString() {
-        assert ( this.descriptor != null );
-        assert ( this.terms != null );
-
-        final StringBuilder builder = new StringBuilder( descriptor().abbreviation() );
+        final StringBuilder builder = new StringBuilder( descriptor().name() );
         builder.append( '(' );
 
         boolean firstTime = true;
 
-        for ( final Term< ? > term : terms() ) {
+        for ( final Value< ? > term : inputs() ) {
             if ( firstTime ) {
                 firstTime = false;
             } else {
@@ -486,104 +578,57 @@ public abstract class AbstractOperation< T > implements GrammarListener, Operati
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.grammar.Operation#transformId()
+     * @see org.polyglotter.transformation.Operation#transformation()
      */
     @Override
-    public QName transformId() {
-        return this.transformId;
+    public Transformation transformation() {
+        return this.transformation;
     }
 
     /**
-     * {@inheritDoc}
-     * 
-     * @throws PolyglotterException
-     *         if there is an issue
-     * 
-     * @see org.polyglotter.grammar.Term#value()
+     * @return the identifier for {@link Transformation transformation} this operation is contained in (never <code>null</code>)
      */
-    @Override
-    public T value() throws PolyglotterException {
-        return result();
+    protected QName transformationId() {
+        return transformation().id();
     }
 
     /**
-     * The operation's descriptor implementation.
+     * Validate the state of the input values. Validation errors should be stored as {@link ValidationProblem problems}.
      */
-    protected class DescriptorImpl implements Descriptor {
+    protected abstract void validate();
 
-        private final String abbreviation;
-        private final Category category;
-        private final String description;
-        private final String name;
+    /**
+     * Called after a change to an input value.
+     */
+    protected void valueChanged() {
+        this.problems.clear();
+        validate();
 
-        /**
-         * @param abbreviation
-         *        the operation's abbreviation (cannot be <code>null</code> or empty)
-         * @param category
-         *        the operations's category (cannot be <code>null</code>)
-         * @param description
-         *        the operation's description (cannot be <code>null</code> or empty)
-         * @param name
-         *        the operation's name (can be <code>null</code> or empty)
-         */
-        protected DescriptorImpl( final String abbreviation,
-                                  final Category category,
-                                  final String description,
-                                  final String name ) {
-            CheckArg.notEmpty( abbreviation, "abbreviation" );
-            CheckArg.notNull( category, "category" );
-            CheckArg.notEmpty( description, "description" );
+        if ( !this.problems.isError() ) {
+            T oldValue = null;
 
-            this.abbreviation = abbreviation;
-            this.category = category;
-            this.description = description;
-            this.name = name;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return this.abbreviation;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return this.category;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return this.description;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            if ( ( this.name == null ) || this.name.isEmpty() ) {
-                return id().toString();
+            try {
+                oldValue = get();
+            } catch ( final PolyglotterException e ) {
+                // TODO add a problem
             }
 
-            return this.name;
-        }
+            T newValue = null;
 
+            try {
+                newValue = calculate();
+
+                if ( !ObjectUtil.equals( oldValue, newValue ) ) {
+                    super.set( newValue );
+                }
+            } catch ( final PolyglotterException e ) {
+                final ValidationProblem problem =
+                    TransformationFactory.createError( descriptor().id(),
+                                                       PolyglotterI18n.errorOnTermChanged.text( newValue,
+                                                                                                descriptor().id() ) );
+                problems().add( problem );
+            }
+        }
     }
 
 }

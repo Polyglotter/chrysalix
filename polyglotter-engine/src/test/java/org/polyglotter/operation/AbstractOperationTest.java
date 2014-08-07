@@ -30,19 +30,20 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Iterator;
 
+import javax.management.Descriptor;
 import javax.xml.namespace.QName;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarEvent.EventType;
-import org.polyglotter.grammar.GrammarListener;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Operation.OperationEventType;
-import org.polyglotter.grammar.Term;
 import org.polyglotter.grammar.TestGrammarListener;
-import org.polyglotter.internal.NumberTerm;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.Operation.OperationEventType;
+import org.polyglotter.transformation.TransformationEvent.EventType;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.TransformationListener;
 
 @SuppressWarnings( "javadoc" )
 public final class AbstractOperationTest {
@@ -54,33 +55,33 @@ public final class AbstractOperationTest {
     public void beforeEach() {
         this.operation = new TestOperation();
         this.listener = new TestGrammarListener();
-        this.operation.add( this.listener );
+        this.operation.addInput( this.listener );
     }
 
     @Test
-    public void shouldAddMultipleTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
-        this.operation.add( TestConstants.STRING_2_TERM );
-        this.operation.add( TestConstants.STRING_3_TERM );
-        assertThat( this.operation.terms(),
+    public void shouldAddMultipleinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.STRING_2_TERM );
+        this.operation.addInput( TestConstants.STRING_3_TERM );
+        assertThat( this.operation.inputs(),
                     hasItems( new Term< ? >[] { TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM } ) );
-        assertThat( this.operation.terms().size(), is( 3 ) );
+        assertThat( this.operation.inputs().size(), is( 3 ) );
     }
 
     @Test
     public void shouldAddMultipleTerms2() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.terms(),
+        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM );
+        assertThat( this.operation.inputs(),
                     hasItems( new Term< ? >[] { TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM } ) );
-        assertThat( this.operation.terms().size(), is( 3 ) );
+        assertThat( this.operation.inputs().size(), is( 3 ) );
     }
 
     @Test
     public void shouldBeAbleToUseOperationAsTerm() throws PolyglotterException {
-        final Add addOp = new Add( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        final Add addOp = new Add( TestConstants.TEST_TRANSFORMATION );
         addOp.add( this.operation );
-        addOp.add( new NumberTerm( TestConstants.ID_2, 2 ) );
-        assertThat( addOp.result(), is( ( Number ) 3L ) );
+        addOp.add( TransformationFactory.createNumberTerm( TestConstants.ID_2, 2 ) );
+        assertThat( addOp.get(), is( ( Number ) 3L ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -90,13 +91,13 @@ public final class AbstractOperationTest {
 
     @Test
     public void shouldGetNotifiedWhenTermIsAdded() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         assertThat( this.listener.count(), is( 1 ) );
     }
 
     @Test
     public void shouldGetNotifiedWhenTermIsRemoved() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         this.listener.clear();
         this.operation.remove( TestConstants.STRING_1_ID );
         assertThat( this.listener.count(), is( 1 ) );
@@ -110,7 +111,7 @@ public final class AbstractOperationTest {
 
     @Test
     public void shouldHaveIteratorSizeEqualToTermSize() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM );
+        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM );
 
         final Iterator< Term< ? >> itr = this.operation.iterator();
         assertThat( itr.next(), is( notNullValue() ) );
@@ -121,12 +122,12 @@ public final class AbstractOperationTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotAllowDuplicateTermToBeAdded() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_1_TERM );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowEmptyTermArrayToBeAdded() throws PolyglotterException {
-        this.operation.add( ( new Term< ? >[ 0 ] ) );
+        this.operation.addInput( ( new Term< ? >[ 0 ] ) );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -145,8 +146,8 @@ public final class AbstractOperationTest {
     }
 
     @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotAllowIteratorToRemoveTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
+    public void shouldNotAllowIteratorToRemoveinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.STRING_1_TERM );
 
         final Iterator< Term< ? > > itr = this.operation.iterator();
         itr.next();
@@ -155,17 +156,17 @@ public final class AbstractOperationTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullListenerToBeAdded() {
-        this.operation.add( ( GrammarListener ) null );
+        this.operation.addInput( ( TransformationListener ) null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullListenerToBeRemoved() {
-        this.operation.remove( ( GrammarListener ) null );
+        this.operation.remove( ( TransformationListener ) null );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullTermArrayToBeAdded() throws PolyglotterException {
-        this.operation.add( ( Term< ? >[] ) null );
+        this.operation.addInput( ( Term< ? >[] ) null );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -175,7 +176,7 @@ public final class AbstractOperationTest {
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldNotAllowNullTermToBeAdded() throws PolyglotterException {
-        this.operation.add( ( Term< ? > ) null );
+        this.operation.addInput( ( Term< ? > ) null );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -191,27 +192,27 @@ public final class AbstractOperationTest {
     @Test
     public void shouldNotGetNotifiedWhenTermAddedAfterListenerIsRemoved() throws PolyglotterException {
         this.operation.remove( this.listener );
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         assertThat( this.listener.count(), is( 0 ) );
     }
 
     @Test
-    public void shouldRemoveMultipleTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
-        this.operation.remove( TestConstants.INT_1_TERM.id(), TestConstants.INT_2_TERM.id(), TestConstants.DOUBLE_1_TERM.id() );
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+    public void shouldRemoveMultipleinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
+        this.operation.remove( TestConstants.INT_1_TERM.transformationId(), TestConstants.INT_2_TERM.transformationId(), TestConstants.DOUBLE_1_TERM.transformationId() );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test
     public void shouldRemoveOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.remove( TestConstants.INT_1_TERM.id() );
-        assertThat( this.operation.terms().size(), is( 0 ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.remove( TestConstants.INT_1_TERM.transformationId() );
+        assertThat( this.operation.inputs().size(), is( 0 ) );
     }
 
     @Test
     public void shouldSetIdAtConstruction() {
-        assertThat( this.operation.id(), is( TestConstants.ID ) );
+        assertThat( this.operation.transformationId(), is( TestConstants.ID ) );
     }
 
     @Test
@@ -252,13 +253,13 @@ public final class AbstractOperationTest {
         }
 
         @Override
-        public int maxTerms() {
+        public int requiredTermCount() {
             return 0;
         }
 
         @Override
-        public int minTerms() {
-            return 0;
+        public boolean termsUnbounded() {
+            return false;
         }
 
         @Override

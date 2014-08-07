@@ -23,13 +23,15 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
+import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Provides a random number with a positive sign, greater than or equal to {@code 0.0} and less than {@code 1.0}. There is an
@@ -38,63 +40,31 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Random extends AbstractOperation< Double > {
 
     /**
-     * The operation descriptor.
+     * The output descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "rand";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.randomOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.randomOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Double > DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Random.class.getSimpleName() ),
+                                                     PolyglotterI18n.randomOperationDescription.text(),
+                                                     PolyglotterI18n.randomOperationName.text(),
+                                                     Double.class,
+                                                     false,
+                                                     0,
+                                                     false );
 
     /**
-     * @param id
-     *        the random number operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
      * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     *         if the input is <code>null</code>
      */
-    Random( final QName id,
-            final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    Random( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -110,63 +80,33 @@ public final class Random extends AbstractOperation< Double > {
             return Math.random();
         }
 
-        final Number value = ( Number ) terms().get( 0 ).value();
+        final Number value = ( Number ) inputs().get( 0 ).get();
         return new java.util.Random( value.longValue() ).nextDouble();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.transformation.Operation#inputDescriptors()
      */
     @Override
-    public int maxTerms() {
-        return 1;
+    public List< ValueDescriptor< ? >> inputDescriptors() {
+        return ValueDescriptor.NO_DESCRIPTORS;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int minTerms() {
-        return 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there is at most one term
-        if ( terms().size() > 1 ) {
+        if ( !inputs().isEmpty() ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.randomOperationInvalidNumberOfTerms.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.randomOperationInvalidNumberOfTerms.text( transformationId() ) );
             problems().add( problem );
-        } else if ( terms().size() == 1 ) {
-            // make sure term is a number
-            final Term< ? > term = terms().get( 0 );
-            Object value;
-
-            try {
-                value = term.value();
-
-                if ( !( value instanceof Number ) ) {
-                    final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.randomOperationInvalidTermType.text( id(),
-                                                                                                         term.id() ) );
-                    problems().add( problem );
-                }
-            } catch ( final PolyglotterException e ) {
-                final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
-                problems().add( problem );
-                this.logger.error( e, PolyglotterI18n.message, problem.message() );
-            }
         }
     }
 

@@ -23,13 +23,17 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
+import java.util.Collections;
+import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Parses the string term into a double value.
@@ -39,63 +43,39 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class ParseDouble extends AbstractOperation< Double > {
 
     /**
-     * The operation descriptor.
+     * The output descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "parse";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.parseDoubleOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.parseDoubleOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Double > DESCRIPTOR =
+        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( ParseDouble.class.getSimpleName() ),
+                                                                       PolyglotterI18n.parseDoubleOperationDescription.text(),
+                                                                       PolyglotterI18n.parseDoubleOperationName.text(),
+                                                                       Double.class );
 
     /**
-     * @param id
-     *        the operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The input descriptors.
      */
-    ParseDouble( final QName id,
-                 final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    private static final List< ValueDescriptor< Number >> INPUT_DESCRIPTORS =
+        // TODO id, description, name
+        Collections.singletonList(
+                   TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( ParseDouble.class.getSimpleName() ),
+                                                                                  PolyglotterI18n.parseDoubleOperationDescription.text(),
+                                                                                  PolyglotterI18n.parseDoubleOperationName.text(),
+                                                                                  Number.class ) );
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    ParseDouble( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -106,7 +86,7 @@ public final class ParseDouble extends AbstractOperation< Double > {
     @Override
     protected Double calculate() throws PolyglotterException {
         assert !problems().isError();
-        final String value = ( String ) terms().get( 0 ).value();
+        final String value = ( String ) inputs().get( 0 ).get();
 
         return Double.valueOf( value );
     }
@@ -114,53 +94,45 @@ public final class ParseDouble extends AbstractOperation< Double > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.transformation.Operation#inputDescriptors()
      */
     @Override
-    public int maxTerms() {
-        return 1;
+    public List< ValueDescriptor< ? >> inputDescriptors() {
+        return INPUT_DESCRIPTORS;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int minTerms() {
-        return 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there is one term
-        if ( terms().size() != 1 ) {
+        if ( inputs().size() != 1 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.parseDoubleOperationMustHaveOneTerm.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.parseDoubleOperationMustHaveOneTerm.text( transformationId() ) );
             problems().add( problem );
         } else {
             // make sure term is a number
-            final Term< ? > term = terms().get( 0 );
+            final Value< ? > term = inputs().get( 0 );
             Object value;
 
             try {
-                value = term.value();
+                value = term.get();
 
                 if ( !( value instanceof Number ) ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.parseDoubleOperationInvalidTermType.text( id(),
-                                                                                                              term.id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.parseDoubleOperationInvalidTermType.text( transformationId() ) );
                     problems().add( problem );
                 }
             } catch ( final PolyglotterException e ) {
                 final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                    TransformationFactory.createError( transformationId(),
+                                                       PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                      transformationId() ) );
                 problems().add( problem );
                 this.logger.error( e, PolyglotterI18n.message, problem.message() );
             }

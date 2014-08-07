@@ -21,37 +21,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.polyglotter.transformation;
 
-import java.util.Map;
+import java.util.List;
 
-import javax.xml.namespace.QName;
+import org.polyglotter.transformation.ValidationProblem.Severity;
 
 /**
- * A class defining a {@link GrammarPart grammar part} event.
+ * A collection of {@link ValidationProblem validation problems}.
  */
-public interface GrammarEvent {
-    
+public interface ValidationProblems extends List< ValidationProblem > {
+
     /**
-     * @return a collection of data related to the event (can be <code>null</code> or empty)
+     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#ERROR error} severity
      */
-    Map< String, ? > data();
-    
+    boolean isError();
+
     /**
-     * @return the grammar part identifier that sourced this event (never <code>null</code>)
+     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#INFO info} severity and does not
+     *         contain problems with {@link Severity#ERROR error} or {@link Severity#WARNING warning} severity
      */
-    QName sourceId();
-    
+    boolean isInfo();
+
     /**
-     * @return the event type
+     * @return <code>true</code> if all the problems in the collection have an {@link Severity#OK OK} severity
      */
-    EventType type();
-    
+    boolean isOk();
+
     /**
-     * The type of the event.
+     * @return <code>true</code> if the collection contains a problem that has a {@link Severity#WARNING warning} severity and does
+     *         not contain a problem with an {@link Severity#ERROR error} severity
      */
-    interface EventType {
-        // nothing to do
-    }
-    
+    boolean isWarning();
+
 }

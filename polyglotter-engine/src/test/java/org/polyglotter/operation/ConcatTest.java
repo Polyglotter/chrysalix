@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.TestConstants;
-import org.polyglotter.grammar.Operation.Category;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 
 @SuppressWarnings( { "javadoc" } )
 public final class ConcatTest {
@@ -39,41 +39,37 @@ public final class ConcatTest {
 
     @Before
     public void beforeEach() {
-        this.operation = new Concat( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Concat( TestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
-    public void shouldConcatMultipleTerms() throws Exception {
-        this.operation.add( TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.result(), is( TestConstants.STRING_1_VALUE + TestConstants.STRING_2_VALUE + TestConstants.STRING_3_VALUE ) );
+    public void shouldConcatMultipleinputs() throws Exception {
+        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM );
+        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.STRING_2_VALUE + TestConstants.STRING_3_VALUE ) );
     }
 
     @Test
     public void shouldConcatTermsWithEmptyValues() throws Exception {
-        this.operation.add( TestConstants.STRING_1_TERM, TestConstants.EMPTY_STRING_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.result(), is( TestConstants.STRING_1_VALUE + TestConstants.EMPTY_STRING_VALUE + TestConstants.STRING_3_VALUE ) );
+        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.EMPTY_STRING_TERM, TestConstants.STRING_3_TERM );
+        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.EMPTY_STRING_VALUE + TestConstants.STRING_3_VALUE ) );
     }
 
     @Test
     public void shouldConcatTermsWithNullValues() throws Exception {
-        this.operation.add( TestConstants.STRING_1_TERM, TestConstants.NULL_STRING_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.result(), is( TestConstants.STRING_1_VALUE + TestConstants.NULL_STRING_VALUE + TestConstants.STRING_3_VALUE ) );
+        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.NULL_STRING_TERM, TestConstants.STRING_3_TERM );
+        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.NULL_STRING_VALUE + TestConstants.STRING_3_VALUE ) );
     }
 
     @Test
     public void shouldConcatTermsWithNumberValues() throws Exception {
-        this.operation.add( TestConstants.STRING_1_TERM, TestConstants.INT_1_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.result(), is( TestConstants.STRING_1_VALUE + TestConstants.INT_1_VALUE + TestConstants.STRING_3_VALUE ) );
-    }
-
-    @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "+" ) );
+        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.INT_1_TERM, TestConstants.STRING_3_TERM );
+        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.INT_1_VALUE + TestConstants.STRING_3_VALUE ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.STRING ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.STRING ), is( true ) );
     }
 
     @Test

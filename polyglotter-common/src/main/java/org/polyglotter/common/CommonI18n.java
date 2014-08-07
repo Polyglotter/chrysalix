@@ -28,13 +28,13 @@ package org.polyglotter.common;
  */
 @SuppressWarnings( "javadoc" )
 public final class CommonI18n {
-    
+
     // public static I18n argumentDidNotContainKey = new I18n( "" );
     // public static I18n argumentDidNotContainObject = new I18n( "" );
     public static I18n argumentMayNotBeEmpty = new I18n( "The \"%s\" argument may not be empty" );
     // public static I18n argumentMayNotBeGreaterThan = new I18n( "" );
     // public static I18n argumentMayNotBeLessThan = new I18n( "" );
-    // public static I18n argumentMayNotBeNegative = new I18n( "" );
+    public static I18n argumentMayNotBeNegative = new I18n( "The \"%s\" argument's value, \"%s\", may not be negative" );
     public static I18n argumentMayNotBeNull = new I18n( "The \"%s\" argument may not be null" );
     public static I18n argumentMayNotBeZeroLength = new I18n( "The \"%s\" argument may not be zero-length" );
     // public static I18n argumentMayNotBePositive = new I18n( "" );

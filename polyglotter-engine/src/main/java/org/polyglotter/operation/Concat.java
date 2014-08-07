@@ -23,14 +23,17 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
+import java.util.Collections;
+import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * A string concatenation operation.
@@ -38,61 +41,44 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Concat extends AbstractOperation< String > {
 
     /**
-     * The operation descriptor.
+     * The output descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "+";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.STRING;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.concatOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.concatOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< String > DESCRIPTOR =
+        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Add.class.getSimpleName() ),
+                                                                       PolyglotterI18n.concatOperationDescription.text(),
+                                                                       PolyglotterI18n.concatOperationName.text(),
+                                                                       String.class );
+    /**
+     * The input term descriptor.
+     */
+    public static final ValueDescriptor< String > TERM_DESCRIPTOR =
+        // TODO id, description, name
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Add.class.getSimpleName() ),
+                                                     PolyglotterI18n.concatOperationDescription.text(),
+                                                     PolyglotterI18n.concatOperationName.text(),
+                                                     String.class,
+                                                     true,
+                                                     2,
+                                                     true );
+    /**
+     * The input descriptors.
+     */
+    private static final List< ValueDescriptor< String >> INPUT_DESCRIPTORS = Collections.singletonList( TERM_DESCRIPTOR );
 
     /**
-     * @param id
-     *        the add operation unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the transform identifier containing this operation (cannot be <code>null</code>)
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
      */
-    Concat( final QName id,
-            final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    Concat( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.STRING );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -106,8 +92,8 @@ public final class Concat extends AbstractOperation< String > {
 
         final StringBuilder result = new StringBuilder();
 
-        for ( final Term< ? > term : terms() ) {
-            final Object value = term.value();
+        for ( final Value< ? > term : inputs() ) {
+            final Object value = term.get();
             result.append( ( value == null ) ? "null" : value.toString() );
         }
 
@@ -117,40 +103,28 @@ public final class Concat extends AbstractOperation< String > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.transformation.Operation#inputDescriptors()
      */
     @Override
-    public int maxTerms() {
-        return Operation.UNLIMITED;
+    public List< ValueDescriptor< ? >> inputDescriptors() {
+        return INPUT_DESCRIPTORS;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int minTerms() {
-        return 2;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
-        if ( terms().isEmpty() ) {
+    protected void validate() {
+        // validate number of terms
+        if ( inputs().size() < TERM_DESCRIPTOR.requiredValueCount() ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.addOperationHasNoTerms.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.invalidTermCount.text( name(),
+                                                                                          transformationId(),
+                                                                                          inputs().size() ) );
             problems().add( problem );
-        } else {
-            if ( terms().size() < minTerms() ) {
-                final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
-                problems().add( problem );
-            }
         }
     }
 

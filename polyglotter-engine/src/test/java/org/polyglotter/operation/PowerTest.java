@@ -28,11 +28,11 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class PowerTest {
@@ -41,41 +41,37 @@ public final class PowerTest {
 
     @Before
     public void beforeEach() {
-        this.operation = new Power( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Power( TestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
-    public void shouldAddTwoTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
-        assertThat( this.operation.terms().size(), is( 2 ) );
+    public void shouldAddTwoinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.INT_2_TERM );
+        assertThat( this.operation.inputs().size(), is( 2 ) );
         assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
         assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_2_ID ), is( TestConstants.INT_2_TERM ) );
     }
 
     @Test
-    public void shouldCalculateDoubleTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.DOUBLE_1_TERM );
-        this.operation.add( TestConstants.DOUBLE_2_TERM );
-        assertThat( this.operation.result(),
+    public void shouldCalculateDoubleinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
+        this.operation.addInput( TestConstants.DOUBLE_2_TERM );
+        assertThat( this.operation.get(),
                     is( ( Number ) Math.pow( TestConstants.DOUBLE_1_VALUE, TestConstants.DOUBLE_2_VALUE ) ) );
     }
 
     @Test
-    public void shouldCalculateFloatTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.FLOAT_1_TERM );
-        this.operation.add( TestConstants.FLOAT_2_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.pow( TestConstants.FLOAT_1_VALUE, TestConstants.FLOAT_2_VALUE ) ) );
-    }
-
-    @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "pow" ) );
+    public void shouldCalculateFloatinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.FLOAT_1_TERM );
+        this.operation.addInput( TestConstants.FLOAT_2_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.pow( TestConstants.FLOAT_1_VALUE, TestConstants.FLOAT_2_VALUE ) ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -84,18 +80,18 @@ public final class PowerTest {
     }
 
     @Test
-    public void shouldHaveErrorWhenMoreThanTwoTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
-        this.operation.add( TestConstants.DOUBLE_1_TERM );
+    public void shouldHaveErrorWhenMoreThanTwoinputs() throws PolyglotterException {
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.INT_2_TERM );
+        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotANumber() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -107,17 +103,17 @@ public final class PowerTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( TestConstants.INT_1_TERM );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test

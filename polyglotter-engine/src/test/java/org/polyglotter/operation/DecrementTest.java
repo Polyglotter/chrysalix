@@ -29,11 +29,11 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class DecrementTest {
@@ -42,31 +42,27 @@ public final class DecrementTest {
 
     @Before
     public void beforeEach() {
-        this.operation = new Decrement( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Decrement( TestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms().size(), is( 1 ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        assertThat( this.operation.inputs().size(), is( 1 ) );
         assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
     }
 
     @Test
     public void shouldDecrement() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM } ) );
-        assertThat( this.operation.result(), is( TestConstants.INT_1_VALUE - 1 ) );
-    }
-
-    @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "--" ) );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        assertThat( this.operation.inputs(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM } ) );
+        assertThat( this.operation.get(), is( TestConstants.INT_1_VALUE - 1 ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -76,15 +72,15 @@ public final class DecrementTest {
 
     @Test
     public void shouldHaveErrorWhenMoreThanOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
+        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( TestConstants.INT_2_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotAnInteger() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( TestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -96,17 +92,17 @@ public final class DecrementTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( TestConstants.INT_1_TERM );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test

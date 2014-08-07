@@ -47,6 +47,14 @@ import org.polyglotter.internal.TransformImpl;
 public final class Polyglotter implements Modeler {
 
     private final Modeler modeler;
+    /**
+     * The Polyglotter namespace. Value is {@value} .
+     */
+    public static final String NAMESPACE_URI = "www.redhat.com/polyglotter/1.0";
+    /**
+     * The Polyglotter namespace prefix. Value is {@value} .
+     */
+    public static final String NAMESPACE_PREFIX = "poly";
 
     /**
      * Uses a default ModeShape configuration.
