@@ -21,43 +21,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.modeshape.modeler.test;
+package org.modeshape.modeler;
 
+import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
-
-import org.junit.Before;
-import org.modeshape.modeler.Model;
-import org.modeshape.modeler.Metamodel;
+import org.junit.Test;
+import org.modeshape.modeler.test.JavaIntegrationTest;
 
 @SuppressWarnings( "javadoc" )
-public abstract class JavaIntegrationTest extends BaseIntegrationTest {
+public class ITMetamodel extends JavaIntegrationTest {
 
-    protected static final String CATEGORY = "java";
-    protected static final String METAMODEL_ID = "org.modeshape.modeler.java.JavaFile";
-
-    protected static final String MODEL_NAME = "Mock.java";
-    protected static final String MODEL_PATH = "src/test/resources/" + MODEL_NAME;
-    protected static final File MODEL_FILE = new File( MODEL_PATH );
-
-    @Override
-    @Before
-    public void before() throws Exception {
-        super.before();
-        metamodelManager().install( CATEGORY );
-    }
-
-    protected Model importModel() throws Exception {
-        final Model model = modeler().importModel( MODEL_FILE, null, metamodel() );
-        assertThat( model, notNullValue() );
-        return model;
-    }
-
-    protected Metamodel metamodel() throws Exception {
+    @Test
+    public void shouldGetDescriptors() throws Exception {
         final Metamodel metamodel = modeler().metamodelManager().metamodel( METAMODEL_ID );
         assertThat( metamodel, notNullValue() );
-        return metamodel;
+        final Descriptor[] descriptors = metamodel.descriptors();
+        assertThat( descriptors, notNullValue() );
+        assertThat( descriptors.length, not( 0 ) );
     }
 }

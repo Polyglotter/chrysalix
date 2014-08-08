@@ -23,49 +23,10 @@
  */
 package org.modeshape.modeler;
 
-import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
-import org.modeshape.modeler.spi.metamodel.Exporter;
-import org.modeshape.modeler.spi.metamodel.Importer;
 
 /**
  * 
  */
-public interface Metamodel {
+public interface Descriptor {
 
-    /**
-     * @return the category of this metamodel
-     */
-    String category();
-
-    /**
-     * @return the dependency processor or <code>null</code> if one does not exist
-     */
-    DependencyProcessor dependencyProcessor();
-
-    /**
-     * @return the descriptors defined by this metamodel
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    Descriptor[] descriptors() throws ModelerException;
-
-    /**
-     * @return this metamodel's exporter or <code>null</code> if one does not exist
-     */
-    Exporter exporter();
-
-    /**
-     * @return the ID of this metamodel
-     */
-    String id();
-
-    /**
-     * @return this metamodel's importer (never <code>null</code>)
-     */
-    Importer importer();
-
-    /**
-     * @return the name of this metamodel
-     */
-    String name();
 }

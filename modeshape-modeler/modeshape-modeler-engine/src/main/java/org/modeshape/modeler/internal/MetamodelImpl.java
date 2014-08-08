@@ -23,37 +23,37 @@
  */
 package org.modeshape.modeler.internal;
 
-import org.modeshape.common.util.CheckArg;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.Session;
+import javax.jcr.nodetype.NodeTypeIterator;
+
 import org.modeshape.common.util.StringUtil;
+import org.modeshape.modeler.Descriptor;
 import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.ModelerException;
+import org.modeshape.modeler.internal.task.TaskWithResult;
 import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 import org.modeshape.modeler.spi.metamodel.Exporter;
 import org.modeshape.modeler.spi.metamodel.Importer;
 
-/**
- * 
- */
-public final class MetamodelImpl implements Metamodel {
+final class MetamodelImpl implements Metamodel {
 
-    private Importer importer;
-    private DependencyProcessor dependencyProcessor;
-    private Exporter exporter;
-
+    private final ModelerImpl modeler;
     private final String category;
     private final String id;
+
+    private Importer importer;
+    private Exporter exporter;
+    private DependencyProcessor dependencyProcessor;
+
     private String name;
 
-    /**
-     * @param category
-     *        the metamodel category (cannot be <code>null</code> or empty)
-     * @param id
-     *        the metamodel identifier (cannot be <code>null</code> or empty)
-     */
-    MetamodelImpl( final String category,
+    MetamodelImpl( final ModelerImpl modeler,
+                   final String category,
                    final String id ) {
-        CheckArg.isNotEmpty( category, "category" );
-        CheckArg.isNotEmpty( id, "id" );
-
+        this.modeler = modeler;
         this.category = category;
         this.id = id;
     }
@@ -85,6 +85,27 @@ public final class MetamodelImpl implements Metamodel {
         // } catch ( final Exception e ) {
         // throw new ModelerException( e );
         // }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Metamodel#descriptors()
+     */
+    @Override
+    public Descriptor[] descriptors() throws ModelerException {
+        return modeler.run( new TaskWithResult< Descriptor[] >() {
+
+            @Override
+            public Descriptor[] run( final Session session ) throws Exception {
+                final List< Descriptor > descriptors = new ArrayList<>();
+                for ( final NodeTypeIterator iter = session.getWorkspace().getNodeTypeManager().getAllNodeTypes(); iter.hasNext(); ) {
+                    iter.nextNodeType();
+                    descriptors.add( new Descriptor() {} );
+                }
+                return descriptors.toArray( new Descriptor[ descriptors.size() ] );
+            }
+        } );
     }
 
     /**

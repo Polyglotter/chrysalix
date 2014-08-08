@@ -70,6 +70,6 @@ public class ITModel extends JavaIntegrationTest {
     public void shouldGetMetamodel() throws Exception {
         final Metamodel metamodel = importModel().metamodel();
         assertThat( metamodel, notNullValue() );
-        assertThat( metamodel.id(), is( JAVA_ID ) );
+        assertThat( metamodel.id(), is( METAMODEL_ID ) );
     }
 }
