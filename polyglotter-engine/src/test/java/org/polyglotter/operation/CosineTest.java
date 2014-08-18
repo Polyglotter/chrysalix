@@ -24,65 +24,85 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class CosineTest {
+
+    private static final String ID = Cosine.TERM_DESCRIPTOR.id();
+    private static Value< Number > DOUBLE_TERM;
+    private static Value< Number > FLOAT_TERM;
+    private static Value< Number > INT_TERM;
+    private static Value< Number > INT2_TERM;
+    private static Value< Number > LONG_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        DOUBLE_TERM = TransformationFactory.createValue( Cosine.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        FLOAT_TERM = TransformationFactory.createValue( Cosine.TERM_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        INT_TERM = TransformationFactory.createValue( Cosine.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = TransformationFactory.createValue( Cosine.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        LONG_TERM = TransformationFactory.createValue( Cosine.TERM_DESCRIPTOR, OperationTestConstants.LONG_1_VALUE );
+    }
 
     private Cosine operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Cosine( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Cosine( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms().size(), is( 1 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
+        this.operation.addInput( ID, INT_TERM );
+        assertThat( this.operation.inputs().size(), is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
     }
 
     @Test
     public void shouldCalculateDoubleTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.cos( TestConstants.DOUBLE_1_VALUE ) ) );
+        this.operation.addInput( ID, DOUBLE_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.cos( DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
     public void shouldCalculateFloatTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.FLOAT_1_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.cos( TestConstants.FLOAT_1_VALUE ) ) );
+        this.operation.addInput( ID, FLOAT_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.cos( FLOAT_TERM.get().floatValue() ) ) );
     }
 
     @Test
     public void shouldCalculateIntegerTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.cos( TestConstants.INT_1_VALUE ) ) );
+        this.operation.addInput( ID, INT_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.cos( INT_TERM.get().intValue() ) ) );
     }
 
     @Test
     public void shouldCalculateLongTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.LONG_1_TERM );
-        assertThat( this.operation.result(), is( ( Number ) Math.cos( TestConstants.LONG_1_VALUE ) ) );
+        this.operation.addInput( ID, LONG_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.cos( LONG_TERM.get().longValue() ) ) );
     }
 
     @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "cos" ) );
+    public void shouldCreateOperation() {
+        assertThat( Cosine.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Cosine.class ) ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -92,15 +112,15 @@ public final class CosineTest {
 
     @Test
     public void shouldHaveErrorWhenMoreThanOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, INT2_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotANumber() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( ID, OperationTestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -112,17 +132,17 @@ public final class CosineTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( INT_TERM );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test

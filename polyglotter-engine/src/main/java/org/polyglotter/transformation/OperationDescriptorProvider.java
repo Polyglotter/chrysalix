@@ -21,23 +21,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter;
+package org.polyglotter.transformation;
 
-import org.polyglotter.common.PolyglotterException;
+import java.util.List;
 
 /**
- * 
+ * A collection of built-in {@link Operation operation} descriptors.
  */
-public interface Operation {
-    
+public interface OperationDescriptorProvider {
+
     /**
-     * @throws PolyglotterException
-     *         if any error occurs
+     * @return a collection of {@link Operation operation} {@link OperationDescriptor descriptors}
      */
-    void execute() throws PolyglotterException;
-    
-    /**
-     * @return this operation's name
-     */
-    String name();
+    List< OperationDescriptor< ? > > descriptors();
+
 }

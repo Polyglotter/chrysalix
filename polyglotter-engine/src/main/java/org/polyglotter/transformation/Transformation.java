@@ -21,50 +21,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
-
-import java.util.Collection;
+package org.polyglotter.transformation;
 
 import org.polyglotter.common.PolyglotterException;
 
 /**
- * A class that contains {@link Operation operations} used in transformations.
+ * A class representing a transformation. A transformation uses an ordered set of {@link Operation operations} to calculate a result
+ * consisting of one or more {@link Value values}.
  */
-public interface Transform extends GrammarPart, Iterable< Operation< ? > > {
-    
+public interface Transformation extends Iterable< Operation< ? > > {
+
     /**
      * @param operations
-     *        the operations being added (cannot be <code>null</code>)
+     *        the operations being added (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the operation array is <code>null</code> or any value in the array is <code>null</code>
+     *         if the operation being added is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws PolyglotterException
-     *         if any of the operations have already been added
+     *         if any of the operations have already been added or if an operation cannot be added
      */
-    void add( Operation< ? >... operations ) throws PolyglotterException;
-    
+    void add( final Operation< ? >... operations ) throws PolyglotterException;
+
     /**
-     * @return a collection of all the {@link Operation operations} performed by this transform (never <code>null</code>)
+     * @return a unique identifier (never <code>null</code> or empty)
      */
-    Collection< Operation< ? > > operations();
-    
+    String id();
+
     /**
-     * @param type
-     *        the result term type of the operations being requested (cannot be <code>null</code>)
-     * @return a collection of operations that match (never <code>null</code> but can be empty)
-     * @throws PolyglotterException
-     *         if the input term type is <code>null</code>
+     * @return a collection of the {@link Operation operations} performed by this transformation (never <code>null</code> but can be
+     *         empty)
      * @see Operation#NO_OPERATIONS
      */
-    < T > Collection< Operation< T >> operationsFor( T type ) throws PolyglotterException;
-    
+    Operation< ? >[] operations();
+
     /**
-     * @param operationIds
-     *        the identifiers of the operations being removed (cannot be <code>null</code>)
+     * @param operations
+     *        the operations being removed (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the operation identifiers array is <code>null</code> or any value in the array is <code>null</code>
+     *         if the operation being removed is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws PolyglotterException
      *         if any of the operations cannot be found or cannot be removed
      */
-    void remove( Operation< ? >... operationIds ) throws PolyglotterException;
-    
+    void remove( final Operation< ? >... operations ) throws PolyglotterException;
+
 }

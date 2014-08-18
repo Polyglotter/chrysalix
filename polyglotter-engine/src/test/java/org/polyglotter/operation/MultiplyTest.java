@@ -24,42 +24,57 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class MultiplyTest {
+
+    private static final String ID = Multiply.TERM_DESCRIPTOR.id();
+    private static Value< Number > DOUBLE_TERM;
+    private static Value< Number > INT_TERM;
+    private static Value< Number > INT2_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        DOUBLE_TERM = TransformationFactory.createValue( Multiply.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        INT_TERM = TransformationFactory.createValue( Multiply.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = TransformationFactory.createValue( Multiply.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+    }
 
     private Multiply operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Multiply( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Multiply( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldCalculateIntegerResult() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
-        assertThat( this.operation.result().intValue(), is( TestConstants.INT_1_VALUE * TestConstants.INT_2_VALUE ) );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, INT2_TERM );
+        assertThat( this.operation.get().intValue(), is( INT_TERM.get().intValue() * INT2_TERM.get().intValue() ) );
     }
 
     @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "*" ) );
+    public void shouldCreateOperation() {
+        assertThat( Multiply.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Multiply.class ) ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -69,8 +84,8 @@ public final class MultiplyTest {
 
     @Test
     public void shouldHaveErrorWhenMultiplyingTermWithWrongType() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( ID, INT_TERM, INT2_TERM ); // will get rid of current problems
+        this.operation.addInput( ID, OperationTestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -82,55 +97,52 @@ public final class MultiplyTest {
 
     @Test
     public void shouldMultiplyIntegerAndDouble() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.terms(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.result(), is( ( Number ) ( TestConstants.INT_1_VALUE * TestConstants.DOUBLE_1_VALUE ) ) );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, DOUBLE_TERM );
+        assertThat( this.operation.get(), is( ( Number ) ( INT_TERM.get().intValue() * DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
-    public void shouldMultiplyMultipleTerms() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.terms().size(), is( 3 ) );
-        assertThat( this.operation.terms(),
-                    hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.result(),
-                    is( ( Number ) ( TestConstants.INT_1_VALUE * TestConstants.INT_2_VALUE * TestConstants.DOUBLE_1_VALUE ) ) );
+    public void shouldMultiplyMultipleinputs() throws PolyglotterException {
+        this.operation.addInput( ID, INT_TERM, INT2_TERM, DOUBLE_TERM );
+        assertThat( this.operation.inputs().size(), is( 3 ) );
+        assertThat( this.operation.get(),
+                    is( ( Number ) ( INT_TERM.get().intValue() * INT2_TERM.get().intValue() * DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultWithOnlyOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.result();
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( INT_TERM );
     }
 
     @Test
     public void shouldNotHaveProblemsWithTwoTermsOfCorrectType() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM );
+        this.operation.addInput( ID, INT_TERM, INT2_TERM );
         assertThat( this.operation.problems().isEmpty(), is( true ) );
         assertThat( this.operation.problems().isOk(), is( true ) );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test
     public void shouldObtainTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms().size(), is( 1 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
+        this.operation.addInput( ID, INT_TERM );
+        assertThat( this.operation.inputs().size(), is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
     }
 
     @Test

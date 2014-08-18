@@ -24,42 +24,55 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.Operation.Category;
-import org.polyglotter.grammar.Term;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class IncrementTest {
+
+    private static final String ID = Increment.TERM_DESCRIPTOR.id();
+    private static Value< Integer > INT_TERM;
+    private static Value< Integer > INT2_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        INT_TERM = TransformationFactory.createValue( Increment.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = TransformationFactory.createValue( Increment.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+    }
 
     private Increment operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Increment( TestConstants.ID, TestConstants.TRANSFORM_ID );
+        this.operation = new Increment( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms().size(), is( 1 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
+        this.operation.addInput( ID, INT_TERM );
+        assertThat( this.operation.inputs().size(), is( 1 ) );
+        assertThat( ( Value< Integer > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
     }
 
     @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "++" ) );
+    public void shouldCreateOperation() {
+        assertThat( Increment.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Increment.class ) ) );
     }
 
     @Test
     public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.descriptor().category(), is( Category.ARITHMETIC ) );
+        assertThat( this.operation.categories().size(), is( 1 ) );
+        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
     }
 
     @Test
@@ -69,15 +82,15 @@ public final class IncrementTest {
 
     @Test
     public void shouldHaveErrorWhenMoreThanOneTerm() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        this.operation.add( TestConstants.INT_2_TERM );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, INT2_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotAnInteger() throws PolyglotterException {
-        this.operation.add( TestConstants.STRING_1_TERM );
+        this.operation.addInput( ID, OperationTestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -89,24 +102,23 @@ public final class IncrementTest {
 
     @Test
     public void shouldIncrement() throws PolyglotterException {
-        this.operation.add( TestConstants.INT_1_TERM );
-        assertThat( this.operation.terms(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM } ) );
-        assertThat( this.operation.result(), is( TestConstants.INT_1_VALUE + 1 ) );
+        this.operation.addInput( ID, INT_TERM );
+        assertThat( this.operation.get(), is( INT_TERM.get().intValue() + 1 ) );
     }
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws PolyglotterException {
-        this.operation.result();
+        this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.terms().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( INT_TERM );
     }
 
     @Test
     public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.terms().isEmpty(), is( true ) );
+        assertThat( this.operation.inputs().isEmpty(), is( true ) );
     }
 
     @Test

@@ -23,14 +23,16 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Determines the minimum value of a collection of terms.
@@ -38,63 +40,58 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Min extends AbstractOperation< Number > {
 
     /**
-     * The operation descriptor.
+     * The input term descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "min";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.minOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.minOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Min.class, "input" ),
+                                                     PolyglotterI18n.minOperationInputDescription.text(),
+                                                     PolyglotterI18n.minOperationInputName.text(),
+                                                     Number.class,
+                                                     true,
+                                                     1,
+                                                     true );
 
     /**
-     * @param id
-     *        the min operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The input descriptors.
      */
-    Min( final QName id,
-         final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Number > DESCRIPTOR =
+        new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Min.class ),
+                                                   PolyglotterI18n.minOperationDescription.text(),
+                                                   PolyglotterI18n.minOperationName.text(),
+                                                   Number.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Number > newInstance( final Transformation transformation ) {
+                return new Min( transformation );
+            }
+
+        };
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Min( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -109,9 +106,8 @@ public final class Min extends AbstractOperation< Number > {
         Number result = null;
         int i = 0;
 
-        for ( final Term< ? > term : terms() ) {
-            assert ( term.value() instanceof Number ); // validate check
-            Number value = ( Number ) term.value();
+        for ( final Value< ? > term : inputs() ) {
+            Number value = ( Number ) term.get();
 
             if ( ( value instanceof Integer ) || ( value instanceof Short ) || ( value instanceof Byte ) ) {
                 value = value.longValue();
@@ -143,57 +139,45 @@ public final class Min extends AbstractOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int maxTerms() {
-        return Operation.UNLIMITED;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
-     */
-    @Override
-    public int minTerms() {
-        return 2;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there are terms
-        if ( terms().isEmpty() ) {
+        if ( inputs().isEmpty() ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.minOperationHasNoTerms.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.minOperationHasNoTerms.text( transformationId() ) );
             problems().add( problem );
         } else {
-            if ( terms().size() < minTerms() ) {
+            if ( inputs().size() < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
                 final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
+                    TransformationFactory.createError( transformationId(),
+                                                       PolyglotterI18n.invalidTermCount.text( name(),
+                                                                                              transformationId(),
+                                                                                              inputs().size() ) );
                 problems().add( problem );
             }
 
             // make sure all the terms have types of Number
-            for ( final Term< ? > term : terms() ) {
+            for ( final Value< ? > term : inputs() ) {
                 Object value;
 
                 try {
-                    value = term.value();
+                    value = term.get();
 
                     if ( !( value instanceof Number ) ) {
                         final ValidationProblem problem =
-                            GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
+                            TransformationFactory.createError( transformationId(),
+                                                               PolyglotterI18n.invalidTermType.text( name(),
+                                                                                                     transformationId() ) );
                         problems().add( problem );
                     }
                 } catch ( final PolyglotterException e ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                          transformationId() ) );
                     problems().add( problem );
                     this.logger.error( e, PolyglotterI18n.message, problem.message() );
                 }

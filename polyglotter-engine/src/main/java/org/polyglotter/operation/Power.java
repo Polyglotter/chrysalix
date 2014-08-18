@@ -25,14 +25,18 @@ package org.polyglotter.operation;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
-import javax.xml.namespace.QName;
+import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Calculates the value of the first term raised to the power of the second term.
@@ -42,63 +46,70 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Power extends AbstractOperation< Number > {
 
     /**
-     * The operation descriptor.
+     * The base descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "pow";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.powerOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.powerOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Number > BASE_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Power.class, "base" ),
+                                                     PolyglotterI18n.powerOperationBaseDescription.text(),
+                                                     PolyglotterI18n.powerOperationBaseName.text(),
+                                                     Number.class,
+                                                     true,
+                                                     1,
+                                                     false );
 
     /**
-     * @param id
-     *        the power operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The exponent descriptor.
      */
-    Power( final QName id,
-           final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    public static final ValueDescriptor< Number > EXPONENT_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Power.class, "exponent" ),
+                                                     PolyglotterI18n.powerOperationExponentDescription.text(),
+                                                     PolyglotterI18n.powerOperationExponentName.text(),
+                                                     Number.class,
+                                                     true,
+                                                     1,
+                                                     false );
+
+    /**
+     * The input descriptors.
+     */
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { BASE_DESCRIPTOR, EXPONENT_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Number > DESCRIPTOR =
+        new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Power.class ),
+                                                   PolyglotterI18n.powerOperationDescription.text(),
+                                                   PolyglotterI18n.powerOperationName.text(),
+                                                   Number.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Number > newInstance( final Transformation transformation ) {
+                return new Power( transformation );
+            }
+
+        };
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Power( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -110,8 +121,8 @@ public final class Power extends AbstractOperation< Number > {
     protected Number calculate() throws PolyglotterException {
         assert !problems().isError();
 
-        final Number base = ( Number ) terms().get( 0 ).value();
-        final Number exponent = ( Number ) terms().get( 1 ).value();
+        final Number base = ( Number ) inputs( BASE_DESCRIPTOR.id() ).get( 0 ).get();
+        final Number exponent = ( Number ) inputs( EXPONENT_DESCRIPTOR.id() ).get( 0 ).get();
 
         if ( base instanceof BigInteger ) return ( ( BigInteger ) base ).pow( exponent.intValue() );
         if ( base instanceof BigDecimal ) return ( ( BigDecimal ) base ).pow( exponent.intValue() );
@@ -122,77 +133,77 @@ public final class Power extends AbstractOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int maxTerms() {
-        return 2;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
-     */
-    @Override
-    public int minTerms() {
-        return 2;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there are terms
-        if ( terms().size() != 2 ) {
+        if ( inputs().size() != 2 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.powerOperationInvalidTermCount.text( id() ) );
+                TransformationFactory.createError( transformationId(), PolyglotterI18n.powerOperationInvalidTermCount.text( transformationId() ) );
             problems().add( problem );
         } else {
-            { // make sure first term is a number
-                final Term< ? > term = terms().get( 0 );
-                Object x;
+            { // base
+                final List< Value< ? >> baseValues = inputs( BASE_DESCRIPTOR.id() );
 
-                try {
-                    x = term.value();
-
-                    if ( !( x instanceof Number ) ) {
-                        final ValidationProblem problem =
-                            GrammarFactory.createError( id(),
-                                                        PolyglotterI18n.powerOperationInvalidBaseTermType.text( term.id(),
-                                                                                                                id() ) );
-                        problems().add( problem );
-                    }
-                } catch ( final PolyglotterException e ) {
+                if ( baseValues.size() != 1 ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.powerOperationInvalidBaseCount.text( transformationId() ) );
                     problems().add( problem );
-                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                } else {
+                    final Value< ? > term = baseValues.get( 0 );
+                    Object x;
+
+                    try {
+                        x = term.get();
+
+                        if ( !( x instanceof Number ) ) {
+                            final ValidationProblem problem =
+                                TransformationFactory.createError( transformationId(),
+                                                                   PolyglotterI18n.powerOperationInvalidBaseTermType.text( transformationId() ) );
+                            problems().add( problem );
+                        }
+                    } catch ( final PolyglotterException e ) {
+                        final ValidationProblem problem =
+                            TransformationFactory.createError( transformationId(),
+                                                               PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                              transformationId() ) );
+                        problems().add( problem );
+                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                    }
                 }
             }
 
-            { // make sure second term is an integer
-                final Term< ? > term = terms().get( 1 );
-                Object y;
+            { // exponent
+                final List< Value< ? >> exponentValues = inputs( EXPONENT_DESCRIPTOR.id() );
 
-                try {
-                    y = term.value();
-
-                    if ( !( y instanceof Number ) ) {
-                        final ValidationProblem problem =
-                            GrammarFactory.createError( id(),
-                                                        PolyglotterI18n.powerOperationInvalidExponentTermType.text( term.id(),
-                                                                                                                    id() ) );
-                        problems().add( problem );
-                    }
-                } catch ( final PolyglotterException e ) {
+                if ( exponentValues.size() != 1 ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.powerOperationInvalidExponentCount.text( transformationId() ) );
                     problems().add( problem );
-                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                } else {
+                    final Value< ? > term = exponentValues.get( 0 );
+                    Object y;
+
+                    try {
+                        y = term.get();
+
+                        if ( !( y instanceof Number ) ) {
+                            final ValidationProblem problem =
+                                TransformationFactory.createError( transformationId(),
+                                                                   PolyglotterI18n.powerOperationInvalidExponentTermType.text( transformationId() ) );
+                            problems().add( problem );
+                        }
+                    } catch ( final PolyglotterException e ) {
+                        final ValidationProblem problem =
+                            TransformationFactory.createError( transformationId(),
+                                                               PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                              transformationId() ) );
+                        problems().add( problem );
+                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                    }
                 }
             }
         }

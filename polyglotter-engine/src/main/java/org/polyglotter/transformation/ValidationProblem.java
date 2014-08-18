@@ -21,52 +21,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
-
-import javax.xml.namespace.QName;
+package org.polyglotter.transformation;
 
 import org.polyglotter.common.CheckArg;
 
 /**
- * A problem created when validating a {@link GrammarPart grammar part} like an {@link Operation operation}.
+ * A problem created when validating a {@link Transformation transformation}-related object like an {@link Operation operation}.
  */
 public interface ValidationProblem {
-    
+
     /**
      * @return <code>true</code> if the problem has an {@link Severity#ERROR error} severity
      */
     boolean isError();
-    
+
     /**
      * @return <code>true</code> if the problem has an {@link Severity#INFO info} severity
      */
     boolean isInfo();
-    
+
     /**
      * @return <code>true</code> if the problem has an {@link Severity#OK OK} severity
      */
     boolean isOk();
-    
+
     /**
      * @return <code>true</code> if the problem has a {@link Severity#WARNING warning} severity
      */
     boolean isWarning();
-    
+
     /**
      * @return the problem message (can be <code>null</code> or empty)
      */
     String message();
-    
+
     /**
      * @return the problem severity (never <code>null</code>)
      */
     Severity severity();
-    
+
     /**
-     * @return the identifier of the grammar part that was validated (never <code>null</code>)
+     * @return the identifier of the transformation that was validated (never <code>null</code> or empty)
      */
-    QName sourceId();
-    
+    String sourceId();
+
     /**
      * The message severity.
      */
@@ -75,7 +73,7 @@ public interface ValidationProblem {
         WARNING,
         INFO,
         OK;
-        
+
         /**
          * @param that
          *        the severity being compared to (cannot be <code>null</code>)
@@ -83,26 +81,26 @@ public interface ValidationProblem {
          */
         public boolean isMoreSevereThan( final Severity that ) {
             CheckArg.notNull( that, "that" );
-            
+
             if ( this == that ) {
                 return false;
             }
-            
+
             if ( this == ERROR ) {
                 return ( that != ERROR );
             }
-            
+
             if ( this == WARNING ) {
                 return ( ( that == ERROR ) ? false : ( that != WARNING ) );
             }
-            
+
             if ( this == INFO ) {
                 return ( ( that == OK ) ? true : false );
             }
-            
+
             // this == OK
             return false;
         }
     }
-    
+
 }
