@@ -28,10 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.transformation.TransformationEvent.EventType;
 
 /**
  * A class that produces a result by using zero or more {@link Value values}.
@@ -68,7 +65,7 @@ public interface Operation< T > extends Value< T >, Iterable< Value< ? > > {
      * @param categoriesBeingAdded
      *        the categories being added (cannot be <code>null</code>)
      * @throws IllegalArgumentException
-     *         if the categories array is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the categories being added is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws PolyglotterException
      *         if any of the categories cannot be added
      */
@@ -76,15 +73,16 @@ public interface Operation< T > extends Value< T >, Iterable< Value< ? > > {
 
     /**
      * @param descriptorId
-     *        the identifier of the {@link ValueDescriptor descriptor} to use when adding the values (cannot be <code>null</code>)
+     *        the identifier of the {@link ValueDescriptor descriptor} to use when adding the values (cannot be <code>null</code> or
+     *        empty)
      * @param valuesBeingAdded
-     *        the values being added (cannot be <code>null</code> or empty)
+     *        the inputs being added (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the values array is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the inputs being added is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws PolyglotterException
-     *         if there is a problem adding any of the values
+     *         if the descriptor ID is not valid or if there is a problem adding any of the values
      */
-    void addInput( final QName descriptorId,
+    void addInput( final String descriptorId,
                    final Object... valuesBeingAdded ) throws PolyglotterException;
 
     /**
@@ -92,11 +90,6 @@ public interface Operation< T > extends Value< T >, Iterable< Value< ? > > {
      *         empty)
      */
     Set< OperationCategory > categories();
-
-    /**
-     * @return a collection of descriptors for the inputs (never <code>null</code> but can be empty)
-     */
-    List< ValueDescriptor< ? >> inputDescriptors();
 
     /**
      * @return all inputs whose value is non-<code>null</code> (never <code>null</code> but can be empty)
@@ -112,88 +105,42 @@ public interface Operation< T > extends Value< T >, Iterable< Value< ? > > {
      * @param categoriesBeingRemoved
      *        the {@link OperationCategory categories} being removed (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the categories array is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the categories being removed is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws PolyglotterException
      *         if any of the categories cannot be found or cannot be removed
      */
     void removeCategory( final OperationCategory... categoriesBeingRemoved ) throws PolyglotterException;
 
     /**
-     * @param inputsBeingRemoved
-     *        the input {@link Value values} being removed (cannot be <code>null</code> or empty)
+     * @param descriptorId
+     *        the identifier of the {@link ValueDescriptor descriptor} to use when removing the values (cannot be <code>null</code>
+     *        or empty)
+     * @param valuesBeingRemoved
+     *        the inputs being removed (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the values array is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the inputs being removed is <code>null</code>, empty, or any value in the array is <code>null</code>; or if the
+     *         descriptor ID is not valid
      * @throws PolyglotterException
-     *         if any of the values cannot be found or cannot be removed
+     *         if there is a problem adding any of the values
      */
-    void removeInput( final Value< ? >... inputsBeingRemoved ) throws PolyglotterException;
+    void removeInput( final String descriptorId,
+                      final Object... valuesBeingRemoved ) throws PolyglotterException;
 
     /**
      * @param descriptorId
-     *        the identifier of the {@link ValueDescriptor descriptor} used when setting input values (cannot be <code>null</code>)
+     *        the identifier of the {@link ValueDescriptor descriptor} used when setting input values (cannot be <code>null</code>
+     *        or empty)
      * @param valuesBeingSet
      *        the new input values (can be <code>null</code> or empty)
      * @throws PolyglotterException
      *         if there is a problem setting the input values
      */
-    void setInput( final QName descriptorId,
+    void setInput( final String descriptorId,
                    final Object... valuesBeingSet ) throws PolyglotterException;
 
     /**
      * @return the owning {@link Transformation transformation} (never <code>null</code>)
      */
     Transformation transformation();
-
-    /**
-     * The event types pertaining to operations.
-     */
-    enum OperationEventType implements EventType {
-
-        /**
-         * Multiple categories have been added.
-         */
-        CATEGORIES_ADDED,
-
-        /**
-         * A category has been added.
-         */
-        CATEGORY_ADDED,
-
-        /**
-         * Multiple categories have been removed.
-         */
-        CATEGORIES_REMOVED,
-
-        /**
-         * A category has been removed.
-         */
-        CATEGORY_REMOVED,
-
-        /**
-         * The key for when the result has changed.
-         */
-        RESULT_CHANGED,
-
-        /**
-         * An input value has been added.
-         */
-        VALUE_ADDED,
-
-        /**
-         * Multiple input values have been added.
-         */
-        VALUES_ADDED,
-
-        /**
-         * An input value has been removed.
-         */
-        VALUE_REMOVED,
-
-        /**
-         * Multiple input values have been removed.
-         */
-        VALUES_REMOVED;
-
-    }
 
 }

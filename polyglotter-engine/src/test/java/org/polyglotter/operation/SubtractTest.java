@@ -24,32 +24,51 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class SubtractTest {
+
+    private static final String ID = Subtract.TERM_DESCRIPTOR.id();
+    private static Value< Number > DOUBLE_TERM;
+    private static Value< Number > INT_TERM;
+    private static Value< Number > INT2_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        DOUBLE_TERM = TransformationFactory.createValue( Subtract.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        INT_TERM = TransformationFactory.createValue( Subtract.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = TransformationFactory.createValue( Subtract.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+    }
 
     private Subtract operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Subtract( TestConstants.TEST_TRANSFORMATION );
+        this.operation = new Subtract( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldCalculateIntegerResult() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
-        assertThat( this.operation.get().intValue(), is( TestConstants.INT_1_VALUE - TestConstants.INT_2_VALUE ) );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, INT2_TERM );
+        assertThat( this.operation.get().intValue(), is( INT_TERM.get().intValue() - INT2_TERM.get().intValue() ) );
+    }
+
+    @Test
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Subtract.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Subtract.class ) ) );
     }
 
     @Test
@@ -65,8 +84,8 @@ public final class SubtractTest {
 
     @Test
     public void shouldHaveErrorWhenSubtractingTermWithWrongType() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
-        this.operation.addInput( TestConstants.STRING_1_TERM );
+        this.operation.addInput( ID, INT_TERM, INT2_TERM ); // will get rid of current problems
+        this.operation.addInput( ID, OperationTestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -83,18 +102,18 @@ public final class SubtractTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultWithOnlyOneTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( ID, INT_TERM );
         this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( INT_TERM );
     }
 
     @Test
     public void shouldNotHaveProblemsWithTwoTermsOfCorrectType() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM );
+        this.operation.addInput( ID, INT_TERM, INT2_TERM );
         assertThat( this.operation.problems().isEmpty(), is( true ) );
         assertThat( this.operation.problems().isOk(), is( true ) );
     }
@@ -106,9 +125,9 @@ public final class SubtractTest {
 
     @Test
     public void shouldObtainTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( ID, INT_TERM );
         assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
+        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
     }
 
     @Test
@@ -123,21 +142,18 @@ public final class SubtractTest {
 
     @Test
     public void shouldSubtractIntegerAndDouble() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.inputs(),
-                    hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.get(), is( ( Number ) ( TestConstants.INT_1_VALUE - TestConstants.DOUBLE_1_VALUE ) ) );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, DOUBLE_TERM );
+        assertThat( this.operation.get(),
+                    is( ( Number ) ( INT_TERM.get().intValue() - DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
     public void shouldSubtractMultipleinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
+        this.operation.addInput( ID, INT_TERM, INT2_TERM, DOUBLE_TERM );
         assertThat( this.operation.inputs().size(), is( 3 ) );
-        assertThat( this.operation.inputs(),
-                    hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM } ) );
         assertThat( this.operation.get(),
-                    is( ( Number ) ( TestConstants.INT_1_VALUE - TestConstants.INT_2_VALUE - TestConstants.DOUBLE_1_VALUE ) ) );
+                    is( ( Number ) ( INT_TERM.get().intValue() - INT2_TERM.get().intValue() - DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
 }

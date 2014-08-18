@@ -23,12 +23,11 @@
  */
 package org.polyglotter.operation;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValueDescriptor;
@@ -39,27 +38,43 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Count extends AbstractOperation< Integer > {
 
     /**
-     * The output descriptor.
+     * The input term descriptor.
      */
-    public static final ValueDescriptor< Integer > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Count.class.getSimpleName() ),
-                                                                       PolyglotterI18n.countOperationDescription.text(),
-                                                                       PolyglotterI18n.countOperationName.text(),
-                                                                       Integer.class );
+    public static final ValueDescriptor< Object > TERM_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Count.class, "input" ),
+                                                     PolyglotterI18n.countOperationInputDescription.text(),
+                                                     PolyglotterI18n.countOperationInputName.text(),
+                                                     Object.class,
+                                                     true,
+                                                     0,
+                                                     true );
 
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< Object >> INPUT_DESCRIPTORS =
-        // TODO id, description, name
-        Collections.singletonList(
-                   TransformationFactory.createValueDescriptor( TransformationFactory.createId( Count.class.getSimpleName() ),
-                                                                PolyglotterI18n.countOperationDescription.text(),
-                                                                PolyglotterI18n.countOperationName.text(),
-                                                                Object.class,
-                                                                true,
-                                                                0,
-                                                                true ) );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Integer > DESCRIPTOR =
+        new AbstractOperationDescriptor< Integer >( TransformationFactory.createId( Count.class ),
+                                                    PolyglotterI18n.countOperationDescription.text(),
+                                                    PolyglotterI18n.countOperationName.text(),
+                                                    Integer.class,
+                                                    INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Integer > newInstance( final Transformation transformation ) {
+                return new Count( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -91,11 +106,12 @@ public final class Count extends AbstractOperation< Integer > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
+     * @see org.polyglotter.operation.AbstractOperation#get()
      */
     @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
+    public Integer get() throws PolyglotterException {
+        final Integer result = super.get();
+        return ( ( result == null ) ? 0 : result );
     }
 
     /**

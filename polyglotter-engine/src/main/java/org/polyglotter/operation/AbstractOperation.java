@@ -32,102 +32,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.ObjectUtil;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
-import org.polyglotter.transformation.TransformationEvent;
-import org.polyglotter.transformation.TransformationEvent.EventType;
 import org.polyglotter.transformation.TransformationFactory;
-import org.polyglotter.transformation.TransformationListener;
 import org.polyglotter.transformation.ValidationProblem;
 import org.polyglotter.transformation.ValidationProblems;
 import org.polyglotter.transformation.Value;
 import org.polyglotter.transformation.ValueDescriptor;
 
 /**
- * The base class for {@link Operation operations}.
+ * A base class implementation for an {@link Operation operation}.
  * 
  * @param <T>
  *        the operation's result type
  */
-public abstract class AbstractOperation< T > extends ValueImpl< T > implements TransformationListener, Operation< T > {
-
-    /**
-     * A transformation that can be used for intermediate results. It does not do anything.
-     */
-    protected static final Transformation TEMP_TRANSFORMATION = new Transformation() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#add(org.polyglotter.transformation.Operation[])
-         */
-        @Override
-        public void add( final Operation< ? >... operations ) {
-            // does nothing
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#execute()
-         */
-        @Override
-        public void execute() {
-            // does nothing
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#id()
-         */
-        @Override
-        public QName id() {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see java.lang.Iterable#iterator()
-         */
-        @Override
-        public Iterator< Operation< ? >> iterator() {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#operations()
-         */
-        @Override
-        public List< Operation< ? >> operations() {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#remove(org.polyglotter.transformation.Operation[])
-         */
-        @Override
-        public void remove( final Operation< ? >... operations ) {
-            // does nothing
-        }
-
-    };
+abstract class AbstractOperation< T > extends ValueImpl< T > implements Operation< T > {
 
     private final Set< OperationCategory > categories;
     private final ValidationProblems problems;
-    private final Map< QName, List< Value< ? > >> inputs;
+    private final Map< String, List< Value< ? > >> inputs;
     private final Transformation transformation;
 
     /**
@@ -145,6 +74,8 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
         this.problems = TransformationFactory.createValidationProblems();
         this.transformation = operationTransformation;
         this.inputs = new HashMap<>( 5 );
+
+        valueChanged(); // to get initial validation and value set
     }
 
     /**
@@ -163,21 +94,16 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
                                                 transformationId() );
             }
         }
-
-        if ( categoriesToAdd.length == 1 ) {
-            notifyObservers( OperationEventType.CATEGORY_ADDED, EventTag.NEW, categoriesToAdd[ 0 ] );
-        } else {
-            notifyObservers( OperationEventType.CATEGORIES_ADDED, EventTag.NEW, categoriesToAdd );
-        }
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.transformation.Operation#addInput(javax.xml.namespace.QName, java.lang.Object[])
+     * @see org.polyglotter.transformation.Operation#addInput(java.lang.String, java.lang.Object[])
      */
+    @SuppressWarnings( "unchecked" )
     @Override
-    public void addInput( final QName descriptorId,
+    public void addInput( final String descriptorId,
                           final Object... valuesBeingAdded ) throws PolyglotterException {
         CheckArg.notNull( descriptorId, "descriptorId" );
         CheckArg.isNotEmpty( valuesBeingAdded, "valuesBeingAdded" );
@@ -185,7 +111,8 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
         if ( !isValidInputDescriptorId( descriptorId ) ) {
             throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
                                             name(),
-                                            transformationId() );
+                                            transformationId(),
+                                            descriptorId );
         }
 
         List< Value< ? >> values = this.inputs.get( descriptorId );
@@ -198,13 +125,25 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
 
         for ( final Object value : valuesBeingAdded ) {
             if ( value == null ) {
-                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput, descriptor().id() );
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                                name(),
+                                                transformationId(),
+                                                descriptorId );
             }
 
+            boolean added = false;
+
             if ( value instanceof Value< ? > ) {
-                // TODO
+                added = values.add( ( Value< ? > ) value );
             } else {
-                values.add( TransformationFactory.createValue( descriptor, value ) );
+                added = values.add( TransformationFactory.createValue( ( ValueDescriptor< Object > ) descriptor, value ) );
+            }
+
+            if ( !added ) {
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                                name(),
+                                                transformationId(),
+                                                descriptorId );
             }
         }
 
@@ -212,11 +151,7 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
             this.inputs.put( descriptorId, values );
         }
 
-        if ( valuesBeingAdded.length == 1 ) {
-            notifyObservers( OperationEventType.VALUE_ADDED, EventTag.NEW, valuesBeingAdded[ 0 ] );
-        } else {
-            notifyObservers( OperationEventType.VALUES_ADDED, EventTag.NEW, valuesBeingAdded );
-        }
+        valueChanged();
     }
 
     /**
@@ -257,8 +192,18 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
         return descriptor().description();
     }
 
-    private ValueDescriptor< ? > descriptor( final QName id ) {
-        for ( final ValueDescriptor< ? > descriptor : inputDescriptors() ) {
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.polyglotter.operation.ValueImpl#descriptor()
+     */
+    @Override
+    public final OperationDescriptor< T > descriptor() {
+        return ( OperationDescriptor< T > ) super.descriptor();
+    }
+
+    private ValueDescriptor< ? > descriptor( final String id ) {
+        for ( final ValueDescriptor< ? > descriptor : descriptor().inputDescriptors() ) {
             if ( descriptor.id().equals( id ) ) {
                 return descriptor;
             }
@@ -308,11 +253,11 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
      *        the identifier of the {@link ValueDescriptor descriptor} whose inputs are being requested (cannot be <code>null</code>
      *        or invalid)
      * @return the values (never <code>null</code> but can be empty)
-     * @see #isValidInputDescriptorId(QName)
+     * @see #isValidInputDescriptorId(String)
      * @throws IllegalArgumentException
      *         if the descriptor is not found
      */
-    protected List< Value< ? >> inputs( final QName descriptorId ) {
+    protected List< Value< ? >> inputs( final String descriptorId ) {
         CheckArg.notNull( descriptor( descriptorId ), "descriptorId" );
         final List< Value< ? > > values = this.inputs.get( descriptorId );
 
@@ -323,7 +268,7 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
         return values;
     }
 
-    private boolean isValidInputDescriptorId( final QName id ) {
+    private boolean isValidInputDescriptorId( final String id ) {
         return ( descriptor( id ) != null );
     }
 
@@ -334,7 +279,7 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
      */
     @Override
     public Iterator< Value< ? >> iterator() {
-        return inputs().iterator();
+        return Collections.unmodifiableCollection( inputs() ).iterator();
     }
 
     /**
@@ -342,91 +287,6 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
      */
     protected String name() {
         return descriptor().name();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.TransformationListener#notify(org.polyglotter.transformation.TransformationEvent)
-     */
-    @Override
-    public void notify( final TransformationEvent event ) {
-        CheckArg.notNull( event, "event" );
-
-        // recalculate as a value changed
-        if ( event.type() == ValueEventType.VALUE_CHANGED ) {
-            valueChanged();
-        }
-    }
-
-    /**
-     * @param type
-     *        the event type being handled (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if type is <code>null</code>)
-     */
-    protected void notifyObservers( final EventType type ) {
-        notifyObservers( type, null, null );
-    }
-
-    /**
-     * @param type
-     *        the event type being handled (cannot be <code>null</code>)
-     * @param eventData
-     *        the event data properties (can be <code>null</code> or empty)
-     * @throws IllegalArgumentException
-     *         if type is <code>null</code>)
-     */
-    protected void notifyObservers( final EventType type,
-                                    final Map< String, Object > eventData ) {
-        CheckArg.notNull( type, "type" );
-
-        if ( !this.listeners.isEmpty() ) {
-            final TransformationEvent event = TransformationFactory.createEvent( type, this, eventData );
-            List< TransformationListener > remove = null;
-
-            for ( final TransformationListener listener : this.listeners ) {
-                try {
-                    listener.notify( event );
-                } catch ( final Exception e ) {
-                    // remove listener since it threw an exception
-                    if ( remove == null ) {
-                        remove = new ArrayList<>();
-                    }
-
-                    this.logger.error( e, PolyglotterI18n.listenerError, listener.getClass(), event );
-                    remove.add( listener );
-                }
-            }
-
-            if ( remove != null ) {
-                for ( final TransformationListener listenerToRemove : remove ) {
-                    remove( listenerToRemove );
-                }
-            }
-        }
-    }
-
-    /**
-     * @param type
-     *        the event type being handled (cannot be <code>null</code>)
-     * @param key
-     *        the identifier of a property of event data (can be <code>null</code> or empty)
-     * @param value
-     *        the value of the property of event data (can be <code>null</code> or empty)
-     * @throws IllegalArgumentException
-     *         if type is <code>null</code>)
-     */
-    protected void notifyObservers( final EventType type,
-                                    final String key,
-                                    final Object value ) {
-        Map< String, Object > map = null;
-
-        if ( ( key != null ) && !key.isEmpty() ) {
-            map = Collections.singletonMap( key, value );
-        }
-
-        notifyObservers( type, map );
     }
 
     /**
@@ -457,49 +317,70 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
                                                 transformationId() );
             }
         }
-
-        if ( categoriesToRemove.length == 1 ) {
-            notifyObservers( OperationEventType.CATEGORY_REMOVED, EventTag.OLD, categoriesToRemove[ 0 ] );
-        } else {
-            notifyObservers( OperationEventType.CATEGORIES_REMOVED, EventTag.OLD, categoriesToRemove );
-        }
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.transformation.Operation#removeInput(org.polyglotter.transformation.Value[])
+     * @see org.polyglotter.transformation.Operation#removeInput(java.lang.String, java.lang.Object[])
      */
     @Override
-    public void removeInput( final Value< ? >... inputsToRemove ) throws PolyglotterException {
-        CheckArg.isNotEmpty( inputsToRemove, "inputsToRemove" );
+    public void removeInput( final String descriptorId,
+                             final Object... valuesBeingRemoved ) throws PolyglotterException {
+        CheckArg.notNull( descriptorId, "descriptorId" );
+        CheckArg.isNotEmpty( valuesBeingRemoved, "valuesBeingRemoved" );
 
-        for ( final Value< ? > term : inputsToRemove ) {
-            if ( term == null ) {
-                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+        if ( !isValidInputDescriptorId( descriptorId ) ) {
+            throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                            name(),
+                                            transformationId(),
+                                            descriptorId );
+        }
+
+        final List< Value< ? >> values = inputs( descriptorId );
+
+        // error if there are no values to delete
+        if ( values.isEmpty() ) {
+            throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                            name(),
+                                            transformationId(),
+                                            descriptorId );
+        }
+
+        for ( final Object valueToDelete : valuesBeingRemoved ) {
+            if ( valueToDelete == null ) {
+                throw new PolyglotterException( PolyglotterI18n.errorRemovingOperationInput,
                                                 name(),
                                                 transformationId() );
             }
 
-            final QName descriptorId = term.descriptor().id();
-            final List< Value< ? >> values = inputs( descriptorId );
+            boolean removed = false;
 
-            if ( ( values == null ) || !values.remove( term ) ) {
+            if ( valueToDelete instanceof Value< ? > ) {
+                removed = values.remove( valueToDelete );
+            } else {
+                // delete first occurrence of value
+                for ( final Value< ? > input : values ) {
+                    if ( valueToDelete.equals( input.get() ) ) {
+                        removed = values.remove( valueToDelete );
+                        break;
+                    }
+                }
+            }
+
+            if ( !removed ) {
                 throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
                                                 name(),
-                                                transformationId() );
-            }
-
-            if ( values.isEmpty() ) {
-                this.inputs.remove( descriptorId );
+                                                transformationId(),
+                                                descriptorId );
             }
         }
 
-        if ( inputsToRemove.length == 1 ) {
-            notifyObservers( OperationEventType.VALUE_REMOVED, EventTag.OLD, inputsToRemove[ 0 ] );
-        } else {
-            notifyObservers( OperationEventType.VALUES_REMOVED, EventTag.OLD, inputsToRemove );
+        if ( values.isEmpty() ) {
+            this.inputs.remove( descriptorId );
         }
+
+        valueChanged();
     }
 
     /**
@@ -516,37 +397,48 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.transformation.Operation#setInput(javax.xml.namespace.QName, java.lang.Object[])
+     * @see org.polyglotter.transformation.Operation#setInput(java.lang.String, java.lang.Object[])
      */
+    @SuppressWarnings( "unchecked" )
     @Override
-    public void setInput( final QName descriptorId,
-                          final Object... value ) throws PolyglotterException {
-        if ( ( ( valuesBeingAdded == null ) || ( valuesBeingAdded.length == 0 ) ) && isValidInputDescriptorId( descriptorId ) ) {
-            this.inputs.remove( descriptorId );
-            this.logger.debug( "Input values for descriptor '%s' were removed", descriptorId );
-        } else if ( !isValidInputDescriptorId( descriptorId ) ) {
+    public void setInput( final String descriptorId,
+                          final Object... valuesBeingSet ) throws PolyglotterException {
+        if ( !isValidInputDescriptorId( descriptorId ) ) {
             throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
                                             name(),
-                                            transformationId() );
+                                            transformationId(),
+                                            descriptorId );
         }
-        CheckArg.notNull( descriptorId, "descriptorId" );
-        int index = 0;
 
-        for ( final ValueDescriptor< ? > descriptor : inputDescriptors() ) {
-            final int numRequired = descriptor.requiredValueCount();
+        // remove any previous values
+        this.inputs.remove( descriptorId );
 
-            if ( descriptor.id().equals( descriptorId ) ) {
-                // TODO process
+        if ( ( valuesBeingSet == null ) || ( valuesBeingSet.length == 0 ) ) {
+            this.logger.debug( "Input values for descriptor '%s' were removed", descriptorId );
+            return;
+        }
 
-                break;
+        final List< Value< ? >> values = new ArrayList<>();
+        final ValueDescriptor< ? > descriptor = descriptor( descriptorId ); // descriptor is valid
+
+        for ( final Object value : valuesBeingSet ) {
+            if ( value == null ) {
+                throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingOperationInput,
+                                                name(),
+                                                transformationId(),
+                                                descriptorId );
+            }
+
+            if ( value instanceof Value< ? > ) {
+                values.add( ( Value< ? > ) value );
             } else {
-                if ( descriptor().unbounded() ) {
-                    // TODO error finding unbounded means we could not find matching descriptor
-                }
-
-                index += numRequired;
+                values.add( TransformationFactory.createValue( ( ValueDescriptor< Object > ) descriptor, value ) );
             }
         }
+
+        this.inputs.put( descriptorId, values );
+
+        valueChanged();
     }
 
     /**
@@ -588,7 +480,7 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
     /**
      * @return the identifier for {@link Transformation transformation} this operation is contained in (never <code>null</code>)
      */
-    protected QName transformationId() {
+    protected String transformationId() {
         return transformation().id();
     }
 
@@ -606,26 +498,20 @@ public abstract class AbstractOperation< T > extends ValueImpl< T > implements T
 
         if ( !this.problems.isError() ) {
             T oldValue = null;
-
-            try {
-                oldValue = get();
-            } catch ( final PolyglotterException e ) {
-                // TODO add a problem
-            }
-
             T newValue = null;
 
             try {
+                oldValue = get();
                 newValue = calculate();
 
                 if ( !ObjectUtil.equals( oldValue, newValue ) ) {
-                    super.set( newValue );
+                    this.value = newValue; // do not call set method as it throws exception
                 }
             } catch ( final PolyglotterException e ) {
                 final ValidationProblem problem =
                     TransformationFactory.createError( descriptor().id(),
-                                                       PolyglotterI18n.errorOnTermChanged.text( newValue,
-                                                                                                descriptor().id() ) );
+                                                       PolyglotterI18n.errorOnTermChanged.text( descriptor().id(),
+                                                                                                transformationId() ) );
                 problems().add( problem );
             }
         }

@@ -23,11 +23,11 @@
  */
 package org.polyglotter.operation;
 
-import java.util.List;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -42,14 +42,24 @@ public final class Random extends AbstractOperation< Double > {
     /**
      * The output descriptor.
      */
-    public static final ValueDescriptor< Double > DESCRIPTOR =
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Random.class.getSimpleName() ),
-                                                     PolyglotterI18n.randomOperationDescription.text(),
-                                                     PolyglotterI18n.randomOperationName.text(),
-                                                     Double.class,
-                                                     false,
-                                                     0,
-                                                     false );
+    public static final OperationDescriptor< Double > DESCRIPTOR =
+        new AbstractOperationDescriptor< Double >( TransformationFactory.createId( Random.class ),
+                                                   PolyglotterI18n.randomOperationDescription.text(),
+                                                   PolyglotterI18n.randomOperationName.text(),
+                                                   Double.class,
+                                                   ValueDescriptor.NO_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Double > newInstance( final Transformation transformation ) {
+                return new Random( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -73,25 +83,9 @@ public final class Random extends AbstractOperation< Double > {
      * @see org.polyglotter.operation.AbstractOperation#calculate()
      */
     @Override
-    protected Double calculate() throws PolyglotterException {
+    protected Double calculate() {
         assert !problems().isError();
-
-        if ( terms().isEmpty() ) {
-            return Math.random();
-        }
-
-        final Number value = ( Number ) inputs().get( 0 ).get();
-        return new java.util.Random( value.longValue() ).nextDouble();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return ValueDescriptor.NO_DESCRIPTORS;
+        return Math.random();
     }
 
     /**

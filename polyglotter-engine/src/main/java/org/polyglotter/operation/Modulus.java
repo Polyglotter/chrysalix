@@ -23,12 +23,13 @@
  */
 package org.polyglotter.operation;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -41,22 +42,12 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Modulus extends AbstractOperation< Double > {
 
     /**
-     * The output descriptor.
-     */
-    public static final ValueDescriptor< Double > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
-                                                                       PolyglotterI18n.modulusOperationDescription.text(),
-                                                                       PolyglotterI18n.modulusOperationName.text(),
-                                                                       Double.class );
-
-    /**
      * The dividend descriptor.
      */
-    // TODO id, description, name
     public static final ValueDescriptor< Number > DIVIDEND_DESCRIPTOR =
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
-                                                     PolyglotterI18n.modulusOperationDescription.text(),
-                                                     PolyglotterI18n.modulusOperationName.text(),
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class, "dividend" ),
+                                                     PolyglotterI18n.modulusOperationDividendDescription.text(),
+                                                     PolyglotterI18n.modulusOperationDividendName.text(),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -65,11 +56,10 @@ public final class Modulus extends AbstractOperation< Double > {
     /**
      * The dividend descriptor.
      */
-    // TODO id, description, name
     public static final ValueDescriptor< Number > DIVISOR_DESCRIPTOR =
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
-                                                     PolyglotterI18n.modulusOperationDescription.text(),
-                                                     PolyglotterI18n.modulusOperationName.text(),
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class, "divisor" ),
+                                                     PolyglotterI18n.modulusOperationDivisorDescription.text(),
+                                                     PolyglotterI18n.modulusOperationDivisorName.text(),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -78,8 +68,29 @@ public final class Modulus extends AbstractOperation< Double > {
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< ? >> INPUT_DESCRIPTORS =
-        Arrays.asList( new ValueDescriptor< ? >[] { DIVIDEND_DESCRIPTOR, DIVISOR_DESCRIPTOR } );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { DIVIDEND_DESCRIPTOR, DIVISOR_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Double > DESCRIPTOR =
+        new AbstractOperationDescriptor< Double >( TransformationFactory.createId( Modulus.class ),
+                                                   PolyglotterI18n.modulusOperationDescription.text(),
+                                                   PolyglotterI18n.modulusOperationName.text(),
+                                                   Double.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Double > newInstance( final Transformation transformation ) {
+                return new Modulus( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -110,16 +121,6 @@ public final class Modulus extends AbstractOperation< Double > {
         final Number divisor = ( Number ) inputs( DIVISOR_DESCRIPTOR.id() ).get( 0 ).get();
 
         return ( dividend.doubleValue() % divisor.doubleValue() );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
     }
 
     /**

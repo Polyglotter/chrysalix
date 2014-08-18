@@ -21,50 +21,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.polyglotter.transformation;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.polyglotter.transformation.TransformationEvent;
-import org.polyglotter.transformation.TransformationListener;
+/**
+ * A collection of built-in {@link Operation operation} descriptors.
+ */
+public interface OperationDescriptorProvider {
 
-@SuppressWarnings( "javadoc" )
-public class TestGrammarListener implements TransformationListener {
-    
-    private int count;
-    private final List< TransformationEvent > events = new ArrayList<>();
-    
-    public void clear() {
-        this.count = 0;
-        this.events.clear();
-    }
-    
-    public int count() {
-        return this.count;
-    }
-    
-    public List< TransformationEvent > events() {
-        return this.events;
-    }
-    
-    public TransformationEvent lastEvent() {
-        if ( this.events.isEmpty() ) {
-            return null;
-        }
-        
-        return this.events.get( this.events.size() - 1 );
-    }
-    
     /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.TransformationListener#notify(org.polyglotter.transformation.TransformationEvent)
+     * @return a collection of {@link Operation operation} {@link OperationDescriptor descriptors}
      */
-    @Override
-    public void notify( final TransformationEvent event ) {
-        ++this.count;
-        this.events.add( event );
-    }
-    
+    List< OperationDescriptor< ? > > descriptors();
+
 }

@@ -23,11 +23,7 @@
  */
 package org.polyglotter.transformation;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-
-import javax.xml.namespace.QName;
 
 /**
  * An input or output {@link Value value} descriptor.
@@ -56,9 +52,9 @@ public interface ValueDescriptor< T > {
     };
 
     /**
-     * An empty collection of descriptors.
+     * An empty collection of value descriptors.
      */
-    List< ValueDescriptor< ? > > NO_DESCRIPTORS = Collections.emptyList();
+    ValueDescriptor< ? >[] NO_DESCRIPTORS = {};
 
     /**
      * @return the localized description of the input or output (never <code>null</code> or empty)
@@ -66,9 +62,9 @@ public interface ValueDescriptor< T > {
     String description();
 
     /**
-     * @return a unique identifier (never <code>null</code>)
+     * @return a unique identifier (never <code>null</code> or empty)
      */
-    QName id();
+    String id();
 
     /**
      * @return <code>true</code> if the value is modifiable
@@ -79,11 +75,6 @@ public interface ValueDescriptor< T > {
      * @return the localized name of the input or output (never <code>null</code> or empty)
      */
     String name();
-
-    /**
-     * @return the namespace URI (can be <code>null</code>)
-     */
-    String namespace();
 
     /**
      * @return the number of required values (never smaller than zero)

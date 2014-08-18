@@ -26,14 +26,14 @@ package org.polyglotter.operation;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -48,24 +48,40 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Round extends AbstractOperation< Number > {
 
     /**
-     * The output descriptor.
+     * The input term descriptor.
      */
-    public static final ValueDescriptor< Number > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Round.class.getSimpleName() ),
-                                                                       PolyglotterI18n.roundOperationDescription.text(),
-                                                                       PolyglotterI18n.roundOperationName.text(),
+    public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
+        TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Round.class, "input" ),
+                                                                       PolyglotterI18n.roundOperationInputDescription.text(),
+                                                                       PolyglotterI18n.roundOperationInputName.text(),
                                                                        Number.class );
 
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< Number >> INPUT_DESCRIPTORS =
-        // TODO id, description, name
-        Collections.singletonList(
-                   TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Round.class.getSimpleName() ),
-                                                                                  PolyglotterI18n.roundOperationDescription.text(),
-                                                                                  PolyglotterI18n.roundOperationName.text(),
-                                                                                  Number.class ) );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Number > DESCRIPTOR =
+        new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Round.class ),
+                                                   PolyglotterI18n.roundOperationDescription.text(),
+                                                   PolyglotterI18n.roundOperationName.text(),
+                                                   Number.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Number > newInstance( final Transformation transformation ) {
+                return new Round( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -107,16 +123,6 @@ public final class Round extends AbstractOperation< Number > {
         if ( value instanceof AtomicLong ) return value;
 
         return Math.round( value.doubleValue() );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
     }
 
     /**

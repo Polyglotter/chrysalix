@@ -27,9 +27,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-
-import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.I18n;
 
@@ -62,9 +59,9 @@ public interface OperationCategory {
     };
 
     /**
-     * @return the unique identifier of an operation category (never <code>null</code>)
+     * @return the unique identifier of an operation category (never <code>null</code> or empty)
      */
-    QName id();
+    String id();
 
     /**
      * @return the localized name of the category (never <code>null</code> or empty)
@@ -117,13 +114,13 @@ public interface OperationCategory {
         STRING( "string", PolyglotterI18n.opCatStringLabel, PolyglotterI18n.opCatStringDescription );
 
         private final I18n description;
-        private final QName id;
+        private final String id;
         private final I18n label;
 
         private BuiltInCategory( final String categoryId,
                                  final I18n categoryLabel,
                                  final I18n categoryDescription ) {
-            this.id = new QName( Polyglotter.NAMESPACE_URI, categoryId, Polyglotter.NAMESPACE_PREFIX );
+            this.id = ( OperationCategory.class.getName() + '.' + categoryId );
             this.label = categoryLabel;
             this.description = categoryDescription;
         }
@@ -141,7 +138,7 @@ public interface OperationCategory {
          * @see org.polyglotter.transformation.OperationCategory#id()
          */
         @Override
-        public QName id() {
+        public String id() {
             return this.id;
         }
 

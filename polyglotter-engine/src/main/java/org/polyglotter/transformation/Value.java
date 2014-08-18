@@ -24,10 +24,10 @@
 package org.polyglotter.transformation;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.transformation.TransformationEvent.EventType;
 
 /**
  * An input or output {@link Value value}.
@@ -35,7 +35,59 @@ import org.polyglotter.transformation.TransformationEvent.EventType;
  * @param <T>
  *        the type of value
  */
-public interface Value< T > extends TransformationSource {
+public interface Value< T > {
+
+    /**
+     * A {@link Number number} term sorter that sorts the term values in ascending order. If there is an error accessing either
+     * term's value a zero is returned.
+     */
+    public static final Comparator< Value< Number > > ASCENDING_NUMBER_SORTER = new Comparator< Value< Number > >() {
+
+        @Override
+        public int compare( final Value< Number > thisNumber,
+                            final Value< Number > thatNumber ) {
+            Number thisValue;
+
+            try {
+                thisValue = thisNumber.get();
+            } catch ( final PolyglotterException e ) {
+                return 0;
+            }
+
+            Number thatValue;
+
+            try {
+                thatValue = thatNumber.get();
+            } catch ( final PolyglotterException e ) {
+                return 0;
+            }
+
+            if ( thisValue == null ) {
+                return ( ( thatValue == null ) ? 0 : -1 );
+            }
+
+            if ( thatValue == null ) {
+                return 1;
+            }
+
+            return Double.compare( thisValue.doubleValue(), thatValue.doubleValue() );
+        }
+
+    };
+
+    /**
+     * A {@link Number number} value sorter that sorts in descending order. If there is an error accessing either value a zero is
+     * returned.
+     */
+    public static final Comparator< Value< Number > > DESCENDING_NUMBER_SORTER = new Comparator< Value< Number > >() {
+
+        @Override
+        public int compare( final Value< Number > thisNumber,
+                            final Value< Number > thatNumber ) {
+            return ASCENDING_NUMBER_SORTER.compare( thatNumber, thisNumber );
+        }
+
+    };
 
     /**
      * An empty list of values.
@@ -64,39 +116,5 @@ public interface Value< T > extends TransformationSource {
      * @see ValueDescriptor#modifiable()
      */
     void set( final T newValue ) throws PolyglotterException;
-
-    /**
-     * Keys used when constructing the data part of an event.
-     */
-    interface EventTag {
-
-        /**
-         * The key for the old value of the property that was changed.
-         */
-        String OLD = "old";
-
-        /**
-         * The key for the new value of the property that was changed.
-         */
-        String NEW = "new";
-
-    }
-
-    /**
-     * The event types pertaining to a value.
-     */
-    enum ValueEventType implements EventType {
-
-        /**
-         * The value's name has changed.
-         */
-        NAME_CHANGED,
-
-        /**
-         * The value's value has changed.
-         */
-        VALUE_CHANGED;
-
-    }
 
 }

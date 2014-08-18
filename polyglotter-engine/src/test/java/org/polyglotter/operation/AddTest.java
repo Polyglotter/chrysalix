@@ -24,55 +24,75 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class AddTest {
+
+    private static final String ID = Add.TERM_DESCRIPTOR.id();
+    private static Value< Number > DOUBLE_TERM;
+    private static Value< Number > INT_TERM;
+    private static Value< Number > INT2_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        DOUBLE_TERM = TransformationFactory.createValue( Add.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        INT_TERM = TransformationFactory.createValue( Add.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = TransformationFactory.createValue( Add.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+    }
 
     private Add operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Add( TestConstants.TEST_TRANSFORMATION );
+        this.operation = new Add( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddIntegerAndDouble() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.inputs(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.get(), is( ( Number ) ( TestConstants.INT_1_VALUE + TestConstants.DOUBLE_1_VALUE ) ) );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, DOUBLE_TERM );
+        assertThat( this.operation.get(),
+                    is( ( Number ) ( INT_TERM.get().doubleValue() + DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
     public void shouldAddMultipleinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM );
+        this.operation.addInput( ID, INT_TERM, INT2_TERM, DOUBLE_TERM );
         assertThat( this.operation.inputs().size(), is( 3 ) );
-        assertThat( this.operation.inputs(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM, TestConstants.DOUBLE_1_TERM } ) );
-        assertThat( this.operation.get(), is( ( Number ) ( TestConstants.INT_1_VALUE + TestConstants.INT_2_VALUE + TestConstants.DOUBLE_1_VALUE ) ) );
+        assertThat( this.operation.get(),
+                    is( ( Number ) ( INT_TERM.get().doubleValue() + INT2_TERM.get().doubleValue() + DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( ID, INT_TERM );
         assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
+        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
     }
 
     @Test
     public void shouldCalculateIntegerResult() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
-        assertThat( this.operation.get().intValue(), is( TestConstants.INT_1_VALUE + TestConstants.INT_2_VALUE ) );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, INT2_TERM );
+        // JCR does not have int so must use long
+        assertThat( this.operation.get(), is( ( Number ) ( INT_TERM.get().longValue() + INT2_TERM.get().longValue() ) ) );
+    }
+
+    @Test
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Add.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Add.class ) ) );
     }
 
     @Test
@@ -88,8 +108,8 @@ public final class AddTest {
 
     @Test
     public void shouldHaveErrorWhenAddingTermWithWrongType() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM ); // will get rid of current problems
-        this.operation.addInput( TestConstants.STRING_1_TERM );
+        this.operation.addInput( ID, INT_TERM, INT2_TERM ); // will get rid of initial problems
+        this.operation.addInput( ID, OperationTestConstants.STRING_1_TERM ); // will cause a new problem
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -106,18 +126,18 @@ public final class AddTest {
 
     @Test( expected = PolyglotterException.class )
     public void shouldNotBeAbleToGetResultWithOnlyOneTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( ID, INT_TERM );
         this.operation.get();
     }
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( INT_TERM );
     }
 
     @Test
     public void shouldNotHaveProblemsWithTwoTermsOfCorrectType() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM );
+        this.operation.addInput( ID, INT_TERM, INT_TERM );
         assertThat( this.operation.problems().isEmpty(), is( true ) );
         assertThat( this.operation.problems().isOk(), is( true ) );
     }

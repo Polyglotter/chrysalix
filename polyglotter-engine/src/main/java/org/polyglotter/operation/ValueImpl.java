@@ -24,18 +24,11 @@
 package org.polyglotter.operation;
 
 import java.lang.reflect.ParameterizedType;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.Logger;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.transformation.TransformationEvent;
-import org.polyglotter.transformation.TransformationFactory;
-import org.polyglotter.transformation.TransformationListener;
 import org.polyglotter.transformation.Value;
 import org.polyglotter.transformation.ValueDescriptor;
 
@@ -48,11 +41,6 @@ import org.polyglotter.transformation.ValueDescriptor;
 public class ValueImpl< T > implements Value< T > {
 
     private final ValueDescriptor< T > descriptor;
-
-    /**
-     * The registered listeners of this value.
-     */
-    protected final Set< TransformationListener > listeners;
 
     /**
      * The current value.
@@ -72,22 +60,7 @@ public class ValueImpl< T > implements Value< T > {
         CheckArg.notNull( valueDescriptor, "valueDescriptor" );
 
         this.descriptor = valueDescriptor;
-        this.listeners = new HashSet<>( 5 );
         this.logger = Logger.getLogger( getClass() );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.TransformationSource#add(org.polyglotter.transformation.TransformationListener)
-     */
-    @Override
-    public void add( final TransformationListener listener ) {
-        CheckArg.notNull( listener, "listener" );
-
-        if ( !this.listeners.contains( listener ) ) {
-            this.listeners.add( listener );
-        }
     }
 
     /**
@@ -96,20 +69,8 @@ public class ValueImpl< T > implements Value< T > {
      * @see org.polyglotter.transformation.Value#descriptor()
      */
     @Override
-    public final ValueDescriptor< T > descriptor() {
+    public ValueDescriptor< T > descriptor() {
         return this.descriptor;
-    }
-
-    /**
-     * @param event
-     *        the event being broadcast to the registered listeners (cannot be <code>null</code>)
-     */
-    protected void fire( final TransformationEvent event ) {
-        CheckArg.notNull( event, "event" );
-
-        for ( final TransformationListener listener : this.listeners ) {
-            listener.notify( event );
-        }
     }
 
     /**
@@ -121,20 +82,6 @@ public class ValueImpl< T > implements Value< T > {
     @Override
     public T get() throws PolyglotterException {
         return this.value;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.TransformationSource#remove(org.polyglotter.transformation.TransformationListener)
-     */
-    @Override
-    public void remove( final TransformationListener listener ) {
-        CheckArg.notNull( listener, "listener" );
-
-        if ( !this.listeners.remove( listener ) ) {
-            throw new IllegalArgumentException( PolyglotterI18n.listenerNotFoundToUnregister.text() );
-        }
     }
 
     /**
@@ -160,16 +107,6 @@ public class ValueImpl< T > implements Value< T > {
         } else if ( ( newValue == null ) || !this.value.equals( newValue ) ) {
             this.value = newValue;
             changed = true;
-        }
-
-        if ( changed ) {
-            final Map< String, Object > data = new HashMap< String, Object >( 1 );
-            data.put( Value.EventTag.OLD, oldValue );
-            data.put( Value.EventTag.NEW, newValue );
-
-            final TransformationEvent event = TransformationFactory.createEvent( Value.ValueEventType.VALUE_CHANGED, this, data );
-            this.logger.debug( "Value '%s' value changed from '%s' to '%s'", descriptor().id(), oldValue, this.value );
-            fire( event );
         }
     }
 

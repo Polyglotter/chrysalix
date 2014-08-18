@@ -25,12 +25,13 @@ package org.polyglotter.operation;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -45,22 +46,12 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Power extends AbstractOperation< Number > {
 
     /**
-     * The output descriptor.
-     */
-    public static final ValueDescriptor< Number > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Power.class.getSimpleName() ),
-                                                                       PolyglotterI18n.powerOperationDescription.text(),
-                                                                       PolyglotterI18n.powerOperationName.text(),
-                                                                       Number.class );
-
-    /**
      * The base descriptor.
      */
-    // TODO id, description, name
     public static final ValueDescriptor< Number > BASE_DESCRIPTOR =
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
-                                                     PolyglotterI18n.powerOperationDescription.text(),
-                                                     PolyglotterI18n.powerOperationName.text(),
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Power.class, "base" ),
+                                                     PolyglotterI18n.powerOperationBaseDescription.text(),
+                                                     PolyglotterI18n.powerOperationBaseName.text(),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -69,11 +60,10 @@ public final class Power extends AbstractOperation< Number > {
     /**
      * The exponent descriptor.
      */
-    // TODO id, description, name
     public static final ValueDescriptor< Number > EXPONENT_DESCRIPTOR =
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Modulus.class.getSimpleName() ),
-                                                     PolyglotterI18n.powerOperationDescription.text(),
-                                                     PolyglotterI18n.powerOperationName.text(),
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Power.class, "exponent" ),
+                                                     PolyglotterI18n.powerOperationExponentDescription.text(),
+                                                     PolyglotterI18n.powerOperationExponentName.text(),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -82,8 +72,29 @@ public final class Power extends AbstractOperation< Number > {
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< ? >> INPUT_DESCRIPTORS =
-        Arrays.asList( new ValueDescriptor< ? >[] { BASE_DESCRIPTOR, EXPONENT_DESCRIPTOR } );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { BASE_DESCRIPTOR, EXPONENT_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Number > DESCRIPTOR =
+        new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Power.class ),
+                                                   PolyglotterI18n.powerOperationDescription.text(),
+                                                   PolyglotterI18n.powerOperationName.text(),
+                                                   Number.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Number > newInstance( final Transformation transformation ) {
+                return new Power( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -117,16 +128,6 @@ public final class Power extends AbstractOperation< Number > {
         if ( base instanceof BigDecimal ) return ( ( BigDecimal ) base ).pow( exponent.intValue() );
 
         return Math.pow( base.doubleValue(), exponent.doubleValue() );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
     }
 
     /**

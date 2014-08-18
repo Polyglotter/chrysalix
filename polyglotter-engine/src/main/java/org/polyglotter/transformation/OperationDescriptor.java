@@ -23,17 +23,35 @@
  */
 package org.polyglotter.transformation;
 
+
 /**
- * A class that processes {@link TransformationEvent events} related to {@link Transformation transformations}.
+ * An {@link Operation operation} descriptor.
+ * 
+ * @param <T>
+ *        the type of the value
  */
-public interface TransformationListener {
+public interface OperationDescriptor< T > extends ValueDescriptor< T > {
 
     /**
-     * @param event
-     *        the event being broadcast (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the event is <code>null</code>
+     * The name of the class field for the output descriptor. Value is {@value} .
      */
-    void notify( final TransformationEvent event );
+    String DESCRIPTOR_NAME = "DESCRIPTOR";
+
+    /**
+     * An empty collection of operation descriptors.
+     */
+    OperationDescriptor< ? >[] NO_DESCRIPTORS = {};
+
+    /**
+     * @return a collection of descriptors for the inputs (never <code>null</code> but can be empty)
+     */
+    ValueDescriptor< ? >[] inputDescriptors();
+
+    /**
+     * @param transformation
+     *        the owning {@link Transformation transformation} (never <code>null</code>)
+     * @return the new operation instance (never <code>null</code>)
+     */
+    Operation< T > newInstance( final Transformation transformation );
 
 }

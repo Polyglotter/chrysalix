@@ -24,46 +24,78 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+//import org.polyglotter.TestConstants;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc" } )
 public final class ConcatTest {
+
+    private static final String ID = Concat.TERM_DESCRIPTOR.id();
+    private static Value< Object > EMPTY_STRING_TERM;
+    private static Value< Object > INT_TERM;
+    private static Value< Object > NULL_STRING_TERM;
+    private static Value< Object > STRING_TERM;
+    private static Value< Object > STRING2_TERM;
+    private static Value< Object > STRING3_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        EMPTY_STRING_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.EMPTY_STRING_VALUE );
+        INT_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        NULL_STRING_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.NULL_STRING_VALUE );
+        STRING_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_1_VALUE );
+        STRING2_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_2_VALUE );
+        STRING3_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_3_VALUE );
+    }
 
     private Concat operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Concat( TestConstants.TEST_TRANSFORMATION );
+        this.operation = new Concat( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldConcatMultipleinputs() throws Exception {
-        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.STRING_2_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.STRING_2_VALUE + TestConstants.STRING_3_VALUE ) );
+        this.operation.addInput( ID, STRING_TERM, STRING2_TERM, STRING3_TERM );
+        assertThat( this.operation.get(),
+                    is( STRING_TERM.get().toString() + STRING2_TERM.get().toString() + STRING3_TERM.get().toString() ) );
     }
 
     @Test
     public void shouldConcatTermsWithEmptyValues() throws Exception {
-        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.EMPTY_STRING_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.EMPTY_STRING_VALUE + TestConstants.STRING_3_VALUE ) );
+        this.operation.addInput( ID, STRING_TERM, EMPTY_STRING_TERM, STRING3_TERM );
+        assertThat( this.operation.get(),
+                    is( STRING_TERM.get().toString() + EMPTY_STRING_TERM.get().toString() + STRING3_TERM.get().toString() ) );
     }
 
     @Test
     public void shouldConcatTermsWithNullValues() throws Exception {
-        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.NULL_STRING_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.NULL_STRING_VALUE + TestConstants.STRING_3_VALUE ) );
+        this.operation.addInput( ID, STRING_TERM, NULL_STRING_TERM, STRING3_TERM );
+        assertThat( this.operation.get(),
+                    is( STRING_TERM.get().toString() + NULL_STRING_TERM.get() + STRING3_TERM.get().toString() ) );
     }
 
     @Test
     public void shouldConcatTermsWithNumberValues() throws Exception {
-        this.operation.addInput( TestConstants.STRING_1_TERM, TestConstants.INT_1_TERM, TestConstants.STRING_3_TERM );
-        assertThat( this.operation.get(), is( TestConstants.STRING_1_VALUE + TestConstants.INT_1_VALUE + TestConstants.STRING_3_VALUE ) );
+        this.operation.addInput( ID, STRING_TERM, INT_TERM, STRING3_TERM );
+        assertThat( this.operation.get(),
+                    is( STRING_TERM.get().toString() + INT_TERM.get().toString() + STRING3_TERM.get().toString() ) );
+    }
+
+    @Test
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Concat.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Concat.class ) ) );
     }
 
     @Test

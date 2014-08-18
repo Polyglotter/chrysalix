@@ -23,12 +23,13 @@
  */
 package org.polyglotter.operation;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -41,21 +42,12 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Add extends AbstractOperation< Number > {
 
     /**
-     * The output descriptor.
-     */
-    public static final ValueDescriptor< Number > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Add.class.getSimpleName() ),
-                                                                       PolyglotterI18n.addOperationDescription.text(),
-                                                                       PolyglotterI18n.addOperationName.text(),
-                                                                       Number.class );
-    /**
      * The input term descriptor.
      */
     public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
-        // TODO id, description, name
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Add.class.getSimpleName() ),
-                                                     PolyglotterI18n.addOperationDescription.text(),
-                                                     PolyglotterI18n.addOperationName.text(),
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Add.class, "input" ),
+                                                     PolyglotterI18n.addOperationInputDescription.text(),
+                                                     PolyglotterI18n.addOperationInputName.text(),
                                                      Number.class,
                                                      true,
                                                      2,
@@ -63,7 +55,29 @@ public final class Add extends AbstractOperation< Number > {
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< Number >> INPUT_DESCRIPTORS = Collections.singletonList( TERM_DESCRIPTOR );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Number > DESCRIPTOR =
+        new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Add.class ),
+                                                   PolyglotterI18n.addOperationDescription.text(),
+                                                   PolyglotterI18n.addOperationName.text(),
+                                                   Number.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Number > newInstance( final Transformation transformation ) {
+                return new Add( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -114,16 +128,6 @@ public final class Add extends AbstractOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
-    };
-
-    /**
-     * {@inheritDoc}
-     * 
      * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
@@ -137,7 +141,7 @@ public final class Add extends AbstractOperation< Number > {
                                                    PolyglotterI18n.addOperationHasNoTerms.text( transformationId() ) );
             problems().add( problem );
         } else {
-            if ( inputs.size() < INPUT_DESCRIPTORS.get( 0 ).requiredValueCount() ) {
+            if ( inputs.size() < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
                 final ValidationProblem problem =
                     TransformationFactory.createError( transformationId(),
                                                        PolyglotterI18n.invalidTermCount.text( name(), transformationId(), inputs().size() ) );
@@ -169,5 +173,4 @@ public final class Add extends AbstractOperation< Number > {
             }
         }
     }
-
 }

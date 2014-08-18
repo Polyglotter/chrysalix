@@ -24,48 +24,78 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class PowerTest {
+
+    private static final String BASE_ID = Power.BASE_DESCRIPTOR.id();
+    private static final String EXP_ID = Power.EXPONENT_DESCRIPTOR.id();
+    private static Value< Number > BASE_DOUBLE_TERM;
+    private static Value< Number > BASE_FLOAT_TERM;
+    private static Value< Number > BASE_INT_TERM;
+    private static Value< Number > EXP_DOUBLE_TERM;
+    private static Value< Number > EXP_FLOAT_TERM;
+    private static Value< Number > EXP_INT_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        BASE_DOUBLE_TERM = TransformationFactory.createValue( Power.BASE_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        BASE_FLOAT_TERM = TransformationFactory.createValue( Power.BASE_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        BASE_INT_TERM = TransformationFactory.createValue( Power.BASE_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        EXP_DOUBLE_TERM = TransformationFactory.createValue( Power.EXPONENT_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
+        EXP_FLOAT_TERM = TransformationFactory.createValue( Power.EXPONENT_DESCRIPTOR, OperationTestConstants.FLOAT_2_VALUE );
+        EXP_INT_TERM = TransformationFactory.createValue( Power.EXPONENT_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+    }
 
     private Power operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Power( TestConstants.TEST_TRANSFORMATION );
+        this.operation = new Power( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddTwoinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
+        this.operation.addInput( BASE_ID, BASE_INT_TERM );
+        this.operation.addInput( EXP_ID, EXP_INT_TERM );
         assertThat( this.operation.inputs().size(), is( 2 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_2_ID ), is( TestConstants.INT_2_TERM ) );
+        assertThat( this.operation.inputs( BASE_ID ).size(), is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs( BASE_ID ).get( 0 ), is( BASE_INT_TERM ) );
+        assertThat( this.operation.inputs( EXP_ID ).size(), is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs( EXP_ID ).get( 0 ), is( EXP_INT_TERM ) );
     }
 
     @Test
     public void shouldCalculateDoubleinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_2_TERM );
+        this.operation.addInput( BASE_ID, BASE_DOUBLE_TERM );
+        this.operation.addInput( EXP_ID, EXP_DOUBLE_TERM );
         assertThat( this.operation.get(),
-                    is( ( Number ) Math.pow( TestConstants.DOUBLE_1_VALUE, TestConstants.DOUBLE_2_VALUE ) ) );
+                    is( ( Number ) Math.pow( BASE_DOUBLE_TERM.get().doubleValue(), EXP_DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
     public void shouldCalculateFloatinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.FLOAT_1_TERM );
-        this.operation.addInput( TestConstants.FLOAT_2_TERM );
-        assertThat( this.operation.get(), is( ( Number ) Math.pow( TestConstants.FLOAT_1_VALUE, TestConstants.FLOAT_2_VALUE ) ) );
+        this.operation.addInput( BASE_ID, BASE_FLOAT_TERM );
+        this.operation.addInput( EXP_ID, EXP_FLOAT_TERM );
+        assertThat( this.operation.get(),
+                    is( ( Number ) Math.pow( BASE_FLOAT_TERM.get().floatValue(), EXP_FLOAT_TERM.get().floatValue() ) ) );
+    }
+
+    @Test
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Power.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Power.class ) ) );
     }
 
     @Test
@@ -80,18 +110,35 @@ public final class PowerTest {
     }
 
     @Test
-    public void shouldHaveErrorWhenMoreThanTwoinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
+    public void shouldHaveErrorWhenBaseIsNotANumber() throws PolyglotterException {
+        this.operation.addInput( BASE_ID, OperationTestConstants.STRING_1_TERM );
+        this.operation.addInput( EXP_ID, EXP_DOUBLE_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
-    public void shouldHaveErrorWhenTermIsNotANumber() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.STRING_1_TERM );
+    public void shouldHaveErrorWhenExponentIsNotANumber() throws PolyglotterException {
+        this.operation.addInput( BASE_ID, BASE_INT_TERM );
+        this.operation.addInput( EXP_ID, OperationTestConstants.STRING_1_TERM );
+        assertThat( this.operation.problems().size(), is( 1 ) );
+        assertThat( this.operation.problems().isError(), is( true ) );
+    }
+
+    @Test
+    public void shouldHaveErrorWhenMoreThanOneBase() throws PolyglotterException {
+        this.operation.addInput( BASE_ID, BASE_DOUBLE_TERM );
+        this.operation.addInput( BASE_ID, BASE_INT_TERM );
+        this.operation.addInput( EXP_ID, EXP_DOUBLE_TERM );
+        assertThat( this.operation.problems().size(), is( 1 ) );
+        assertThat( this.operation.problems().isError(), is( true ) );
+    }
+
+    @Test
+    public void shouldHaveErrorWhenMoreThanOneExponent() throws PolyglotterException {
+        this.operation.addInput( BASE_ID, BASE_INT_TERM );
+        this.operation.addInput( EXP_ID, EXP_DOUBLE_TERM );
+        this.operation.addInput( EXP_ID, EXP_FLOAT_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -108,7 +155,7 @@ public final class PowerTest {
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( BASE_DOUBLE_TERM );
     }
 
     @Test

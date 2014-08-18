@@ -23,8 +23,6 @@
  */
 package org.polyglotter.transformation;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.common.CheckArg;
 
 /**
@@ -63,9 +61,9 @@ public interface ValidationProblem {
     Severity severity();
 
     /**
-     * @return the identifier of the transformation that was validated (never <code>null</code>)
+     * @return the identifier of the transformation that was validated (never <code>null</code> or empty)
      */
-    QName sourceId();
+    String sourceId();
 
     /**
      * The message severity.

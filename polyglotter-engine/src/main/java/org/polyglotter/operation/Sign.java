@@ -25,12 +25,12 @@ package org.polyglotter.operation;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -48,24 +48,40 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Sign extends AbstractOperation< Integer > {
 
     /**
-     * The output descriptor.
+     * The input term descriptor.
      */
-    public static final ValueDescriptor< Integer > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Sign.class.getSimpleName() ),
-                                                                       PolyglotterI18n.signOperationDescription.text(),
-                                                                       PolyglotterI18n.signOperationName.text(),
-                                                                       Integer.class );
+    public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
+        TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Sign.class, "input" ),
+                                                                       PolyglotterI18n.signOperationInputDescription.text(),
+                                                                       PolyglotterI18n.signOperationInputName.text(),
+                                                                       Number.class );
 
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< Number >> INPUT_DESCRIPTORS =
-        // TODO id, description, name
-        Collections.singletonList(
-                   TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Sign.class.getSimpleName() ),
-                                                                                  PolyglotterI18n.signOperationDescription.text(),
-                                                                                  PolyglotterI18n.signOperationName.text(),
-                                                                                  Number.class ) );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Integer > DESCRIPTOR =
+        new AbstractOperationDescriptor< Integer >( TransformationFactory.createId( Sign.class ),
+                                                    PolyglotterI18n.signOperationDescription.text(),
+                                                    PolyglotterI18n.signOperationName.text(),
+                                                    Integer.class,
+                                                    INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Integer > newInstance( final Transformation transformation ) {
+                return new Sign( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -98,16 +114,6 @@ public final class Sign extends AbstractOperation< Integer > {
         if ( value instanceof Float ) return Double.valueOf( Math.signum( ( Float ) value ) ).intValue();
 
         return Double.valueOf( Math.signum( value.doubleValue() ) ).intValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
     }
 
     /**

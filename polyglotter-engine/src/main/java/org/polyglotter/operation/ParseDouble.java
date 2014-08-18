@@ -23,12 +23,11 @@
  */
 package org.polyglotter.operation;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -43,24 +42,40 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class ParseDouble extends AbstractOperation< Double > {
 
     /**
-     * The output descriptor.
+     * The input term descriptor.
      */
-    public static final ValueDescriptor< Double > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( ParseDouble.class.getSimpleName() ),
-                                                                       PolyglotterI18n.parseDoubleOperationDescription.text(),
-                                                                       PolyglotterI18n.parseDoubleOperationName.text(),
-                                                                       Double.class );
+    public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
+        TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( ParseDouble.class, "input" ),
+                                                                       PolyglotterI18n.parseDoubleOperationInputDescription.text(),
+                                                                       PolyglotterI18n.parseDoubleOperationInputName.text(),
+                                                                       Number.class );
 
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< Number >> INPUT_DESCRIPTORS =
-        // TODO id, description, name
-        Collections.singletonList(
-                   TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( ParseDouble.class.getSimpleName() ),
-                                                                                  PolyglotterI18n.parseDoubleOperationDescription.text(),
-                                                                                  PolyglotterI18n.parseDoubleOperationName.text(),
-                                                                                  Number.class ) );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Double > DESCRIPTOR =
+        new AbstractOperationDescriptor< Double >( TransformationFactory.createId( ParseDouble.class ),
+                                                   PolyglotterI18n.parseDoubleOperationDescription.text(),
+                                                   PolyglotterI18n.parseDoubleOperationName.text(),
+                                                   Double.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Double > newInstance( final Transformation transformation ) {
+                return new ParseDouble( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -89,16 +104,6 @@ public final class ParseDouble extends AbstractOperation< Double > {
         final String value = ( String ) inputs().get( 0 ).get();
 
         return Double.valueOf( value );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
     }
 
     /**

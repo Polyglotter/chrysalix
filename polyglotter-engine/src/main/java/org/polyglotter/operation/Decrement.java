@@ -23,12 +23,11 @@
  */
 package org.polyglotter.operation;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -41,24 +40,40 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Decrement extends AbstractOperation< Integer > {
 
     /**
-     * The output descriptor.
+     * The input term descriptor.
      */
-    public static final ValueDescriptor< Integer > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Decrement.class.getSimpleName() ),
-                                                                       PolyglotterI18n.decrementOperationDescription.text(),
-                                                                       PolyglotterI18n.decrementOperationName.text(),
+    public static final ValueDescriptor< Integer > TERM_DESCRIPTOR =
+        TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Decrement.class, "input" ),
+                                                                       PolyglotterI18n.decrementOperationInputDescription.text(),
+                                                                       PolyglotterI18n.decrementOperationInputName.text(),
                                                                        Integer.class );
 
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< Integer >> INPUT_DESCRIPTORS =
-        // TODO id, description, name
-        Collections.singletonList(
-                   TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Decrement.class.getSimpleName() ),
-                                                                                  PolyglotterI18n.decrementOperationDescription.text(),
-                                                                                  PolyglotterI18n.decrementOperationName.text(),
-                                                                                  Integer.class ) );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Integer > DESCRIPTOR =
+        new AbstractOperationDescriptor< Integer >( TransformationFactory.createId( Decrement.class ),
+                                                    PolyglotterI18n.decrementOperationDescription.text(),
+                                                    PolyglotterI18n.decrementOperationName.text(),
+                                                    Integer.class,
+                                                    INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Integer > newInstance( final Transformation transformation ) {
+                return new Decrement( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -86,16 +101,6 @@ public final class Decrement extends AbstractOperation< Integer > {
         assert !problems().isError();
         int value = ( Integer ) inputs().get( 0 ).get();
         return --value;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
     }
 
     /**

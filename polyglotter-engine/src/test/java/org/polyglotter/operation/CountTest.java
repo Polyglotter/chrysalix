@@ -24,32 +24,45 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class CountTest {
+
+    private static final String ID = Count.TERM_DESCRIPTOR.id();
+    private static Value< Object > DOUBLE_TERM;
+    private static Value< Object > INT_TERM;
+    private static Value< Object > INT2_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        DOUBLE_TERM = TransformationFactory.createValue( Count.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        INT_TERM = TransformationFactory.createValue( Count.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = TransformationFactory.createValue( Count.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+    }
 
     private Count operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Count( TestConstants.TEST_TRANSFORMATION );
+        this.operation = new Count( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( ID, INT_TERM );
         assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
+        assertThat( ( Value< Object > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
     }
 
     @Test
@@ -58,20 +71,24 @@ public final class CountTest {
     }
 
     @Test
-    public void shouldCountinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM, TestConstants.INT_2_TERM );
+    public void shouldCountInputs() throws PolyglotterException {
+        this.operation.addInput( ID, INT_TERM, INT2_TERM );
         assertThat( this.operation.inputs().size(), is( 2 ) );
-        assertThat( this.operation.inputs(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.INT_2_TERM } ) );
         assertThat( this.operation.get(), is( 2 ) );
     }
 
     @Test
     public void shouldCountTermsOfDifferentTypes() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
-        this.operation.addInput( TestConstants.STRING_1_TERM );
-        assertThat( this.operation.inputs(), hasItems( new Term< ? >[] { TestConstants.INT_1_TERM, TestConstants.DOUBLE_1_TERM, TestConstants.STRING_1_TERM } ) );
+        this.operation.addInput( ID, INT_TERM );
+        this.operation.addInput( ID, DOUBLE_TERM );
+        this.operation.addInput( ID, OperationTestConstants.STRING_1_TERM );
         assertThat( this.operation.get(), is( 3 ) );
+    }
+
+    @Test
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Count.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Count.class ) ) );
     }
 
     @Test
@@ -82,7 +99,7 @@ public final class CountTest {
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( INT_TERM );
     }
 
     @Test

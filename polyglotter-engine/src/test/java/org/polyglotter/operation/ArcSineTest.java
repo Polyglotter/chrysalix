@@ -24,60 +24,78 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class ArcSineTest {
+
+    private static Value< Number > DOUBLE_TERM;
+    private static Value< Number > FLOAT_TERM;
+    private static Value< Number > INT_TERM;
+    private static Value< Number > INT2_TERM;
+    private static Value< Number > LONG_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        DOUBLE_TERM = TransformationFactory.createValue( ArcSine.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        FLOAT_TERM = TransformationFactory.createValue( ArcSine.TERM_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        INT_TERM = TransformationFactory.createValue( ArcSine.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = TransformationFactory.createValue( ArcSine.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        LONG_TERM = TransformationFactory.createValue( ArcSine.TERM_DESCRIPTOR, OperationTestConstants.LONG_1_VALUE );
+    }
 
     private ArcSine operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new ArcSine( TestConstants.TEST_TRANSFORMATION );
+        this.operation = new ArcSine( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), INT_TERM );
         assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
+        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
     }
 
     @Test
     public void shouldCalculateDoubleTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.get(), is( ( Number ) Math.asin( TestConstants.DOUBLE_1_VALUE ) ) );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), DOUBLE_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.asin( DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
     public void shouldCalculateFloatTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.FLOAT_1_TERM );
-        assertThat( this.operation.get(), is( ( Number ) Math.asin( TestConstants.FLOAT_1_VALUE ) ) );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), FLOAT_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.asin( FLOAT_TERM.get().floatValue() ) ) );
     }
 
     @Test
     public void shouldCalculateIntegerTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        assertThat( this.operation.get(), is( ( Number ) Math.asin( TestConstants.INT_1_VALUE ) ) );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), INT_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.asin( INT_TERM.get().intValue() ) ) );
     }
 
     @Test
     public void shouldCalculateLongTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.LONG_1_TERM );
-        assertThat( this.operation.get(), is( ( Number ) Math.asin( TestConstants.LONG_1_VALUE ) ) );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), LONG_TERM );
+        assertThat( this.operation.get(), is( ( Number ) Math.asin( LONG_TERM.get().longValue() ) ) );
     }
 
     @Test
-    public void shouldHaveAbbreviation() {
-        assertThat( this.operation.descriptor().abbreviation(), is( "asin" ) );
+    public void shouldCreateOperation() throws Exception {
+        assertThat( ArcSine.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( ArcSine.class ) ) );
     }
 
     @Test
@@ -92,15 +110,15 @@ public final class ArcSineTest {
 
     @Test
     public void shouldHaveErrorWhenMoreThanOneTerm() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), INT_TERM );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), INT2_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenTermIsNotANumber() throws PolyglotterException {
-        this.operation.addInput( TestConstants.STRING_1_TERM );
+        this.operation.addInput( ArcSine.TERM_DESCRIPTOR.id(), OperationTestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -117,7 +135,7 @@ public final class ArcSineTest {
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( INT_TERM );
     }
 
     @Test

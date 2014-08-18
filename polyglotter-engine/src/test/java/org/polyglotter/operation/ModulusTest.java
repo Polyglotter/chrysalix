@@ -24,61 +24,93 @@
 package org.polyglotter.operation;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.modeshape.jcr.query.model.FullTextSearch.Term;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.TestConstants;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.Value;
 
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class ModulusTest {
+
+    private static final String DIVIDEND_ID = Modulus.DIVIDEND_DESCRIPTOR.id();
+    private static final String DIVISOR_ID = Modulus.DIVISOR_DESCRIPTOR.id();
+    private static Value< Number > DIVIDEND_DOUBLE_TERM;
+    private static Value< Number > DIVIDEND_FLOAT_TERM;
+    private static Value< Number > DIVIDEND_INT_TERM;
+    private static Value< Number > DIVISOR_DOUBLE_TERM;
+    private static Value< Number > DIVISOR_FLOAT_TERM;
+    private static Value< Number > DIVISOR_INT_TERM;
+
+    @BeforeClass
+    public static void initializeConstants() throws Exception {
+        DIVIDEND_DOUBLE_TERM = TransformationFactory.createValue( Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        DIVIDEND_FLOAT_TERM = TransformationFactory.createValue( Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        DIVIDEND_INT_TERM = TransformationFactory.createValue( Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        DIVISOR_DOUBLE_TERM = TransformationFactory.createValue( Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
+        DIVISOR_FLOAT_TERM = TransformationFactory.createValue( Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.FLOAT_2_VALUE );
+        DIVISOR_INT_TERM = TransformationFactory.createValue( Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+    }
 
     private Modulus operation;
 
     @Before
     public void beforeEach() {
-        this.operation = new Modulus( TestConstants.TEST_TRANSFORMATION );
+        this.operation = new Modulus( OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddTwoinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_INT_TERM );
         assertThat( this.operation.inputs().size(), is( 2 ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_1_ID ), is( TestConstants.INT_1_TERM ) );
-        assertThat( ( Term< Number > ) this.operation.get( TestConstants.INT_2_ID ), is( TestConstants.INT_2_TERM ) );
+        assertThat( this.operation.inputs( DIVIDEND_ID ).size(), is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs( DIVIDEND_ID ).get( 0 ), is( DIVIDEND_INT_TERM ) );
+        assertThat( this.operation.inputs( DIVISOR_ID ).size(), is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs( DIVISOR_ID ).get( 0 ), is( DIVISOR_INT_TERM ) );
     }
 
     @Test
     public void shouldCalculateDoubleinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_2_TERM );
-        assertThat( this.operation.get(), is( TestConstants.DOUBLE_1_VALUE % TestConstants.DOUBLE_2_VALUE ) );
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_DOUBLE_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_DOUBLE_TERM );
+        assertThat( this.operation.get(),
+                    is( DIVIDEND_DOUBLE_TERM.get().doubleValue() % DIVISOR_DOUBLE_TERM.get().doubleValue() ) );
     }
 
     @Test
     public void shouldCalculateFloatinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.FLOAT_1_TERM );
-        this.operation.addInput( TestConstants.FLOAT_2_TERM );
-        assertThat( this.operation.get(), is( ( double ) TestConstants.FLOAT_1_VALUE % ( double ) TestConstants.FLOAT_2_VALUE ) );
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_FLOAT_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_FLOAT_TERM );
+        assertThat( this.operation.get(),
+                    is( DIVIDEND_FLOAT_TERM.get().doubleValue() % DIVISOR_FLOAT_TERM.get().doubleValue() ) );
     }
 
     @Test
     public void shouldCalculateIntegerinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
-        assertThat( this.operation.get(), is( ( double ) TestConstants.INT_1_VALUE % ( double ) TestConstants.INT_2_VALUE ) );
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_INT_TERM );
+        assertThat( this.operation.get(),
+                    is( DIVIDEND_INT_TERM.get().doubleValue() % DIVISOR_INT_TERM.get().doubleValue() ) );
     }
 
     @Test
     public void shouldCalculateMixedinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
-        assertThat( this.operation.get(), is( TestConstants.INT_1_VALUE % TestConstants.DOUBLE_1_VALUE ) );
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_DOUBLE_TERM );
+        assertThat( this.operation.get(), is( DIVIDEND_INT_TERM.get().intValue() % DIVISOR_DOUBLE_TERM.get().doubleValue() ) );
+    }
+
+    @Test
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Modulus.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+                    is( instanceOf( Modulus.class ) ) );
     }
 
     @Test
@@ -94,25 +126,34 @@ public final class ModulusTest {
 
     @Test
     public void shouldHaveErrorWhenDividendTermIsNotANumber() throws PolyglotterException {
-        this.operation.addInput( TestConstants.STRING_1_TERM );
-        this.operation.addInput( TestConstants.INT_1_TERM );
+        this.operation.addInput( DIVIDEND_ID, OperationTestConstants.STRING_1_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_INT_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
     public void shouldHaveErrorWhenDivisorTermIsNotANumber() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.STRING_1_TERM );
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
+        this.operation.addInput( DIVISOR_ID, OperationTestConstants.STRING_1_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
     @Test
-    public void shouldHaveErrorWhenMoreThanTwoinputs() throws PolyglotterException {
-        this.operation.addInput( TestConstants.INT_1_TERM );
-        this.operation.addInput( TestConstants.INT_2_TERM );
-        this.operation.addInput( TestConstants.DOUBLE_1_TERM );
+    public void shouldHaveErrorWhenMoreThanOneDividend() throws PolyglotterException {
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_DOUBLE_TERM );
+        assertThat( this.operation.problems().size(), is( 1 ) );
+        assertThat( this.operation.problems().isError(), is( true ) );
+    }
+
+    @Test
+    public void shouldHaveErrorWhenMoreThanOneDivisor() throws PolyglotterException {
+        this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_DOUBLE_TERM );
+        this.operation.addInput( DIVISOR_ID, DIVISOR_DOUBLE_TERM );
         assertThat( this.operation.problems().size(), is( 1 ) );
         assertThat( this.operation.problems().isError(), is( true ) );
     }
@@ -129,7 +170,7 @@ public final class ModulusTest {
 
     @Test( expected = UnsupportedOperationException.class )
     public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( TestConstants.INT_1_TERM );
+        this.operation.inputs().add( DIVIDEND_INT_TERM );
     }
 
     @Test

@@ -23,13 +23,14 @@ AbstractOperation * Polyglotter (http://polyglotter.org)
  */
 package org.polyglotter.operation;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.Logger;
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.ValidationProblem;
@@ -42,27 +43,43 @@ import org.polyglotter.transformation.ValueDescriptor;
 public final class Average extends AbstractOperation< Number > {
 
     /**
-     * The output descriptor.
+     * The input term descriptor.
      */
-    public static final ValueDescriptor< Number > DESCRIPTOR =
-        TransformationFactory.createReadOnlyBoundedOneValueDescriptor( TransformationFactory.createId( Average.class.getSimpleName() ),
-                                                                       PolyglotterI18n.averageOperationDescription.text(),
-                                                                       PolyglotterI18n.averageOperationName.text(),
-                                                                       Number.class );
+    public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Average.class, "input" ),
+                                                     PolyglotterI18n.averageOperationInputDescription.text(),
+                                                     PolyglotterI18n.averageOperationInputName.text(),
+                                                     Number.class,
+                                                     true,
+                                                     1,
+                                                     true );
 
     /**
      * The input descriptors.
      */
-    private static final List< ValueDescriptor< Number >> INPUT_DESCRIPTORS =
-        // TODO id, description, name
-        Collections.singletonList(
-                   TransformationFactory.createValueDescriptor( TransformationFactory.createId( Average.class.getSimpleName() ),
-                                                                PolyglotterI18n.averageOperationDescription.text(),
-                                                                PolyglotterI18n.averageOperationName.text(),
-                                                                Number.class,
-                                                                true,
-                                                                2,
-                                                                true ) );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Number > DESCRIPTOR =
+        new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Average.class ),
+                                                   PolyglotterI18n.averageOperationDescription.text(),
+                                                   PolyglotterI18n.averageOperationName.text(),
+                                                   Number.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Number > newInstance( final Transformation transformation ) {
+                return new Average( transformation );
+            }
+
+        };
 
     /**
      * @param transformation
@@ -96,11 +113,11 @@ public final class Average extends AbstractOperation< Number > {
         }
 
         try {
-            final Add addOp = new Add( TEMP_TRANSFORMATION );
+            final Add addOp = new Add( transformation() );
             addOp.addInput( Add.TERM_DESCRIPTOR.id(), ( Object[] ) terms.toArray( new Value< ? >[ terms.size() ] ) );
             final Number total = addOp.get();
 
-            final Divide divideOp = new Divide( TEMP_TRANSFORMATION );
+            final Divide divideOp = new Divide( transformation() );
             divideOp.addInput( Divide.TERM_DESCRIPTOR.id(), total, terms.size() );
 
             return divideOp.get();
@@ -118,16 +135,6 @@ public final class Average extends AbstractOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.transformation.Operation#inputDescriptors()
-     */
-    @Override
-    public List< ValueDescriptor< ? >> inputDescriptors() {
-        return INPUT_DESCRIPTORS;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
      * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
@@ -139,7 +146,7 @@ public final class Average extends AbstractOperation< Number > {
                                                    PolyglotterI18n.averageOperationHasNoTerms.text( transformationId() ) );
             problems().add( problem );
         } else {
-            if ( inputs().size() < INPUT_DESCRIPTORS.get( 0 ).requiredValueCount() ) {
+            if ( inputs().size() < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
                 final ValidationProblem problem =
                     TransformationFactory.createError( transformationId(),
                                                        PolyglotterI18n.invalidTermCount.text( name(),

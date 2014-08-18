@@ -21,46 +21,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.transformation;
+package org.polyglotter;
 
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Transformation;
 
 /**
- * A class representing a transformation. A transformation uses an ordered set of {@link Operation operations} to calculate a result
- * consisting of one or more {@link Value values}.
+ * A model transformation.
  */
-public interface Transformation extends Iterable< Operation< ? > > {
+public interface ModelTransformation {
 
     /**
-     * @param operations
-     *        the operations being added (cannot be <code>null</code> or empty)
+     * @param transformations
+     *        the transformations being added (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the operation being added is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the transformations being added is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws PolyglotterException
-     *         if any of the operations have already been added or if an operation cannot be added
+     *         if any of the transformations have already been added or if an operation cannot be added
      */
-    void add( final Operation< ? >... operations ) throws PolyglotterException;
+    void add( final Transformation... transformations ) throws PolyglotterException;
 
     /**
-     * @return a unique identifier (never <code>null</code> or empty)
+     * @throws PolyglotterException
+     *         if any error occurs
      */
-    String id();
+    void execute() throws PolyglotterException;
 
     /**
-     * @return a collection of the {@link Operation operations} performed by this transformation (never <code>null</code> but can be
-     *         empty)
-     * @see Operation#NO_OPERATIONS
-     */
-    Operation< ? >[] operations();
-
-    /**
-     * @param operations
-     *        the operations being removed (cannot be <code>null</code> or empty)
+     * @param transformations
+     *        the transformations being removed (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the operation being removed is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the transformations being removed is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws PolyglotterException
      *         if any of the operations cannot be found or cannot be removed
      */
-    void remove( final Operation< ? >... operations ) throws PolyglotterException;
+    void remove( final Transformation... transformations ) throws PolyglotterException;
+
+    /**
+     * @return a collection of transformations (never <code>null</code> but can be empty)
+     */
+    Transformation[] transformations();
 
 }

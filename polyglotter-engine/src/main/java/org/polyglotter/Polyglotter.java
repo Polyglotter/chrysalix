@@ -30,16 +30,10 @@ import java.net.URL;
 
 import org.modeshape.modeler.ModeShapeModeler;
 import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelType;
 import org.modeshape.modeler.ModelTypeManager;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
-import org.polyglotter.common.CheckArg;
-import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.internal.CloneOperation;
-import org.polyglotter.internal.ModelTransformImpl;
-import org.polyglotter.internal.TransformImpl;
 
 /**
  * 
@@ -291,51 +285,6 @@ public final class Polyglotter implements Modeler {
     @Override
     public String modeShapeConfigurationPath() {
         return modeler.modeShapeConfigurationPath();
-    }
-
-    /**
-     * @param sourceModel
-     *        the model that is the source of the transforms
-     * @param targetModelPath
-     *        the workspace path to a new model that will be the target of the transforms
-     * @return a new model transform with default one-to-one transforms between the supplied models
-     * @throws PolyglotterException
-     *         if any error occurs
-     */
-    public ModelTransform newCloneModelTransform( final Model sourceModel,
-                                                  final String targetModelPath ) throws PolyglotterException {
-        CheckArg.notNull( sourceModel, "sourceModel" );
-        CheckArg.notEmpty( targetModelPath, "targetModelPath" );
-        final ModelTransformImpl modelXform = new ModelTransformImpl();
-        newCopyModelTransform( modelXform, sourceModel, sourceModel, targetModelPath );
-        return modelXform;
-    }
-
-    private void newCopyModelTransform( final ModelTransformImpl modelXform,
-                                        final Model sourceModel,
-                                        final ModelObject sourceObject,
-                                        final String targetModelPath ) throws PolyglotterException {
-        try {
-            TransformImpl xform = new TransformImpl();
-            xform.add( new CloneOperation( sourceModel, sourceObject.modelRelativePath(), targetModelPath ) );
-            modelXform.add( xform );
-            for ( final String name : sourceObject.propertyNames() ) {
-                xform = new TransformImpl();
-                xform.add( new CloneOperation( sourceModel, sourceObject.modelRelativePath() + "/@" + name, targetModelPath ) );
-                modelXform.add( xform );
-            }
-            for ( final ModelObject sourceChild : sourceObject.children() )
-                newCopyModelTransform( modelXform, sourceModel, sourceChild, targetModelPath );
-        } catch ( final ModelerException e ) {
-            throw new PolyglotterException( e );
-        }
-    }
-
-    /**
-     * @return a new model transform
-     */
-    public ModelTransform newModelTransform() {
-        return new ModelTransformImpl();
     }
 
     /**

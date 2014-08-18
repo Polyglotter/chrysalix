@@ -25,18 +25,14 @@ package org.polyglotter.transformation;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-
-import javax.xml.namespace.QName;
+import java.util.List;
 
 import org.polyglotter.Polyglotter;
 import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.internal.NumberValue;
-import org.polyglotter.internal.StringValue;
+import org.polyglotter.operation.BuiltInOperationDescriptorProvider;
+import org.polyglotter.operation.ValueDescriptorImpl;
 import org.polyglotter.operation.ValueImpl;
-import org.polyglotter.transformation.TransformationEvent.EventType;
 import org.polyglotter.transformation.ValidationProblem.Severity;
 
 /**
@@ -44,89 +40,56 @@ import org.polyglotter.transformation.ValidationProblem.Severity;
  */
 public final class TransformationFactory {
 
+    private static final OperationDescriptorProvider OP_PROVIDER = new BuiltInOperationDescriptorProvider();
+
     /**
      * @param transformationId
-     *        the source transformation's identifier (cannot be <code>null</code>)
+     *        the source transformation's identifier (cannot be <code>null</code> or empty)
      * @param message
      *        the problem message (can be <code>null</code> or empty)
      * @return the problem (never <code>null</code>)
      * @throws IllegalArgumentException
      *         if the transformation identifier is <code>null</code>
      */
-    public static ValidationProblem createError( final QName transformationId,
+    public static ValidationProblem createError( final String transformationId,
                                                  final String message ) {
-        CheckArg.notNull( transformationId, "transformationId" );
+        CheckArg.notEmpty( transformationId, "transformationId" );
         return new Problem( Severity.ERROR, transformationId, message );
-    }
-
-    /**
-     * @param type
-     *        the event type (cannot be <code>null</code>)
-     * @param source
-     *        the value that sourced this event (cannot be <code>null</code>)
-     * @param data
-     *        an optional collection of event data
-     * @return the event (never <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the type or source is <code>null</code>
-     */
-    public static TransformationEvent createEvent( final EventType type,
-                                                   final Value< ? > source,
-                                                   final Map< String, Object > data ) {
-        CheckArg.notNull( type, "type" );
-        CheckArg.notNull( source, "source" );
-        return new Event( type, source, data );
-    }
-
-    /**
-     * @param type
-     *        the event type (cannot be <code>null</code>)
-     * @param source
-     *        the value that sourced this event (cannot be <code>null</code>)
-     * @param key
-     *        the identifier of event data (cannot be <code>null</code> or empty)
-     * @param value
-     *        the value of event data (can be <code>null</code>)
-     * @return the event (never <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the type, source, or key is <code>null</code>
-     */
-    public static TransformationEvent createEvent( final EventType type,
-                                                   final Value< ? > source,
-                                                   final String key,
-                                                   final Object value ) {
-        CheckArg.notNull( key, "key" );
-        return createEvent( type, source, Collections.singletonMap( key, value ) );
     }
 
     /**
      * Creates an ID using the {@link Polyglotter#NAMESPACE_PREFIX} and {@link Polyglotter#NAMESPACE_URI}.
      * 
-     * @param name
-     *        the identifier's local part name (cannot be <code>null</code> or empty)
+     * @param clazz
+     *        the class whose name will be used to construct the identifier (cannot be <code>null</code>)
      * @return the ID (never <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the class is <code>null</code>
      */
-    public static QName createId( final String name ) {
-        CheckArg.notEmpty( name, "name" );
-        return createId( Polyglotter.NAMESPACE_PREFIX, name, Polyglotter.NAMESPACE_URI );
+    public static String createId( final Class< ? > clazz ) {
+        return createId( clazz, null );
     }
 
     /**
-     * @param namespacePrefix
-     *        the identifier's namespace prefix (can be <code>null</code> or empty)
-     * @param namespaceUri
-     *        the identifier's namespace URI (can be <code>null</code> or empty)
-     * @param name
-     *        the identifier's local part name (cannot be <code>null</code> or empty)
+     * @param clazz
+     *        the class whose name will be used to construct the identifier (cannot be <code>null</code>)
+     * @param suffix
+     *        the identifier's suffix (can be <code>null</code> or empty)
      * @return the ID (never <code>null</code>)
      * @throws IllegalArgumentException
-     *         if the name is <code>null</code> or empty
+     *         if the class is <code>null</code>
      */
-    public static QName createId( final String namespacePrefix,
-                                  final String namespaceUri,
-                                  final String name ) {
-        CheckArg.notEmpty( name, "name" );
-        return new QName( namespaceUri, name, namespacePrefix );
+    public static String createId( final Class< ? > clazz,
+                                   final String suffix ) {
+        CheckArg.notNull( clazz, "clazz" );
+
+        final StringBuilder result = new StringBuilder( clazz.getName() );
+
+        if ( ( suffix != null ) && !suffix.isEmpty() ) {
+            return result.append( '.' ).append( suffix ).toString();
+        }
+
+        return result.toString();
     }
 
     /**
@@ -138,27 +101,13 @@ public final class TransformationFactory {
      * @throws IllegalArgumentException
      *         if the transformation identifier is <code>null</code>
      */
-    public static ValidationProblem createInfo( final QName transformationId,
+    public static ValidationProblem createInfo( final String transformationId,
                                                 final String message ) {
-        CheckArg.notNull( transformationId, "transformationId" );
+        CheckArg.notEmpty( transformationId, "transformationId" );
         return new Problem( Severity.INFO, transformationId, message );
     }
 
     /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @param initialValue
-     *        the initial value (can be <code>null</code>)
-     * @return the new number value (never <code>null</code>)
-     * @throws PolyglotterException
-     *         if there is a problem setting the initial value
-     */
-    public static Value< Number > createNumberValue( final ValueDescriptor< Number > descriptor,
-                                                     final Number initialValue ) throws PolyglotterException {
-        return new NumberValue( descriptor, initialValue );
-    }
-
-    /**
      * @param transformationId
      *        the source transformation's identifier (cannot be <code>null</code>)
      * @param message
@@ -167,44 +116,10 @@ public final class TransformationFactory {
      * @throws IllegalArgumentException
      *         if the transformation identifier is <code>null</code>
      */
-    public static ValidationProblem createOk( final QName transformationId,
+    public static ValidationProblem createOk( final String transformationId,
                                               final String message ) {
-        CheckArg.notNull( transformationId, "transformationId" );
+        CheckArg.notEmpty( transformationId, "transformationId" );
         return new Problem( Severity.OK, transformationId, message );
-    }
-
-    /**
-     * Creates a descriptor that is not modifiable, not unbounded, and requires only one value.
-     * 
-     * @param valueId
-     *        the value identifier (cannot be <code>null</code>)
-     * @param valueDescription
-     *        the value description (cannot be <code>null</code> or empty)
-     * @param valueName
-     *        the value name (cannot be <code>null</code> or empty)
-     * @param valueType
-     *        the value type (cannot be <code>null</code>)
-     * @return the value descriptor (never <code>null</code>)
-     */
-    public static < T extends Object > ValueDescriptor< T > createReadOnlyBoundedOneValueDescriptor( final QName valueId,
-                                                                                                     final String valueDescription,
-                                                                                                     final String valueName,
-                                                                                                     final Class< T > valueType ) {
-        return createValueDescriptor( valueId, valueDescription, valueName, valueType, false, 1, false );
-    }
-
-    /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @param initialValue
-     *        the initial value (can be <code>null</code> or empty)
-     * @return the new string value (never <code>null</code>)
-     * @throws PolyglotterException
-     *         if there is a problem setting the initial value
-     */
-    public static Value< String > createStringValue( final ValueDescriptor< String > descriptor,
-                                                     final String initialValue ) throws PolyglotterException {
-        return new StringValue( descriptor, initialValue );
     }
 
     /**
@@ -217,9 +132,65 @@ public final class TransformationFactory {
     /**
      * @param descriptor
      *        the value descriptor (cannot be <code>null</code>)
+     * @param initialValue
+     *        the initial value
+     * @return the new double value (never <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
+     */
+    public static Value< Double > createValue( final ValueDescriptor< Double > descriptor,
+                                               final double initialValue ) throws PolyglotterException {
+        return new DoubleValue( descriptor, initialValue );
+    }
+
+    /**
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
+     * @param initialValue
+     *        the initial value
+     * @return the new double value (never <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
+     */
+    public static Value< Float > createValue( final ValueDescriptor< Float > descriptor,
+                                              final float initialValue ) throws PolyglotterException {
+        return new FloatValue( descriptor, initialValue );
+    }
+
+    /**
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
+     * @param initialValue
+     *        the initial value
+     * @return the new double value (never <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
+     */
+    public static Value< Integer > createValue( final ValueDescriptor< Integer > descriptor,
+                                                final int initialValue ) throws PolyglotterException {
+        return new IntegerValue( descriptor, initialValue );
+    }
+
+    /**
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
+     * @param initialValue
+     *        the initial value
+     * @return the new double value (never <code>null</code>)
+     * @throws PolyglotterException
+     *         if there is a problem setting the initial value
+     */
+    public static Value< Long > createValue( final ValueDescriptor< Long > descriptor,
+                                             final long initialValue ) throws PolyglotterException {
+        return new LongValue( descriptor, initialValue );
+    }
+
+    /**
+     * @param descriptor
+     *        the value descriptor (cannot be <code>null</code>)
      * @return the new value (never <code>null</code>)
      */
-    public static < T extends Object > Value< T > createValue( final ValueDescriptor< T > descriptor ) {
+    public static < T > Value< T > createValue( final ValueDescriptor< T > descriptor ) {
         CheckArg.notNull( descriptor, "descriptor" );
         return new ValueImpl< T >( descriptor );
     }
@@ -235,8 +206,8 @@ public final class TransformationFactory {
      * @throws UnsupportedOperationException
      *         if the descriptor is read-only
      */
-    public static < T extends Object > Value< T > createValue( final ValueDescriptor< T > descriptor,
-                                                               final T value ) throws PolyglotterException {
+    public static < T > Value< T > createValue( final ValueDescriptor< T > descriptor,
+                                                final T value ) throws PolyglotterException {
         final Value< T > result = createValue( descriptor );
         result.set( value );
 
@@ -245,7 +216,7 @@ public final class TransformationFactory {
 
     /**
      * @param valueId
-     *        the value identifier (cannot be <code>null</code>)
+     *        the value identifier (cannot be <code>null</code> or empty)
      * @param valueDescription
      *        the value description (cannot be <code>null</code> or empty)
      * @param valueName
@@ -260,36 +231,42 @@ public final class TransformationFactory {
      *        <code>true</code> if there is no limit to the number of values
      * @return the value descriptor (never <code>null</code>)
      */
-    public static < T extends Object > ValueDescriptor< T > createValueDescriptor( final QName valueId,
-                                                                                   final String valueDescription,
-                                                                                   final String valueName,
-                                                                                   final Class< T > valueType,
-                                                                                   final boolean isModifiable,
-                                                                                   final int requiredValueCount,
-                                                                                   final boolean isUnbounded ) {
-        return new ValueDescriptorImpl< T >( valueId, valueDescription, valueName, valueType, isModifiable, requiredValueCount, isUnbounded );
+    public static < T > ValueDescriptor< T > createValueDescriptor( final String valueId,
+                                                                    final String valueDescription,
+                                                                    final String valueName,
+                                                                    final Class< T > valueType,
+                                                                    final boolean isModifiable,
+                                                                    final int requiredValueCount,
+                                                                    final boolean isUnbounded ) {
+        return new ValueDescriptorImpl< T >( valueId,
+                                             valueDescription,
+                                             valueName,
+                                             valueType,
+                                             isModifiable,
+                                             requiredValueCount,
+                                             isUnbounded );
     }
 
     /**
      * @param transformationId
-     *        the source transformation's identifier (cannot be <code>null</code>)
+     *        the source transformation's identifier (cannot be <code>null</code> or empty)
      * @param message
      *        the problem message (can be <code>null</code> or empty)
      * @return the problem (never <code>null</code>)
      * @throws IllegalArgumentException
      *         if the transformation identifier is <code>null</code>
      */
-    public static ValidationProblem createWarning( final QName transformationId,
+    public static ValidationProblem createWarning( final String transformationId,
                                                    final String message ) {
-        CheckArg.notNull( transformationId, "transformationId" );
+        CheckArg.notEmpty( transformationId, "transformationId" );
         return new Problem( Severity.WARNING, transformationId, message );
     }
 
     /**
-     * Creates a descriptor that is modifiable, not unbounded, and requires only one value.
+     * Creates a descriptor that is modifiable, requires one value, and is limited to one value.
      * 
      * @param valueId
-     *        the value identifier (cannot be <code>null</code>)
+     *        the value identifier (cannot be <code>null</code> or empty)
      * @param valueDescription
      *        the value description (cannot be <code>null</code> or empty)
      * @param valueName
@@ -298,11 +275,18 @@ public final class TransformationFactory {
      *        the value type (cannot be <code>null</code>)
      * @return the value descriptor (never <code>null</code>)
      */
-    public static < T extends Object > ValueDescriptor< T > createWritableBoundedOneValueDescriptor( final QName valueId,
-                                                                                                     final String valueDescription,
-                                                                                                     final String valueName,
-                                                                                                     final Class< T > valueType ) {
+    public static < T > ValueDescriptor< T > createWritableBoundedOneValueDescriptor( final String valueId,
+                                                                                      final String valueDescription,
+                                                                                      final String valueName,
+                                                                                      final Class< T > valueType ) {
         return createValueDescriptor( valueId, valueDescription, valueName, valueType, true, 1, false );
+    }
+
+    /**
+     * @return an unmodifiable list of descriptors sorted by operation name (never <code>null</code> or empty)
+     */
+    public static List< OperationDescriptor< ? > > descriptors() {
+        return OP_PROVIDER.descriptors();
     }
 
     /**
@@ -312,58 +296,106 @@ public final class TransformationFactory {
         // nothing to do
     }
 
-    private static class Event implements TransformationEvent {
+    private static class DoubleValue extends ValueImpl< Double > {
 
-        private final Map< String, Object > data;
-        private final Object source;
-        private final EventType type;
-
-        Event( final EventType eventType,
-               final Object eventSource,
-               final Map< String, Object > eventData ) {
-            this.type = eventType;
-            this.source = eventSource;
-            this.data = eventData;
+        /**
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         */
+        public DoubleValue( final ValueDescriptor< Double > descriptor ) {
+            super( descriptor );
         }
 
         /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.TransformationEvent#data()
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         * @param initialValue
+         *        the initial value (can be <code>null</code>)
+         * @throws PolyglotterException
+         *         if there is a problem setting the initial value
          */
-        @Override
-        public Map< String, ? > data() {
-            return this.data;
+        public DoubleValue( final ValueDescriptor< Double > descriptor,
+                            final double initialValue ) throws PolyglotterException {
+            this( descriptor );
+            set( initialValue );
+        }
+
+    }
+
+    private static class FloatValue extends ValueImpl< Float > {
+
+        /**
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         */
+        public FloatValue( final ValueDescriptor< Float > descriptor ) {
+            super( descriptor );
         }
 
         /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.TransformationEvent#source()
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         * @param initialValue
+         *        the initial value (can be <code>null</code>)
+         * @throws PolyglotterException
+         *         if there is a problem setting the initial value
          */
-        @Override
-        public Object source() {
-            return this.source;
+        public FloatValue( final ValueDescriptor< Float > descriptor,
+                           final float initialValue ) throws PolyglotterException {
+            this( descriptor );
+            set( initialValue );
+        }
+
+    }
+
+    private static class IntegerValue extends ValueImpl< Integer > {
+
+        /**
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         */
+        public IntegerValue( final ValueDescriptor< Integer > descriptor ) {
+            super( descriptor );
         }
 
         /**
-         * {@inheritDoc}
-         * 
-         * @see java.lang.Object#toString()
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         * @param initialValue
+         *        the initial value (can be <code>null</code>)
+         * @throws PolyglotterException
+         *         if there is a problem setting the initial value
          */
-        @Override
-        public String toString() {
-            return ( "event type = " + this.type + ", source = " + this.source.getClass().getSimpleName() + ", data = " + this.data );
+        public IntegerValue( final ValueDescriptor< Integer > descriptor,
+                             final int initialValue ) throws PolyglotterException {
+            this( descriptor );
+            set( initialValue );
+        }
+
+    }
+
+    private static class LongValue extends ValueImpl< Long > {
+
+        /**
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         */
+        public LongValue( final ValueDescriptor< Long > descriptor ) {
+            super( descriptor );
         }
 
         /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.TransformationEvent#type()
+         * @param descriptor
+         *        the value descriptor (cannot be <code>null</code>)
+         * @param initialValue
+         *        the initial value (can be <code>null</code>)
+         * @throws PolyglotterException
+         *         if there is a problem setting the initial value
          */
-        @Override
-        public EventType type() {
-            return this.type;
+        public LongValue( final ValueDescriptor< Long > descriptor,
+                          final long initialValue ) throws PolyglotterException {
+            this( descriptor );
+            set( initialValue );
         }
 
     }
@@ -372,10 +404,10 @@ public final class TransformationFactory {
 
         private final Severity severity;
         private final String message;
-        private final QName sourceId;
+        private final String sourceId;
 
         Problem( final Severity problemSeverity,
-                 final QName problemPartId,
+                 final String problemPartId,
                  final String problemMessage ) {
             this.severity = problemSeverity;
             this.message = problemMessage;
@@ -448,7 +480,7 @@ public final class TransformationFactory {
          * @see org.polyglotter.transformation.ValidationProblem#sourceId()
          */
         @Override
-        public QName sourceId() {
+        public String sourceId() {
             return this.sourceId;
         }
 
@@ -685,136 +717,6 @@ public final class TransformationFactory {
             if ( problem.severity().isMoreSevereThan( this.severity ) ) {
                 this.severity = problem.severity();
             }
-        }
-
-    }
-
-    private static class ValueDescriptorImpl< T > implements ValueDescriptor< T > {
-
-        private final String description;
-        private final QName id;
-        private final boolean modifiable;
-        private final String name;
-        private final int numRequiredValues;
-        private final Class< T > type;
-        private final boolean unbounded;
-
-        /**
-         * @param valueId
-         *        the value identifier (cannot be <code>null</code>)
-         * @param valueDescription
-         *        the value description (cannot be <code>null</code> or empty)
-         * @param valueName
-         *        the value name (cannot be <code>null</code> or empty)
-         * @param valueType
-         *        the value type (cannot be <code>null</code>)
-         * @param isModifiable
-         *        <code>true</code> if value is modifiable
-         * @param requiredValueCount
-         *        the number of required values (cannot be a negative number)
-         * @param isUnbounded
-         *        <code>true</code> if there is no limit to the number of values
-         */
-        ValueDescriptorImpl( final QName valueId,
-                             final String valueDescription,
-                             final String valueName,
-                             final Class< T > valueType,
-                             final boolean isModifiable,
-                             final int requiredValueCount,
-                             final boolean isUnbounded ) {
-            CheckArg.notNull( valueId, "valueId" );
-            CheckArg.notEmpty( valueDescription, "valueDescription" );
-            CheckArg.notEmpty( valueName, "valueName" );
-            CheckArg.notNull( valueType, "valueType" );
-            CheckArg.isNonNegative( requiredValueCount, "requiredValueCount" );
-
-            this.id = valueId;
-            this.description = valueDescription;
-            this.name = valueName;
-            this.type = valueType;
-            this.modifiable = isModifiable;
-            this.numRequiredValues = requiredValueCount;
-            this.unbounded = isUnbounded;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#description()
-         */
-        @Override
-        public String description() {
-            return this.description;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#id()
-         */
-        @Override
-        public QName id() {
-            return this.id;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#modifiable()
-         */
-        @Override
-        public boolean modifiable() {
-            return this.modifiable;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#name()
-         */
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#namespace()
-         */
-        @Override
-        public String namespace() {
-            return this.id.getNamespaceURI();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#requiredValueCount()
-         */
-        @Override
-        public int requiredValueCount() {
-            return this.numRequiredValues;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#type()
-         */
-        @Override
-        public Class< T > type() {
-            return this.type;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.ValueDescriptor#unbounded()
-         */
-        @Override
-        public boolean unbounded() {
-            return this.unbounded;
         }
 
     }
