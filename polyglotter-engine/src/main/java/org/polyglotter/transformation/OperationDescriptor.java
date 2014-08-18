@@ -21,37 +21,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.polyglotter.transformation;
 
-import java.util.Map;
-
-import javax.xml.namespace.QName;
 
 /**
- * A class defining a {@link GrammarPart grammar part} event.
+ * An {@link Operation operation} descriptor.
+ * 
+ * @param <T>
+ *        the type of the value
  */
-public interface GrammarEvent {
-    
+public interface OperationDescriptor< T > extends ValueDescriptor< T > {
+
     /**
-     * @return a collection of event data (can be <code>null</code> or empty)
+     * The name of the class field for the output descriptor. Value is {@value} .
      */
-    Map< String, ? > data();
-    
+    String DESCRIPTOR_NAME = "DESCRIPTOR";
+
     /**
-     * @return the grammar part identifier that sourced this event (never <code>null</code>)
+     * An empty collection of operation descriptors.
      */
-    QName sourceId();
-    
+    OperationDescriptor< ? >[] NO_DESCRIPTORS = {};
+
     /**
-     * @return the event type
+     * @return a collection of descriptors for the inputs (never <code>null</code> but can be empty)
      */
-    EventType type();
-    
+    ValueDescriptor< ? >[] inputDescriptors();
+
     /**
-     * The type of the event.
+     * @param transformation
+     *        the owning {@link Transformation transformation} (never <code>null</code>)
+     * @return the new operation instance (never <code>null</code>)
      */
-    interface EventType {
-        // nothing to do
-    }
-    
+    Operation< T > newInstance( final Transformation transformation );
+
 }

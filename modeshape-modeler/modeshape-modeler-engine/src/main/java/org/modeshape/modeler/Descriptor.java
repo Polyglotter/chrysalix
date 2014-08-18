@@ -21,47 +21,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.modeshape.modeler;
 
-import java.util.ArrayList;
-import java.util.List;
 
-@SuppressWarnings( "javadoc" )
-public class TestGrammarListener implements GrammarListener {
-    
-    private int count;
-    private final List< GrammarEvent > events = new ArrayList<>();
-    
-    public void clear() {
-        this.count = 0;
-        this.events.clear();
-    }
-    
-    public int count() {
-        return this.count;
-    }
-    
-    public List< GrammarEvent > events() {
-        return this.events;
-    }
-    
-    public GrammarEvent lastEvent() {
-        if ( this.events.isEmpty() ) {
-            return null;
-        }
-        
-        return this.events.get( this.events.size() - 1 );
-    }
-    
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.GrammarListener#notify(org.polyglotter.grammar.GrammarEvent)
-     */
-    @Override
-    public void notify( final GrammarEvent event ) {
-        ++this.count;
-        this.events.add( event );
-    }
-    
+/**
+ * 
+ */
+public interface Descriptor {
+
 }

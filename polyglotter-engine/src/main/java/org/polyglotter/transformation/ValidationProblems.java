@@ -21,30 +21,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.polyglotter.transformation;
 
+import java.util.List;
+
+import org.polyglotter.transformation.ValidationProblem.Severity;
 
 /**
- * A {@link GrammarPart grammar part} that broadcasts events to registered listeners.
+ * A collection of {@link ValidationProblem validation problems}.
  */
-public interface GrammarEventSource {
-    
+public interface ValidationProblems extends List< ValidationProblem > {
+
     /**
-     * A listener will only be registered once.
-     * 
-     * @param listener
-     *        the listener being registered to receive events (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the listener is <code>null</code>
+     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#ERROR error} severity
      */
-    void add( final GrammarListener listener );
-    
+    boolean isError();
+
     /**
-     * @param listener
-     *        the listener being unregistered from receiving events (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the listener is <code>null</code> or is not registered
+     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#INFO info} severity and does not
+     *         contain problems with {@link Severity#ERROR error} or {@link Severity#WARNING warning} severity
      */
-    void remove( final GrammarListener listener );
-    
+    boolean isInfo();
+
+    /**
+     * @return <code>true</code> if all the problems in the collection have an {@link Severity#OK OK} severity
+     */
+    boolean isOk();
+
+    /**
+     * @return <code>true</code> if the collection contains a problem that has a {@link Severity#WARNING warning} severity and does
+     *         not contain a problem with an {@link Severity#ERROR error} severity
+     */
+    boolean isWarning();
+
 }

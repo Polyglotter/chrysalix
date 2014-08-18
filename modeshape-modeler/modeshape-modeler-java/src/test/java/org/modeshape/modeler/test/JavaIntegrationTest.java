@@ -36,7 +36,7 @@ import org.modeshape.modeler.Metamodel;
 public abstract class JavaIntegrationTest extends BaseIntegrationTest {
 
     protected static final String CATEGORY = "java";
-    protected static final String JAVA_ID = "org.modeshape.modeler.java.JavaFile";
+    protected static final String METAMODEL_ID = "org.modeshape.modeler.java.JavaFile";
 
     protected static final String MODEL_NAME = "Mock.java";
     protected static final String MODEL_PATH = "src/test/resources/" + MODEL_NAME;
@@ -56,7 +56,7 @@ public abstract class JavaIntegrationTest extends BaseIntegrationTest {
     }
 
     protected Metamodel metamodel() throws Exception {
-        final Metamodel metamodel = modeler().metamodelManager().metamodel( JAVA_ID );
+        final Metamodel metamodel = modeler().metamodelManager().metamodel( METAMODEL_ID );
         assertThat( metamodel, notNullValue() );
         return metamodel;
     }

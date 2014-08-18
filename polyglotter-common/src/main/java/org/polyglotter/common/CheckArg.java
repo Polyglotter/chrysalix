@@ -28,7 +28,7 @@ package org.polyglotter.common;
  * arguments should result in a useful error message. In all cases, use the <code>assert</code> statement.
  */
 public final class CheckArg {
-    
+
     //
     // /**
     // * Check that the collection contains the value
@@ -524,21 +524,22 @@ public final class CheckArg {
     // final String name ) {
     // if ( argument < 0.0 ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNegative.text( name, argument ) );
     // }
-    //
-    // /**
-    // * Check that the argument is non-negative (>=0).
-    // *
-    // * @param argument
-    // * The argument
-    // * @param name
-    // * The name of the argument
-    // * @throws IllegalArgumentException
-    // * If argument is negative (<0)
-    // */
-    // public static void isNonNegative( final int argument,
-    // final String name ) {
-    // if ( argument < 0 ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNegative.text( name, argument ) );
-    // }
+
+    /**
+     * Check that the argument is non-negative (>=0).
+     * 
+     * @param argument
+     *        The argument
+     * @param name
+     *        The name of the argument
+     * @throws IllegalArgumentException
+     *         If argument is negative (<0)
+     */
+    public static void isNonNegative( final int argument,
+                                      final String name ) {
+        if ( argument < 0 ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNegative.text( name, argument ) );
+    }
+
     //
     // /**
     // * Check that the argument is non-negative (>=0).
@@ -647,7 +648,7 @@ public final class CheckArg {
     // notNull( argument, name );
     // if ( argument.isEmpty() ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
     // }
-    
+
     /**
      * Check that the array is not empty
      * 
@@ -665,7 +666,7 @@ public final class CheckArg {
             throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
         }
     }
-    
+
     //
     // /**
     // * Asserts that the specified first object is not {@link Object#equals(Object) equal to} the specified second object. This
@@ -862,7 +863,7 @@ public final class CheckArg {
     // throw new IllegalArgumentException( CommonI18n.argumentMustBeSameAs.text( argumentName, objectName ) );
     // }
     // }
-    
+
     /**
      * Check that the string is not empty, is not null, and does not contain only whitespace.
      * 
@@ -880,7 +881,7 @@ public final class CheckArg {
             throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
         }
     }
-    
+
     /**
      * Check that the specified argument is non-null
      * 
@@ -897,7 +898,7 @@ public final class CheckArg {
             throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNull.text( name ) );
         }
     }
-    
+
     /**
      * Check that the string is non-null and has length > 0
      * 
@@ -915,7 +916,7 @@ public final class CheckArg {
             throw new IllegalArgumentException( CommonI18n.argumentMayNotBeZeroLength.text( name ) );
         }
     }
-    
+
     private CheckArg() {
         // prevent construction
     }

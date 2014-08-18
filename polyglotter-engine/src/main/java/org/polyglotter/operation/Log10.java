@@ -23,13 +23,16 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Calculates the base 10 logarithm of a term.
@@ -39,63 +42,55 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Log10 extends AbstractOperation< Double > {
 
     /**
-     * The operation descriptor.
+     * The input term descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "log10";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.log10OperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.log10OperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
+        TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Log10.class, "input" ),
+                                                                       PolyglotterI18n.log10OperationInputDescription.text(),
+                                                                       PolyglotterI18n.log10OperationInputName.text(),
+                                                                       Number.class );
 
     /**
-     * @param id
-     *        the operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The input descriptors.
      */
-    Log10( final QName id,
-           final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Double > DESCRIPTOR =
+        new AbstractOperationDescriptor< Double >( TransformationFactory.createId( Log10.class ),
+                                                   PolyglotterI18n.log10OperationDescription.text(),
+                                                   PolyglotterI18n.log10OperationName.text(),
+                                                   Double.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Double > newInstance( final Transformation transformation ) {
+                return new Log10( transformation );
+            }
+
+        };
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Log10( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -106,7 +101,7 @@ public final class Log10 extends AbstractOperation< Double > {
     @Override
     protected Double calculate() throws PolyglotterException {
         assert !problems().isError();
-        final Number value = ( Number ) terms().get( 0 ).value();
+        final Number value = ( Number ) inputs().get( 0 ).get();
 
         return Math.log10( value.doubleValue() );
     }
@@ -114,53 +109,35 @@ public final class Log10 extends AbstractOperation< Double > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int maxTerms() {
-        return 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
-     */
-    @Override
-    public int minTerms() {
-        return 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there are terms
-        if ( terms().size() != 1 ) {
+        if ( inputs().size() != 1 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.log10OperationMustHaveOneTerm.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.log10OperationMustHaveOneTerm.text( transformationId() ) );
             problems().add( problem );
         } else {
             // make sure term is a number
-            final Term< ? > term = terms().get( 0 );
+            final Value< ? > term = inputs().get( 0 );
             Object value;
 
             try {
-                value = term.value();
+                value = term.get();
 
                 if ( !( value instanceof Number ) ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.log10OperationInvalidTermType.text( id(),
-                                                                                                        term.id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.log10OperationInvalidTermType.text( transformationId() ) );
                     problems().add( problem );
                 }
             } catch ( final PolyglotterException e ) {
                 final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                    TransformationFactory.createError( transformationId(),
+                                                       PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                      transformationId() ) );
                 problems().add( problem );
                 this.logger.error( e, PolyglotterI18n.message, problem.message() );
             }

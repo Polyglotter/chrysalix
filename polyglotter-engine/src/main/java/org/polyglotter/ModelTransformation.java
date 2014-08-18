@@ -24,17 +24,22 @@
 package org.polyglotter;
 
 import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.transformation.Transformation;
 
 /**
- * 
+ * A model transformation.
  */
-public interface ModelTransform {
+public interface ModelTransformation {
 
     /**
-     * @param transform
-     *        a transform
+     * @param transformations
+     *        the transformations being added (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the transformations being added is <code>null</code>, empty, or any value in the array is <code>null</code>
+     * @throws PolyglotterException
+     *         if any of the transformations have already been added or if an operation cannot be added
      */
-    void add( Transform transform );
+    void add( final Transformation... transformations ) throws PolyglotterException;
 
     /**
      * @throws PolyglotterException
@@ -43,13 +48,18 @@ public interface ModelTransform {
     void execute() throws PolyglotterException;
 
     /**
-     * @param transform
-     *        a transform
+     * @param transformations
+     *        the transformations being removed (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the transformations being removed is <code>null</code>, empty, or any value in the array is <code>null</code>
+     * @throws PolyglotterException
+     *         if any of the operations cannot be found or cannot be removed
      */
-    void remove( Transform transform );
+    void remove( final Transformation... transformations ) throws PolyglotterException;
 
     /**
-     * @return a list of transforms
+     * @return a collection of transformations (never <code>null</code> but can be empty)
      */
-    Transform[] transforms();
+    Transformation[] transformations();
+
 }

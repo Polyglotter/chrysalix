@@ -21,37 +21,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.polyglotter.grammar;
+package org.modeshape.modeler;
 
-import java.util.List;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertThat;
 
-import org.polyglotter.grammar.ValidationProblem.Severity;
+import org.junit.Test;
+import org.modeshape.modeler.test.JavaIntegrationTest;
 
-/**
- * A collection of {@link ValidationProblem validation problems}.
- */
-public interface ValidationProblems extends List< ValidationProblem > {
-    
-    /**
-     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#ERROR error} severity
-     */
-    boolean isError();
-    
-    /**
-     * @return <code>true</code> if the collection contains a problem that has an {@link Severity#INFO info} severity and does not
-     *         contain problems with {@link Severity#ERROR error} or {@link Severity#WARNING warning} severity
-     */
-    boolean isInfo();
-    
-    /**
-     * @return <code>true</code> if all the problems in the collection have an {@link Severity#OK OK} severity
-     */
-    boolean isOk();
-    
-    /**
-     * @return <code>true</code> if the collection contains a problem that has a {@link Severity#WARNING warning} severity and does
-     *         not contain a problem with an {@link Severity#ERROR error} severity
-     */
-    boolean isWarning();
-    
+@SuppressWarnings( "javadoc" )
+public class ITMetamodel extends JavaIntegrationTest {
+
+    @Test
+    public void shouldGetDescriptors() throws Exception {
+        final Metamodel metamodel = modeler().metamodelManager().metamodel( METAMODEL_ID );
+        assertThat( metamodel, notNullValue() );
+        final Descriptor[] descriptors = metamodel.descriptors();
+        assertThat( descriptors, notNullValue() );
+        assertThat( descriptors.length, not( 0 ) );
+    }
 }

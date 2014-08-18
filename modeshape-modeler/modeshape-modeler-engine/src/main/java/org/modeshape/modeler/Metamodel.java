@@ -43,6 +43,13 @@ public interface Metamodel {
     DependencyProcessor dependencyProcessor();
 
     /**
+     * @return the descriptors defined by this metamodel
+     * @throws ModelerException
+     *         if any error occurs
+     */
+    Descriptor[] descriptors() throws ModelerException;
+
+    /**
      * @return this metamodel's exporter or <code>null</code> if one does not exist
      */
     Exporter exporter();

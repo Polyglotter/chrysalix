@@ -23,13 +23,16 @@
  */
 package org.polyglotter.operation;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Increments the term.
@@ -37,63 +40,55 @@ import org.polyglotter.grammar.ValidationProblem;
 public final class Increment extends AbstractOperation< Integer > {
 
     /**
-     * The operation descriptor.
+     * The input term descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "++";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.incrementOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.incrementOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Integer > TERM_DESCRIPTOR =
+        TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( Increment.class, "input" ),
+                                                                       PolyglotterI18n.incrementOperationInputDescription.text(),
+                                                                       PolyglotterI18n.incrementOperationInputName.text(),
+                                                                       Integer.class );
 
     /**
-     * @param id
-     *        the increment operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The input descriptors.
      */
-    Increment( final QName id,
-               final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Integer > DESCRIPTOR =
+        new AbstractOperationDescriptor< Integer >( TransformationFactory.createId( Increment.class ),
+                                                    PolyglotterI18n.incrementOperationDescription.text(),
+                                                    PolyglotterI18n.incrementOperationName.text(),
+                                                    Integer.class,
+                                                    INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Integer > newInstance( final Transformation transformation ) {
+                return new Increment( transformation );
+            }
+
+        };
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Increment( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -104,60 +99,42 @@ public final class Increment extends AbstractOperation< Integer > {
     @Override
     protected Integer calculate() throws PolyglotterException {
         assert !problems().isError();
-        int value = ( Integer ) terms().get( 0 ).value();
+        int value = ( Integer ) inputs().get( 0 ).get();
         return ++value;
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int maxTerms() {
-        return 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
-     */
-    @Override
-    public int minTerms() {
-        return 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there are terms
-        if ( terms().size() != 1 ) {
+        if ( inputs().size() != 1 ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.incrementOperationMustHaveOneTerm.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.incrementOperationMustHaveOneTerm.text( transformationId() ) );
             problems().add( problem );
         } else {
             // make sure term is an int
-            final Term< ? > term = terms().get( 0 );
+            final Value< ? > term = inputs().get( 0 );
             Object value;
 
             try {
-                value = term.value();
+                value = term.get();
 
                 if ( !( value instanceof Integer ) ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(),
-                                                    PolyglotterI18n.incrementOperationInvalidTermType.text( id(),
-                                                                                                            term.id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.incrementOperationInvalidTermType.text( transformationId() ) );
                     problems().add( problem );
                 }
             } catch ( final PolyglotterException e ) {
                 final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                    TransformationFactory.createError( transformationId(),
+                                                       PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                      transformationId() ) );
                 problems().add( problem );
                 this.logger.error( e, PolyglotterI18n.message, problem.message() );
             }

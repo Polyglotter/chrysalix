@@ -27,16 +27,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.namespace.QName;
-
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.Logger;
 import org.polyglotter.common.PolyglotterException;
-import org.polyglotter.grammar.GrammarFactory;
-import org.polyglotter.grammar.Operation;
-import org.polyglotter.grammar.Term;
-import org.polyglotter.grammar.ValidationProblem;
-import org.polyglotter.internal.NumberTerm;
+import org.polyglotter.transformation.Operation;
+import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
+import org.polyglotter.transformation.OperationDescriptor;
+import org.polyglotter.transformation.Transformation;
+import org.polyglotter.transformation.TransformationFactory;
+import org.polyglotter.transformation.ValidationProblem;
+import org.polyglotter.transformation.Value;
+import org.polyglotter.transformation.ValueDescriptor;
 
 /**
  * Computes the median value of a collection of number terms.
@@ -44,63 +45,58 @@ import org.polyglotter.internal.NumberTerm;
 public final class Median extends AbstractOperation< Number > {
 
     /**
-     * The operation descriptor.
+     * The input term descriptor.
      */
-    public static final Descriptor DESCRIPTOR = new Descriptor() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#abbreviation()
-         */
-        @Override
-        public String abbreviation() {
-            return "median";
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#category()
-         */
-        @Override
-        public Category category() {
-            return Category.ARITHMETIC;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#description()
-         */
-        @Override
-        public String description() {
-            return PolyglotterI18n.medianOperationDescription.text();
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.grammar.Operation.Descriptor#name()
-         */
-        @Override
-        public String name() {
-            return PolyglotterI18n.medianOperationName.text();
-        }
-
-    };
+    public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
+        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Median.class, "input" ),
+                                                     PolyglotterI18n.medianOperationInputDescription.text(),
+                                                     PolyglotterI18n.medianOperationInputName.text(),
+                                                     Number.class,
+                                                     true,
+                                                     1,
+                                                     true );
 
     /**
-     * @param id
-     *        the median operation's unique identifier (cannot be <code>null</code>)
-     * @param transformId
-     *        the owning transform identifier (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if any inputs are <code>null</code>
+     * The input descriptors.
      */
-    Median( final QName id,
-            final QName transformId ) {
-        super( id, transformId, DESCRIPTOR );
+    private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = { TERM_DESCRIPTOR };
+
+    /**
+     * The output descriptor.
+     */
+    public static final OperationDescriptor< Number > DESCRIPTOR =
+        new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Median.class ),
+                                                   PolyglotterI18n.medianOperationDescription.text(),
+                                                   PolyglotterI18n.medianOperationName.text(),
+                                                   Number.class,
+                                                   INPUT_DESCRIPTORS ) {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.polyglotter.transformation.OperationDescriptor#newInstance(org.polyglotter.transformation.Transformation)
+             */
+            @Override
+            public Operation< Number > newInstance( final Transformation transformation ) {
+                return new Median( transformation );
+            }
+
+        };
+
+    /**
+     * @param transformation
+     *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws IllegalArgumentException
+     *         if the input is <code>null</code>
+     */
+    Median( final Transformation transformation ) {
+        super( DESCRIPTOR, transformation );
+
+        try {
+            addCategory( BuiltInCategory.ARITHMETIC );
+        } catch ( final PolyglotterException e ) {
+            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+        }
     }
 
     /**
@@ -114,106 +110,92 @@ public final class Median extends AbstractOperation< Number > {
         assert !problems().isError();
 
         int size = 0;
-        List< Term< Number >> numberTerms = null;
+        List< Value< Number >> numberTerms = null;
 
         { // convert terms to number terms
-            final List< Term< ? >> terms = terms();
+            final List< Value< ? >> terms = inputs();
             size = terms.size();
             numberTerms = new ArrayList<>( size );
 
             // OK to cast since this method should not be run if there is a non-number term
-            for ( final Term< ? > term : terms ) {
-                numberTerms.add( ( Term< Number > ) term );
+            for ( final Value< ? > term : terms ) {
+                numberTerms.add( ( Value< Number > ) term );
             }
 
             // sort values
-            Collections.sort( numberTerms, NumberTerm.ASCENDING_SORTER );
+            Collections.sort( numberTerms, Value.ASCENDING_NUMBER_SORTER );
         }
 
         final boolean even = ( ( size & 1 ) == 0 );
         final int halfwayIndex = ( size / 2 );
 
         if ( even ) {
-            final Term< ? > first = numberTerms.get( halfwayIndex - 1 );
-            final Term< ? > second = numberTerms.get( halfwayIndex );
-            final QName tempId1 = new QName( "temp1" );
-            final QName tempId2 = new QName( "temp2" );
-            final Add addOp = new Add( tempId1, id() );
+            final Value< ? > first = numberTerms.get( halfwayIndex - 1 );
+            final Value< ? > second = numberTerms.get( halfwayIndex );
+            final Add addOp = new Add( transformation() );
 
             try {
-                addOp.add( first, second );
-                final Number sum = addOp.calculate();
+                addOp.addInput( Add.TERM_DESCRIPTOR.id(), first, second );
+                final Number sum = addOp.get();
 
-                final Divide divideOp = new Divide( tempId1, id() );
-                divideOp.add( GrammarFactory.createNumberTerm( tempId1, sum ),
-                              GrammarFactory.createNumberTerm( tempId2, 2 ) );
+                final Divide divideOp = new Divide( transformation() );
+                divideOp.addInput( Divide.TERM_DESCRIPTOR.id(), sum, 2 );
 
-                return divideOp.calculate();
+                return divideOp.get();
             } catch ( final PolyglotterException e ) {
-                final ValidationProblem problem = GrammarFactory.createError( id(),
-                                                                              PolyglotterI18n.medianOperationError.text( id() ) );
+                final ValidationProblem problem =
+                    TransformationFactory.createError( transformationId(),
+                                                       PolyglotterI18n.medianOperationError.text( transformationId() ) );
                 problems().add( problem );
-                Logger.getLogger( getClass() ).error( e, PolyglotterI18n.medianOperationError, id() );
+                Logger.getLogger( getClass() ).error( e, PolyglotterI18n.medianOperationError, transformationId() );
             }
         }
 
-        return numberTerms.get( halfwayIndex ).value();
+        return numberTerms.get( halfwayIndex ).get();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.operation.AbstractOperation#maxTerms()
+     * @see org.polyglotter.operation.AbstractOperation#validate()
      */
     @Override
-    public int maxTerms() {
-        return Operation.UNLIMITED;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.operation.AbstractOperation#minTerms()
-     */
-    @Override
-    public int minTerms() {
-        return 2;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.grammar.Operation#validate()
-     */
-    @Override
-    public void validate() {
+    protected void validate() {
         // make sure there are terms
-        if ( terms().isEmpty() ) {
+        if ( inputs().isEmpty() ) {
             final ValidationProblem problem =
-                GrammarFactory.createError( id(), PolyglotterI18n.medianOperationHasNoTerms.text( id() ) );
+                TransformationFactory.createError( transformationId(),
+                                                   PolyglotterI18n.medianOperationHasNoTerms.text( transformationId() ) );
             problems().add( problem );
         } else {
-            if ( terms().size() < minTerms() ) {
+            if ( inputs().size() < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
                 final ValidationProblem problem =
-                    GrammarFactory.createError( id(), PolyglotterI18n.invalidTermCount.text( id(), terms().size() ) );
+                    TransformationFactory.createError( transformationId(),
+                                                       PolyglotterI18n.invalidTermCount.text( name(),
+                                                                                              transformationId(),
+                                                                                              inputs().size() ) );
                 problems().add( problem );
             }
 
             // make sure all the terms have types of Number
-            for ( final Term< ? > term : terms() ) {
+            for ( final Value< ? > term : inputs() ) {
                 Object value;
 
                 try {
-                    value = term.value();
+                    value = term.get();
 
                     if ( !( value instanceof Number ) ) {
                         final ValidationProblem problem =
-                            GrammarFactory.createError( id(), PolyglotterI18n.invalidTermType.text( term.id(), id() ) );
+                            TransformationFactory.createError( transformationId(),
+                                                               PolyglotterI18n.invalidTermType.text( name(),
+                                                                                                     transformationId() ) );
                         problems().add( problem );
                     }
                 } catch ( final PolyglotterException e ) {
                     final ValidationProblem problem =
-                        GrammarFactory.createError( id(), PolyglotterI18n.operationValidationError.text( term.id(), id() ) );
+                        TransformationFactory.createError( transformationId(),
+                                                           PolyglotterI18n.operationValidationError.text( name(),
+                                                                                                          transformationId() ) );
                     problems().add( problem );
                     this.logger.error( e, PolyglotterI18n.message, problem.message() );
                 }
