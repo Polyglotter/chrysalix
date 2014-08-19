@@ -46,8 +46,6 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.jcr.Value;
-import javax.jcr.observation.EventIterator;
-import javax.jcr.observation.EventListener;
 
 import org.infinispan.commons.util.ReflectionUtil;
 import org.jsoup.Jsoup;
@@ -59,7 +57,6 @@ import org.modeshape.jcr.ExtensionLogger;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
-import org.modeshape.jcr.api.observation.Event;
 import org.modeshape.jcr.api.sequencer.Sequencer;
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.MetamodelManager;
@@ -116,15 +113,15 @@ final class MetamodelManagerImpl implements MetamodelManager {
             @Override
             public void run( final Session session,
                              final Node systemNode ) throws Exception {
-                session.getWorkspace().getObservationManager().addEventListener( new EventListener() {
-
-                    @Override
-                    public void onEvent( final EventIterator events ) {
-                        while ( events.hasNext() )
-                            // jpav: remove
-                            System.out.println( "event: " + events.nextEvent() );
-                    }
-                }, Event.ALL_EVENTS, "/jcr:system", true, null, null, false );
+                // session.getWorkspace().getObservationManager().addEventListener( new EventListener() {
+                //
+                // @Override
+                // public void onEvent( final EventIterator events ) {
+                // while ( events.hasNext() )
+                // // jpav: remove
+                // System.out.println( "event: " + events.nextEvent() );
+                // }
+                // }, Event.ALL_EVENTS, "/jcr:system", true, null, null, false );
                 loadMetamodelRepositories( session, systemNode );
                 loadCategories( session, systemNode );
             }
