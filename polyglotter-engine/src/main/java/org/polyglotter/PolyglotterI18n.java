@@ -139,6 +139,25 @@ public class PolyglotterI18n {
     public static I18n errorOnTermChanged =
         new I18n( "Error processing an input value change in operation '%s' of tranformation '%s'" );
 
+    public static I18n errorAddingOrRemovingNullTransformationModel =
+        new I18n( "Tried to add a null model to or remove a null model from transformation '%s'" );
+    public static I18n errorAddingOrRemovingNullTransformationOperation =
+        new I18n( "Tried to add a null operation to or remove a null operation from transformation '%s'" );
+    public static I18n errorAddingTransformationModel =
+        new I18n( "A model (whose name could not be determined) could not be added to transformation '%s.' The model type '%s' is invalid." );
+    public static I18n errorAddingOrRemovingTransformationOperation =
+        new I18n( "The operation '%s' could not be added to transformation '%s.'" );
+    public static I18n errorAddingTransformationModelWithName =
+        new I18n( "The model '%s' could not be added to transformation '%s.' The model type '%s' is invalid." );
+    public static I18n errorRemovingTransformationModel =
+        new I18n( "A model (whose name could not be determined) could not be removed from transformation '%s.' The model type '%s' is invalid." );
+    public static I18n errorRemovingTransformationModelWithName =
+        new I18n( "The model '%s' could not be removed from transformation '%s.' The model type '%s' is invalid." );
+    public static I18n errorRemovingUnaddedTransformationModel =
+        new I18n( "The model (whose name could not be determined) could not be removed from transformation '%s' as it has never been added." );
+    public static I18n errorRemovingUnaddedTransformationModelWithName =
+        new I18n( "The model '%s' could not be removed from transformation '%s' as it has never been added." );
+
     public static I18n floorOperationDescription = new I18n( "Find the closest integer less than or equal to the term" );
     public static I18n floorOperationInputDescription = new I18n( "The input term whose floor is being calculated" );
     public static I18n floorOperationInputName = new I18n( "Input" );
@@ -208,6 +227,35 @@ public class PolyglotterI18n {
     public static I18n log10OperationMustHaveOneTerm =
         new I18n( "Log 10 operation in transformation '%s' requires one and only one term" );
     public static I18n log10OperationName = new I18n( "Logarithm Base 10" );
+
+    public static I18n mapOperationDescription = new I18n( "Maps one model's property to another model's property" );
+    public static I18n mapOperationInvalidSourceModelCount =
+        new I18n( "Map operation in transformation '%s' must have exactly one source model" );
+    public static I18n mapOperationInvalidSourceModelType =
+        new I18n( "The source model of map operation in transformation '%s' must be a model" );
+    public static I18n mapOperationInvalidSourcePropCount =
+        new I18n( "Map operation in transformation '%s' must have exactly one source model property name" );
+    public static I18n mapOperationInvalidSourcePropType =
+        new I18n( "The source model's property name of map operation in transformation '%s' must be a string" );
+    public static I18n mapOperationInvalidTargetModelCount =
+        new I18n( "Map operation in transformation '%s' must have exactly one target model" );
+    public static I18n mapOperationInvalidTargetPropCount =
+        new I18n( "Map operation in transformation '%s' must have exactly one target model property name" );
+    public static I18n mapOperationInvalidTargetPropType =
+        new I18n( "The target model's property name of map operation in transformation '%s' must be a string" );
+    public static I18n mapOperationInvalidTargetModelType =
+        new I18n( "The target model of map operation in transformation '%s' must be a model" );
+    public static I18n mapOperationInvalidTermCount =
+        new I18n( "Map operation in transformation '%s' must have exactly one 4 terms" );
+    public static I18n mapOperationName = new I18n( "Map" );
+    public static I18n mapOperationSourceDescription = new I18n( "The source model whose property is being mapped" );
+    public static I18n mapOperationSourceName = new I18n( "Source" );
+    public static I18n mapOperationSourcePropDescription = new I18n( "The name of the source model's property being mapped" );
+    public static I18n mapOperationSourcePropName = new I18n( "Source Property" );
+    public static I18n mapOperationTargetDescription = new I18n( "The target model whose property is being mapped" );
+    public static I18n mapOperationTargetName = new I18n( "Target" );
+    public static I18n mapOperationTargetPropDescription = new I18n( "The name of the target model's property being mapped" );
+    public static I18n mapOperationTargetPropName = new I18n( "Target Property" );
 
     public static I18n maxOperationDescription = new I18n( "Finds the maximum value of two or more numbers" );
     public static I18n maxOperationHasNoTerms = new I18n( "Max operation in transformation '%s' has no terms" );
