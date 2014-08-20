@@ -105,7 +105,7 @@ abstract class AbstractOperation< T > extends ValueImpl< T > implements Operatio
     @Override
     public void addInput( final String descriptorId,
                           final Object... valuesBeingAdded ) throws PolyglotterException {
-        CheckArg.notNull( descriptorId, "descriptorId" );
+        CheckArg.notEmpty( descriptorId, "descriptorId" );
         CheckArg.isNotEmpty( valuesBeingAdded, "valuesBeingAdded" );
 
         if ( !isValidInputDescriptorId( descriptorId ) ) {
@@ -327,7 +327,7 @@ abstract class AbstractOperation< T > extends ValueImpl< T > implements Operatio
     @Override
     public void removeInput( final String descriptorId,
                              final Object... valuesBeingRemoved ) throws PolyglotterException {
-        CheckArg.notNull( descriptorId, "descriptorId" );
+        CheckArg.notEmpty( descriptorId, "descriptorId" );
         CheckArg.isNotEmpty( valuesBeingRemoved, "valuesBeingRemoved" );
 
         if ( !isValidInputDescriptorId( descriptorId ) ) {

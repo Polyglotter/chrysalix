@@ -23,6 +23,8 @@
  */
 package org.polyglotter.transformation;
 
+import org.modeshape.modeler.Model;
+import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.PolyglotterException;
 
 /**
@@ -32,12 +34,29 @@ import org.polyglotter.common.PolyglotterException;
 public interface Transformation extends Iterable< Operation< ? > > {
 
     /**
+     * Adds models to a transformation or adds a {@link ModelType model type} to an existing model.
+     * 
+     * @param modelType
+     *        the model type (cannot be <code>null</code>)
+     * @param models
+     *        the models being added to the transformation (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the model type is <code>null</code> or if the models being added is <code>null</code> or empty
+     * @throws PolyglotterException
+     *         if a model is <code>null</code>, if a model being added has already been added and already has the specified model
+     *         type, or if a model cannot be added
+     */
+    void add( final ModelType modelType,
+              final Model... models ) throws PolyglotterException;
+
+    /**
      * @param operations
      *        the operations being added (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the operation being added is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the operations being added are <code>null</code> or empty
      * @throws PolyglotterException
-     *         if any of the operations have already been added or if an operation cannot be added
+     *         if any of the operations have already been added, if an operation is <code>null</code>, or if an operation cannot be
+     *         added
      */
     void add( final Operation< ? >... operations ) throws PolyglotterException;
 
@@ -54,6 +73,32 @@ public interface Transformation extends Iterable< Operation< ? > > {
     Operation< ? >[] operations();
 
     /**
+     * @param models
+     *        the models being removed from the transformation (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the models being removed is <code>null</code> or empty
+     * @throws PolyglotterException
+     *         if a model is <code>null</code> or if it cannot be removed
+     */
+    void remove( final Model... models ) throws PolyglotterException;
+
+    /**
+     * Removes a model type from an added model or removes the model completely if there are no more model types associcated with
+     * the model.
+     * 
+     * @param modelType
+     *        the model type (cannot be <code>null</code>)
+     * @param models
+     *        the models whose model type is being removed (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the model type is <code>null</code> or if the models being removed is <code>null</code> or empty
+     * @throws PolyglotterException
+     *         if a model is <code>null</code>, if a model does not have that model type, or if a model cannot be removed
+     */
+    void remove( final ModelType modelType,
+                 final Model... models ) throws PolyglotterException;
+
+    /**
      * @param operations
      *        the operations being removed (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
@@ -62,5 +107,47 @@ public interface Transformation extends Iterable< Operation< ? > > {
      *         if any of the operations cannot be found or cannot be removed
      */
     void remove( final Operation< ? >... operations ) throws PolyglotterException;
+
+    /**
+     * @return all source models (never <code>null</code> but can be empty)
+     */
+    Model[] sources();
+
+    /**
+     * @return all target models (never <code>null</code> but can be empty)
+     */
+    Model[] targets();
+
+    /**
+     * Indicates if a {@link Model model} is being used as a source, target, or both
+     */
+    enum ModelType {
+
+        /**
+         * The model is being used as only a source.
+         */
+        SOURCE,
+
+        /**
+         * The model is being used as both a source and a target.
+         */
+        SOURCE_TARGET,
+
+        /**
+         * The model is being used as only a target.
+         */
+        TARGET;
+
+        public static boolean isSource( final ModelType modelType ) {
+            CheckArg.notNull( modelType, "modelType" );
+            return ( ( modelType == SOURCE ) || ( modelType == SOURCE_TARGET ) );
+        }
+
+        public static boolean isTarget( final ModelType modelType ) {
+            CheckArg.notNull( modelType, "modelType" );
+            return ( ( modelType == TARGET ) || ( modelType == SOURCE_TARGET ) );
+        }
+
+    }
 
 }

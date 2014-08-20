@@ -25,9 +25,16 @@ package org.polyglotter.transformation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.modeshape.modeler.Model;
+import org.modeshape.modeler.ModelerException;
 import org.polyglotter.Polyglotter;
+import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.operation.BuiltInOperationDescriptorProvider;
@@ -120,6 +127,15 @@ public final class TransformationFactory {
                                               final String message ) {
         CheckArg.notEmpty( transformationId, "transformationId" );
         return new Problem( Severity.OK, transformationId, message );
+    }
+
+    /**
+     * @param id
+     *        the transformation identifier (cannot be <code>null</code> or empty)
+     * @return the transformation (never <code>null</code>)
+     */
+    public static Transformation createTransformation( final String id ) {
+        return new TransformationImpl( id );
     }
 
     /**
@@ -717,6 +733,303 @@ public final class TransformationFactory {
             if ( problem.severity().isMoreSevereThan( this.severity ) ) {
                 this.severity = problem.severity();
             }
+        }
+
+    }
+
+    private static class TransformationImpl implements Transformation {
+
+        private final String id;
+        private final Map< Model, ModelType > models;
+        private final List< Operation< ? > > operations;
+
+        /**
+         * @param tranformationId
+         *        the transformation identifier (cannot be <code>null</code> or empty)
+         */
+        public TransformationImpl( final String tranformationId ) {
+            CheckArg.notEmpty( tranformationId, "tranformationId" );
+            this.id = tranformationId;
+            this.models = new HashMap<>();
+            this.operations = new ArrayList<>();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#add(org.polyglotter.transformation.Transformation.ModelType,
+         *      org.modeshape.modeler.Model[])
+         */
+        @Override
+        public void add( final ModelType modelType,
+                         final Model... modelsBeingAdded ) throws PolyglotterException {
+            CheckArg.notNull( modelType, "modelType" );
+            CheckArg.isNotEmpty( modelsBeingAdded, "modelsBeingAdded" );
+
+            for ( final Model model : modelsBeingAdded ) {
+                if ( model == null ) {
+                    throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingNullTransformationModel,
+                                                    id() );
+                }
+
+                final ModelType currentType = this.models.get( model );
+
+                // if not found just add it
+                if ( currentType == null ) {
+                    this.models.put( model, modelType );
+                } else {
+                    // model has already been added with that type
+                    if ( ( currentType == ModelType.SOURCE_TARGET ) || ( currentType == modelType ) ) {
+                        String modelName = null;
+
+                        try {
+                            modelName = model.name();
+                        } catch ( final ModelerException e ) {
+                            throw new PolyglotterException( e,
+                                                            PolyglotterI18n.errorAddingTransformationModel,
+                                                            id(),
+                                                            modelType.name() );
+                        }
+
+                        throw new PolyglotterException( PolyglotterI18n.errorAddingTransformationModelWithName,
+                                                        modelName,
+                                                        id(),
+                                                        modelType.name() );
+                    }
+
+                    // added either source or target so now model can be used as both
+                    this.models.put( model, ModelType.SOURCE_TARGET );
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#add(org.polyglotter.transformation.Operation[])
+         */
+        @Override
+        public void add( final Operation< ? >... operationsToAdd ) throws PolyglotterException {
+            CheckArg.isNotEmpty( operationsToAdd, "operationsToAdd" );
+
+            for ( final Operation< ? > operation : operationsToAdd ) {
+                if ( operation == null ) {
+                    throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingNullTransformationOperation,
+                                                    id() );
+                }
+
+                if ( this.operations.contains( operation ) || !this.operations.add( operation ) ) {
+                    throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingTransformationOperation,
+                                                    operation.descriptor().id(),
+                                                    id() );
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#id()
+         */
+        @Override
+        public String id() {
+            return this.id;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see java.lang.Iterable#iterator()
+         */
+        @Override
+        public Iterator< Operation< ? >> iterator() {
+            final List< Operation< ? >> copy = Collections.unmodifiableList( this.operations );
+            return copy.iterator();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#operations()
+         */
+        @Override
+        public Operation< ? >[] operations() {
+            return this.operations.toArray( new Operation< ? >[ this.operations.size() ] );
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#remove(org.modeshape.modeler.Model[])
+         */
+        @Override
+        public void remove( final Model... modelsBeingRemoved ) throws PolyglotterException {
+            CheckArg.isNotEmpty( modelsBeingRemoved, "modelsBeingRemoved" );
+
+            for ( final Model model : modelsBeingRemoved ) {
+                if ( model == null ) {
+                    throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingNullTransformationModel,
+                                                    id() );
+                }
+
+                final ModelType currentType = this.models.get( model );
+
+                // model was not added
+                if ( currentType == null ) {
+                    String modelName = null;
+
+                    try {
+                        modelName = model.name();
+                    } catch ( final ModelerException e ) {
+                        throw new PolyglotterException( e,
+                                                        PolyglotterI18n.errorRemovingUnaddedTransformationModel,
+                                                        id() );
+                    }
+
+                    throw new PolyglotterException( PolyglotterI18n.errorRemovingUnaddedTransformationModelWithName,
+                                                    modelName,
+                                                    id() );
+                }
+
+                this.models.remove( model );
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#remove(org.polyglotter.transformation.Transformation.ModelType,
+         *      org.modeshape.modeler.Model[])
+         */
+        @Override
+        public void remove( final ModelType modelType,
+                            final Model... modelsBeingRemoved ) throws PolyglotterException {
+            CheckArg.notNull( modelType, "modelType" );
+            CheckArg.isNotEmpty( modelsBeingRemoved, "modelsBeingRemoved" );
+
+            for ( final Model model : modelsBeingRemoved ) {
+                if ( model == null ) {
+                    throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingNullTransformationModel,
+                                                    id() );
+                }
+
+                final ModelType currentType = this.models.get( model );
+
+                // model was not added
+                if ( currentType == null ) {
+                    String modelName = null;
+
+                    try {
+                        modelName = model.name();
+                    } catch ( final ModelerException e ) {
+                        throw new PolyglotterException( e,
+                                                        PolyglotterI18n.errorRemovingUnaddedTransformationModel,
+                                                        id() );
+                    }
+
+                    throw new PolyglotterException( PolyglotterI18n.errorRemovingUnaddedTransformationModelWithName,
+                                                    modelName,
+                                                    id() );
+                }
+
+                // model had been previously added so can be removed
+                if ( currentType == modelType ) {
+                    this.models.remove( model );
+                } else if ( currentType == ModelType.SOURCE_TARGET ) {
+                    if ( modelType == ModelType.SOURCE ) {
+                        this.models.put( model, ModelType.TARGET );
+                    } else {
+                        this.models.put( model, ModelType.SOURCE );
+                    }
+                } else {
+                    String modelName = null;
+
+                    try {
+                        modelName = model.name();
+                    } catch ( final ModelerException e ) {
+                        throw new PolyglotterException( e,
+                                                        PolyglotterI18n.errorRemovingTransformationModel,
+                                                        id(),
+                                                        modelType.name() );
+                    }
+
+                    throw new PolyglotterException( PolyglotterI18n.errorRemovingTransformationModelWithName,
+                                                    modelName,
+                                                    id(),
+                                                    modelType.name() );
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#remove(org.polyglotter.transformation.Operation[])
+         */
+        @Override
+        public void remove( final Operation< ? >... operationsToRemove ) throws PolyglotterException {
+            CheckArg.isNotEmpty( operationsToRemove, "operationsToRemove" );
+
+            for ( final Operation< ? > operation : operationsToRemove ) {
+                if ( operation == null ) {
+                    throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingNullTransformationOperation,
+                                                    id() );
+                }
+
+                if ( !this.operations.remove( operation ) ) {
+                    throw new PolyglotterException( PolyglotterI18n.errorAddingOrRemovingTransformationOperation,
+                                                    operation.descriptor().id(),
+                                                    id() );
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#sources()
+         */
+        @Override
+        public Model[] sources() {
+            if ( this.models.isEmpty() ) {
+                return Model.NO_MODELS;
+            }
+
+            final List< Model > sources = new ArrayList<>();
+
+            for ( final Map.Entry< Model, ModelType > entry : this.models.entrySet() ) {
+                final ModelType modelType = entry.getValue();
+
+                if ( ModelType.isSource( modelType ) ) {
+                    sources.add( entry.getKey() );
+                }
+            }
+
+            return sources.toArray( new Model[ sources.size() ] );
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.polyglotter.transformation.Transformation#targets()
+         */
+        @Override
+        public Model[] targets() {
+            if ( this.models.isEmpty() ) {
+                return Model.NO_MODELS;
+            }
+
+            final List< Model > targets = new ArrayList<>();
+
+            for ( final Map.Entry< Model, ModelType > entry : this.models.entrySet() ) {
+                final ModelType modelType = entry.getValue();
+
+                if ( ModelType.isTarget( modelType ) ) {
+                    targets.add( entry.getKey() );
+                }
+            }
+
+            return targets.toArray( new Model[ targets.size() ] );
         }
 
     }

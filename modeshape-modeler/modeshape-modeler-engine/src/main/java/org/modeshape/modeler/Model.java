@@ -34,6 +34,11 @@ import org.modeshape.modeler.spi.metamodel.Dependency;
 public interface Model extends ModelObject {
 
     /**
+     * An empty array of models.
+     */
+    Model[] NO_MODELS = new Model[ 0 ];
+
+    /**
      * @return <code>true</code> if all dependencies, recursively, exist in the repository.
      * @throws ModelerException
      *         if any error occurs

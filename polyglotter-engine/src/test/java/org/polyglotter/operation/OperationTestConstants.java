@@ -23,8 +23,6 @@
  */
 package org.polyglotter.operation;
 
-import java.util.Iterator;
-
 import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationDescriptor;
@@ -103,60 +101,6 @@ public class OperationTestConstants {
 
         };
 
-    public static final Transformation TEST_TRANSFORMATION = new Transformation() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#add(org.polyglotter.transformation.Operation[])
-         */
-        @Override
-        public void add( final Operation< ? >... operations ) {
-            // nothing to do
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#id()
-         */
-        @Override
-        public String id() {
-            return TRANSFORM_ID;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see java.lang.Iterable#iterator()
-         */
-        @Override
-        public Iterator< Operation< ? >> iterator() {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#operations()
-         */
-        @Override
-        public Operation< ? >[] operations() {
-            return null;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.polyglotter.transformation.Transformation#remove(org.polyglotter.transformation.Operation[])
-         */
-        @Override
-        public void remove( final Operation< ? >... operations ) {
-            // nothing to do
-        }
-
-    };
-
     public static final String EMPTY_STRING_VALUE = "";
     public static Value< String > EMPTY_STRING_TERM;
 
@@ -216,6 +160,8 @@ public class OperationTestConstants {
 
     public static final String TRANSFORM_ID = "Transform_1";
     public static final String TRANSFORM_2_ID = "Transform_2";
+
+    public static final Transformation TEST_TRANSFORMATION = TransformationFactory.createTransformation( TRANSFORM_ID );
 
     static {
         try {

@@ -34,7 +34,6 @@ import org.polyglotter.operation.OperationTestConstants;
 public final class TransformationFactoryTest {
 
     private static final String MSG = "MSG";
-    private static final String TX_ID = "TX_ID";
 
     @Test
     public void shouldCreateDoubleValue() throws Exception {
@@ -47,14 +46,14 @@ public final class TransformationFactoryTest {
 
     @Test
     public void shouldCreateErrorValidationProblem() {
-        final ValidationProblem problem = TransformationFactory.createError( TX_ID, MSG );
+        final ValidationProblem problem = TransformationFactory.createError( OperationTestConstants.TRANSFORM_ID, MSG );
         assertThat( problem, is( notNullValue() ) );
         assertThat( problem.severity(), is( ValidationProblem.Severity.ERROR ) );
         assertThat( problem.isError(), is( true ) );
         assertThat( problem.isWarning(), is( false ) );
         assertThat( problem.isInfo(), is( false ) );
         assertThat( problem.isOk(), is( false ) );
-        assertThat( problem.sourceId(), is( TX_ID ) );
+        assertThat( problem.sourceId(), is( OperationTestConstants.TRANSFORM_ID ) );
         assertThat( problem.message(), is( MSG ) );
     }
 
@@ -69,14 +68,14 @@ public final class TransformationFactoryTest {
 
     @Test
     public void shouldCreateInfoValidationInfo() {
-        final ValidationProblem problem = TransformationFactory.createInfo( TX_ID, MSG );
+        final ValidationProblem problem = TransformationFactory.createInfo( OperationTestConstants.TRANSFORM_ID, MSG );
         assertThat( problem, is( notNullValue() ) );
         assertThat( problem.severity(), is( ValidationProblem.Severity.INFO ) );
         assertThat( problem.isError(), is( false ) );
         assertThat( problem.isWarning(), is( false ) );
         assertThat( problem.isInfo(), is( true ) );
         assertThat( problem.isOk(), is( false ) );
-        assertThat( problem.sourceId(), is( TX_ID ) );
+        assertThat( problem.sourceId(), is( OperationTestConstants.TRANSFORM_ID ) );
         assertThat( problem.message(), is( MSG ) );
     }
 
@@ -100,14 +99,14 @@ public final class TransformationFactoryTest {
 
     @Test
     public void shouldCreateOkValidationProblem() {
-        final ValidationProblem problem = TransformationFactory.createOk( TX_ID, MSG );
+        final ValidationProblem problem = TransformationFactory.createOk( OperationTestConstants.TRANSFORM_ID, MSG );
         assertThat( problem, is( notNullValue() ) );
         assertThat( problem.severity(), is( ValidationProblem.Severity.OK ) );
         assertThat( problem.isError(), is( false ) );
         assertThat( problem.isWarning(), is( false ) );
         assertThat( problem.isInfo(), is( false ) );
         assertThat( problem.isOk(), is( true ) );
-        assertThat( problem.sourceId(), is( TX_ID ) );
+        assertThat( problem.sourceId(), is( OperationTestConstants.TRANSFORM_ID ) );
         assertThat( problem.message(), is( MSG ) );
     }
 
@@ -120,15 +119,25 @@ public final class TransformationFactoryTest {
 
     @Test
     public void shouldCreateWarningValidationProblem() {
-        final ValidationProblem problem = TransformationFactory.createWarning( TX_ID, MSG );
+        final ValidationProblem problem = TransformationFactory.createWarning( OperationTestConstants.TRANSFORM_ID, MSG );
         assertThat( problem, is( notNullValue() ) );
         assertThat( problem.severity(), is( ValidationProblem.Severity.WARNING ) );
         assertThat( problem.isError(), is( false ) );
         assertThat( problem.isWarning(), is( true ) );
         assertThat( problem.isInfo(), is( false ) );
         assertThat( problem.isOk(), is( false ) );
-        assertThat( problem.sourceId(), is( TX_ID ) );
+        assertThat( problem.sourceId(), is( OperationTestConstants.TRANSFORM_ID ) );
         assertThat( problem.message(), is( MSG ) );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToCreatTransformationIfIdIsEmpty() {
+        TransformationFactory.createTransformation( "" );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailToCreatTransformationIfIdIsNull() {
+        TransformationFactory.createTransformation( null );
     }
 
     @Test
