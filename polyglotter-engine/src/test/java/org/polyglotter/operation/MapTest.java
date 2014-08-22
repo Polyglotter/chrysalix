@@ -37,9 +37,9 @@ import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 @SuppressWarnings( { "javadoc" } )
 public final class MapTest {
 
-    private static final String SOURCE_ID = Map.SOURCE_MODEL_DESCRIPTOR.id();
+    private static final String SOURCE_ID = Map.SOURCE_MODEL_OBJECT_DESCRIPTOR.id();
     private static final String SOURCE_PROP_ID = Map.SOURCE_PROP_DESCRIPTOR.id();
-    private static final String TARGET_ID = Map.TARGET_MODEL_DESCRIPTOR.id();
+    private static final String TARGET_ID = Map.TARGET_MODEL_OBJECT_DESCRIPTOR.id();
     private static final String TARGET_PROP_ID = Map.TARGET_PROP_DESCRIPTOR.id();
 
     private Map operation;

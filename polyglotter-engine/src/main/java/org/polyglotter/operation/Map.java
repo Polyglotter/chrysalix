@@ -26,6 +26,7 @@ package org.polyglotter.operation;
 import java.util.List;
 
 import org.modeshape.modeler.Model;
+import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelerException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.PolyglotterException;
@@ -39,24 +40,24 @@ import org.polyglotter.transformation.Value;
 import org.polyglotter.transformation.ValueDescriptor;
 
 /**
- * Maps one {@link Model model's} property to another model's property.
+ * Maps one {@link ModelObject model object's} property to another model object's property.
  */
 public final class Map extends AbstractOperation< Void > {
 
     /**
-     * The source {@link Model model} descriptor.
+     * The source {@link ModelObject model object} descriptor.
      */
-    public static final ValueDescriptor< Model > SOURCE_MODEL_DESCRIPTOR =
+    public static final ValueDescriptor< ModelObject > SOURCE_MODEL_OBJECT_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "source" ),
                                                      PolyglotterI18n.mapOperationSourceDescription.text(),
                                                      PolyglotterI18n.mapOperationSourceName.text(),
-                                                     Model.class,
+                                                     ModelObject.class,
                                                      true,
                                                      1,
                                                      false );
 
     /**
-     * The descriptor for the name of the source {@link Model model} property used in the mapping.
+     * The descriptor for the name of the source {@link ModelObject model object} property used in the mapping.
      */
     public static final ValueDescriptor< String > SOURCE_PROP_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "sourceProperty" ),
@@ -68,19 +69,19 @@ public final class Map extends AbstractOperation< Void > {
                                                      false );
 
     /**
-     * The target {@link Model model} descriptor.
+     * The target {@link ModelObject model object} descriptor.
      */
-    public static final ValueDescriptor< Model > TARGET_MODEL_DESCRIPTOR =
+    public static final ValueDescriptor< ModelObject > TARGET_MODEL_OBJECT_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "target" ),
                                                      PolyglotterI18n.mapOperationTargetDescription.text(),
                                                      PolyglotterI18n.mapOperationTargetName.text(),
-                                                     Model.class,
+                                                     ModelObject.class,
                                                      true,
                                                      1,
                                                      false );
 
     /**
-     * The descriptor for the name of the target {@link Model model} property used in the mapping.
+     * The descriptor for the name of the target {@link ModelObject model object} property used in the mapping.
      */
     public static final ValueDescriptor< String > TARGET_PROP_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "targetProperty" ),
@@ -95,9 +96,9 @@ public final class Map extends AbstractOperation< Void > {
      * The input descriptors.
      */
     private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = {
-                    SOURCE_MODEL_DESCRIPTOR,
+                    SOURCE_MODEL_OBJECT_DESCRIPTOR,
                     SOURCE_PROP_DESCRIPTOR,
-                    TARGET_MODEL_DESCRIPTOR,
+                    TARGET_MODEL_OBJECT_DESCRIPTOR,
                     TARGET_PROP_DESCRIPTOR };
 
     /**
@@ -147,10 +148,10 @@ public final class Map extends AbstractOperation< Void > {
     protected Void calculate() throws PolyglotterException {
         assert !problems().isError();
 
-        final Model sourceModel = ( Model ) inputs( SOURCE_MODEL_DESCRIPTOR.id() ).get( 0 ).get();
+        final ModelObject sourceModel = ( ModelObject ) inputs( SOURCE_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
         final String sourceProp = ( String ) inputs( SOURCE_PROP_DESCRIPTOR.id() ).get( 0 ).get();
 
-        final Model targetModel = ( Model ) inputs( TARGET_MODEL_DESCRIPTOR.id() ).get( 0 ).get();
+        final ModelObject targetModel = ( ModelObject ) inputs( TARGET_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
         final String targetProp = ( String ) inputs( TARGET_PROP_DESCRIPTOR.id() ).get( 0 ).get();
 
         try {
@@ -178,7 +179,7 @@ public final class Map extends AbstractOperation< Void > {
             problems().add( problem );
         } else {
             { // source model
-                final List< Value< ? >> sourceModels = inputs( SOURCE_MODEL_DESCRIPTOR.id() );
+                final List< Value< ? >> sourceModels = inputs( SOURCE_MODEL_OBJECT_DESCRIPTOR.id() );
 
                 if ( sourceModels.size() != 1 ) {
                     final ValidationProblem problem =
@@ -192,10 +193,10 @@ public final class Map extends AbstractOperation< Void > {
                     try {
                         model = term.get();
 
-                        if ( !( model instanceof Model ) ) {
+                        if ( !( model instanceof ModelObject ) && !( model instanceof Model ) ) {
                             final ValidationProblem problem =
                                 TransformationFactory.createError( transformationId(),
-                                                                   PolyglotterI18n.mapOperationInvalidSourceModelType.text( transformationId() ) );
+                                                                   PolyglotterI18n.mapOperationInvalidSourceModelObjectType.text( transformationId() ) );
                             problems().add( problem );
                         }
                     } catch ( final PolyglotterException e ) {
@@ -242,7 +243,7 @@ public final class Map extends AbstractOperation< Void > {
             }
 
             { // target model
-                final List< Value< ? >> targetModels = inputs( TARGET_MODEL_DESCRIPTOR.id() );
+                final List< Value< ? >> targetModels = inputs( TARGET_MODEL_OBJECT_DESCRIPTOR.id() );
 
                 if ( targetModels.size() != 1 ) {
                     final ValidationProblem problem =
@@ -256,10 +257,10 @@ public final class Map extends AbstractOperation< Void > {
                     try {
                         model = term.get();
 
-                        if ( !( model instanceof Model ) ) {
+                        if ( !( model instanceof ModelObject ) && !( model instanceof Model ) ) {
                             final ValidationProblem problem =
                                 TransformationFactory.createError( transformationId(),
-                                                                   PolyglotterI18n.mapOperationInvalidTargetModelType.text( transformationId() ) );
+                                                                   PolyglotterI18n.mapOperationInvalidTargetModelObjectType.text( transformationId() ) );
                             problems().add( problem );
                         }
                     } catch ( final PolyglotterException e ) {
