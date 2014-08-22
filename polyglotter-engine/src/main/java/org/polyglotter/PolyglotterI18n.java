@@ -228,25 +228,25 @@ public class PolyglotterI18n {
         new I18n( "Log 10 operation in transformation '%s' requires one and only one term" );
     public static I18n log10OperationName = new I18n( "Logarithm Base 10" );
 
-    public static I18n mapOperationDescription = new I18n( "Maps one model's property to another model's property" );
+    public static I18n mapOperationDescription = new I18n( "Maps one model object's property to another model object's property" );
     public static I18n mapOperationInvalidSourceModelCount =
-        new I18n( "Map operation in transformation '%s' must have exactly one source model" );
-    public static I18n mapOperationInvalidSourceModelType =
-        new I18n( "The source model of map operation in transformation '%s' must be a model" );
+        new I18n( "A map operation in transformation '%s' does not have exactly one source model object" );
+    public static I18n mapOperationInvalidSourceModelObjectType =
+        new I18n( "The source of a map operation in transformation '%s' is not a model object" );
     public static I18n mapOperationInvalidSourcePropCount =
-        new I18n( "Map operation in transformation '%s' must have exactly one source model property name" );
+        new I18n( "A map operation in transformation '%s' does not have exactly one source model property name" );
     public static I18n mapOperationInvalidSourcePropType =
-        new I18n( "The source model's property name of map operation in transformation '%s' must be a string" );
+        new I18n( "A source model object's property name of a map operation in transformation '%s' is not a string" );
     public static I18n mapOperationInvalidTargetModelCount =
-        new I18n( "Map operation in transformation '%s' must have exactly one target model" );
+        new I18n( "A map operation in transformation '%s' does not have exactly one target model object" );
     public static I18n mapOperationInvalidTargetPropCount =
-        new I18n( "Map operation in transformation '%s' must have exactly one target model property name" );
+        new I18n( "A map operation in transformation '%s' does not have exactly one target model property name" );
     public static I18n mapOperationInvalidTargetPropType =
-        new I18n( "The target model's property name of map operation in transformation '%s' must be a string" );
-    public static I18n mapOperationInvalidTargetModelType =
-        new I18n( "The target model of map operation in transformation '%s' must be a model" );
+        new I18n( "A target model object's property name of a map operation in transformation '%s' is not a string" );
+    public static I18n mapOperationInvalidTargetModelObjectType =
+        new I18n( "A target of a map operation in transformation '%s' is not a model object" );
     public static I18n mapOperationInvalidTermCount =
-        new I18n( "Map operation in transformation '%s' must have exactly one 4 terms" );
+        new I18n( "A map operation in transformation '%s' does not have exactly 4 terms (source model object and property name, and target model object and property name" );
     public static I18n mapOperationName = new I18n( "Map" );
     public static I18n mapOperationSourceDescription = new I18n( "The source model whose property is being mapped" );
     public static I18n mapOperationSourceName = new I18n( "Source" );
