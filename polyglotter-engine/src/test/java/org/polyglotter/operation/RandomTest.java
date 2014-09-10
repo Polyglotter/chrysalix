@@ -29,8 +29,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 
 @SuppressWarnings( { "javadoc" } )

@@ -32,7 +32,7 @@ import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.transformation.TransformationFactory;
 import org.polyglotter.transformation.Value;
 

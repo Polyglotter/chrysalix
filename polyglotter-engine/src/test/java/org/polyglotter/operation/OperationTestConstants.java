@@ -23,7 +23,7 @@
  */
 package org.polyglotter.operation;
 
-import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationDescriptor;
 import org.polyglotter.transformation.Transformation;

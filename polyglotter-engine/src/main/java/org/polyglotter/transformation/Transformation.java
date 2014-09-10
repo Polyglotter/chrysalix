@@ -24,8 +24,8 @@
 package org.polyglotter.transformation;
 
 import org.modeshape.modeler.Model;
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.common.CheckArg;
-import org.polyglotter.common.PolyglotterException;
 
 /**
  * A class representing a transformation. A transformation uses an ordered set of {@link Operation operations} to calculate a result

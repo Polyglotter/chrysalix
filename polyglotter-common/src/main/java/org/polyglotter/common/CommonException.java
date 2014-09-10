@@ -21,52 +21,60 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.polyglotter.common;
 
 /**
  * 
  */
-public class PolyglotterException extends Exception {
+public class CommonException extends BaseException {
 
     /**
-     * @param i18n
-     *        an internationalizable message
+     * @param message
+     *        a localizable exception message
      * @param arguments
-     *        optional arguments to the internationalized message
+     *        optional arguments to the supplied message
      */
-    public PolyglotterException( final I18n i18n,
-                                 final Object... arguments ) {
-        super( i18n.text( arguments ) );
+    public CommonException( final I18n message,
+                            final Object... arguments ) {
+        super( message, arguments );
     }
 
     /**
      * @param message
-     *        the <em>localized</em> exception message
-     */
-    public PolyglotterException( final String message ) {
-        super( message );
-    }
-
-    /**
-     * @param cause
-     *        the underlying Throwable that caused of this exception
-     */
-    public PolyglotterException( final Throwable cause ) {
-        super( cause );
-    }
-
-    /**
-     * @param cause
-     *        the underlying Throwable that caused of this exception
-     * @param i18n
-     *        an internationalized message
+     *        the localizable exception message
      * @param arguments
-     *        arguments to the internationalized message
+     *        optional arguments to the supplied message
      */
-    public PolyglotterException( final Throwable cause,
-                                 final I18n i18n,
-                                 final Object... arguments ) {
-        super( i18n.text( arguments ), cause );
+    public CommonException( final String message,
+                            final Object... arguments ) {
+        super( CommonI18n.class, message, arguments );
+    }
+
+    /**
+     * @param cause
+     *        the underlying Throwable that caused of this exception
+     * @param message
+     *        the localizable exception message
+     * @param arguments
+     *        optional arguments to the supplied message
+     */
+    public CommonException( final Throwable cause,
+                            final I18n message,
+                            final Object... arguments ) {
+        super( cause, message, arguments );
+    }
+
+    /**
+     * @param cause
+     *        the underlying Throwable that caused of this exception
+     * @param message
+     *        the localizable exception message
+     * @param arguments
+     *        optional arguments to the supplied message
+     */
+    public CommonException( final Throwable cause,
+                            final String message,
+                            final Object... arguments ) {
+        super( CommonI18n.class, cause, message, arguments );
     }
 }

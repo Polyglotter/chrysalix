@@ -28,7 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.PolyglotterException;
 
 /**
  * A class that produces a result by using zero or more {@link Value values}.
