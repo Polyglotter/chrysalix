@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.PolyglotterException;
 
 /**
  * An input or output {@link Value value}.

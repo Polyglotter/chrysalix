@@ -28,8 +28,8 @@ import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 import org.polyglotter.transformation.OperationDescriptor;

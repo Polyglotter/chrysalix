@@ -356,7 +356,7 @@ public final class I18n {
         return problem;
     }
 
-    private String rawText( Locale locale ) throws PolyglotterException {
+    private String rawText( Locale locale ) throws CommonException {
         assert locale != null;
         locale = localize( i18nClass, locale );
         // Check if text exists
@@ -366,7 +366,7 @@ public final class I18n {
         }
         // If not, there was a problem, so throw it within an exception so upstream callers can tell the difference between normal
         // text and problem text.
-        throw new PolyglotterException( problem( locale ) );
+        throw new CommonException( problem( locale ) );
     }
 
     /**
@@ -386,7 +386,7 @@ public final class I18n {
         } catch ( final IllegalFormatException err ) {
             throw new IllegalArgumentException( CommonI18n.localize( "Internationalization field \"%s\" in %s: %s",
                                                                      id, i18nClass, err.getMessage() ) );
-        } catch ( final PolyglotterException err ) {
+        } catch ( final CommonException err ) {
             return '<' + err.getMessage() + '>';
         }
     }
@@ -412,7 +412,7 @@ public final class I18n {
     public String toString() {
         try {
             return rawText( Locale.getDefault() );
-        } catch ( final PolyglotterException err ) {
+        } catch ( final CommonException err ) {
             return '<' + err.getMessage() + '>';
         }
     }

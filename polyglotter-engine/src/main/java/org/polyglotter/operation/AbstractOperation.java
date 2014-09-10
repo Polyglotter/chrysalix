@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.ObjectUtil;
-import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory;
 import org.polyglotter.transformation.OperationDescriptor;

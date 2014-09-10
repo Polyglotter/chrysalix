@@ -25,10 +25,10 @@ package org.polyglotter.operation;
 
 import java.lang.reflect.ParameterizedType;
 
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
 import org.polyglotter.common.Logger;
-import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.Value;
 import org.polyglotter.transformation.ValueDescriptor;
 

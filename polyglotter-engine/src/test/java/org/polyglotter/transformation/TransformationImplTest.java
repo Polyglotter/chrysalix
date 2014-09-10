@@ -36,7 +36,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.modeshape.modeler.Model;
-import org.polyglotter.common.PolyglotterException;
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.operation.OperationTestConstants;
 import org.polyglotter.transformation.Transformation.ModelType;
 

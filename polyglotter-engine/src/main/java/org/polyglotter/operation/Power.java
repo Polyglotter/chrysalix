@@ -27,8 +27,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
+import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.common.PolyglotterException;
 import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 import org.polyglotter.transformation.OperationDescriptor;
