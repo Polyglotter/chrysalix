@@ -66,7 +66,6 @@ import org.modeshape.modeler.internal.task.WriteTask;
 import org.modeshape.modeler.internal.task.WriteTaskWithResult;
 import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 import org.modeshape.modeler.spi.metamodel.Exporter;
-import org.polyglotter.common.CommonI18n;
 import org.polyglotter.common.Logger;
 
 /**
@@ -555,7 +554,7 @@ public class ModelerImpl implements Modeler {
                 final Problems problems = config.validate();
                 if ( problems.hasProblems() ) {
                     for ( final Problem problem : problems )
-                        Logger.getLogger( getClass() ).error( problem.getThrowable(), CommonI18n.text, problem.getMessageString() );
+                        Logger.getLogger( getClass() ).error( problem.getThrowable(), problem.getMessageString() );
                     throw problems.iterator().next().getThrowable();
                 }
                 JcrRepository repository;

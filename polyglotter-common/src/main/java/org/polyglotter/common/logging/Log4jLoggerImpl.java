@@ -79,6 +79,14 @@ final class Log4jLoggerImpl extends Logger {
     }
 
     @Override
+    public void error( final Throwable t,
+                       final String message ) {
+        if ( !isErrorEnabled() ) return;
+        logger.error( message, t );
+
+    }
+
+    @Override
     public String getName() {
         return logger.getName();
     }

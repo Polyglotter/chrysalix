@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public abstract class Logger {
 
-    private static final AtomicReference< Locale > LOGGING_LOCALE = new AtomicReference< Locale >( null );
+    private static final AtomicReference< Locale > LOGGING_LOCALE = new AtomicReference<>( null );
 
     /**
      * Return a logger named corresponding to the class passed as parameter.
@@ -136,6 +136,18 @@ public abstract class Logger {
     public abstract void error( Throwable t,
                                 I18n message,
                                 Object... params );
+
+    /**
+     * Log an exception (throwable) at the ERROR level with an accompanying message. If the exception is null, then this method
+     * calls {@link #error(I18n, Object...)}.
+     * 
+     * @param t
+     *        the exception (throwable) to log
+     * @param message
+     *        the <em>localized</em> message accompanying the exception
+     */
+    public abstract void error( Throwable t,
+                                String message );
 
     /**
      * Return the name of this logger instance.

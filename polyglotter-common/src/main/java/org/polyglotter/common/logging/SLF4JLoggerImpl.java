@@ -137,6 +137,21 @@ final class SLF4JLoggerImpl extends Logger {
     }
 
     @Override
+    public void error( final Throwable t,
+                       final String message ) {
+        if ( !isErrorEnabled() ) return;
+        if ( t == null ) {
+            logger.error( message );
+            return;
+        }
+        if ( message == null ) {
+            logger.error( null, t );
+            return;
+        }
+        logger.error( message, t );
+    }
+
+    @Override
     public String getName() {
         return logger.getName();
     }

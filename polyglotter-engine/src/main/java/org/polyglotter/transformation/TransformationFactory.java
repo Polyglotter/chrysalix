@@ -208,7 +208,7 @@ public final class TransformationFactory {
      */
     public static < T > Value< T > createValue( final ValueDescriptor< T > descriptor ) {
         CheckArg.notNull( descriptor, "descriptor" );
-        return new ValueImpl< T >( descriptor );
+        return new ValueImpl<>( descriptor );
     }
 
     /**
@@ -254,13 +254,13 @@ public final class TransformationFactory {
                                                                     final boolean isModifiable,
                                                                     final int requiredValueCount,
                                                                     final boolean isUnbounded ) {
-        return new ValueDescriptorImpl< T >( valueId,
-                                             valueDescription,
-                                             valueName,
-                                             valueType,
-                                             isModifiable,
-                                             requiredValueCount,
-                                             isUnbounded );
+        return new ValueDescriptorImpl<>( valueId,
+                                          valueDescription,
+                                          valueName,
+                                          valueType,
+                                          isModifiable,
+                                          requiredValueCount,
+                                          isUnbounded );
     }
 
     /**
