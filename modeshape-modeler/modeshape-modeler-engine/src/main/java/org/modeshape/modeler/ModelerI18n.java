@@ -39,13 +39,13 @@ public final class ModelerI18n {
     public static final I18n modelerStopped = new I18n( "Modeler stopped" );
     public static final I18n modelExporterNotFound = new I18n( "Model '%s' cannot be exported since an exporter was not found" );
     public static final I18n mustBeModelNode = new I18n( "Node '%s' is not a model node" );
+    public static final I18n notModelPath = new I18n( "Not a path to a model: %s" );
+    public static final I18n notMultiValuedProperty = new I18n( "Property \"%s\" is not a multi-value property" );
+    public static final I18n sessionRollbackFailed = new I18n( "*** Session rollback failed for category '%s' ***" );
     public static final I18n unableToCreateModel = new I18n( "Unable to create %s model \"%s\" from data at \"%s\"" );
     public static final I18n unableToDetermineDefaultMetamodel = new I18n( "Unable to determine default metamodel for file %s" );
     public static final I18n unableToFindMetamodelCategory =
         new I18n( "Unable to find metamodel category '%s' in registered metamodel repositories" );
     public static final I18n unableToFindMetamodelCategoryInCache = new I18n( "Metamodel category '%s' was not found in cache" );
     public static final I18n urlNotFound = new I18n( "URL not found: %s" );
-    public static final I18n notModelPath = new I18n( "Not a path to a model: %s" );
-    public static final I18n notMultiValuedProperty = new I18n( "Property \"%s\" is not a multi-value property" );
-    public static final I18n sessionRollbackFailed = new I18n( "*** Session rollback failed for category '%s' ***" );
 }

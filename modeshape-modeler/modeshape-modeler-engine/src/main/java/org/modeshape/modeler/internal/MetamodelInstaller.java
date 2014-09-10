@@ -38,7 +38,6 @@ import java.util.zip.ZipFile;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
 
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.Metamodel;
@@ -132,17 +131,11 @@ public class MetamodelInstaller {
         // loop through repositories until we find the extension archive which is found at root of archive
         for ( final URL repositoryUrl : metamodelRepositories ) {
             final URL url = new URL( path( repositoryUrl.toString(), extensionArchivePath ) );
-            InputStream urlStream = null;
-            Exception err = null;
 
-            try {
-                try {
-                    urlStream = url.openStream();
-                    LOGGER.debug( "Archive found at URL '%s'", url );
-                } catch ( final IOException e ) {
-                    LOGGER.debug( "Archive at URL '%s' was NOT found in repository", url );
-                    continue; // not found
-                }
+            boolean archiveFound = false;
+            try ( InputStream urlStream = url.openStream() ) {
+                archiveFound = true;
+                LOGGER.debug( "Archive found at URL '%s'", url );
 
                 // copy archive over to library if found at this repository
                 Files.copy( urlStream, archivePath );
@@ -156,20 +149,10 @@ public class MetamodelInstaller {
                                            urlStream );
 
                 archivePath.toFile().delete();
-            } catch ( final IOException | RepositoryException e ) {
-                err = e;
-            } finally {
-                if ( urlStream != null ) {
-                    try {
-                        urlStream.close();
-                    } catch ( final IOException e ) {
-                        if ( err == null ) throw e;
-                        err.addSuppressed( e );
-                        throw err;
-                    }
-                } else if ( err != null ) {
-                    throw err;
-                }
+            } catch ( final IOException e ) {
+                if ( archiveFound ) throw e;
+                LOGGER.debug( "Archive at URL '%s' was NOT found in repository", url );
+                continue;
             }
 
             // Iterate through entries looking for appropriate extension classes

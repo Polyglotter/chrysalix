@@ -49,38 +49,39 @@ import org.polyglotter.common.logging.SLF4JLoggerFactory;
  * </p>
  */
 public abstract class LogFactory {
-    
+
     /**
      * The name of the {@link LogFactory} implementation that is not provided out of the box but can be created, implemented, and
      * placed on the classpath to have Polyglotter send log messages to a custom framework.
      */
     public static final String CUSTOM_LOG_FACTORY_CLASSNAME = "org.polyglotter.common.logging.CustomLoggerFactory";
-    
+
     private static LogFactory LOGFACTORY;
-    
+
     static {
-        if ( isCustomLoggerAvailable() )
-            try {
-                @SuppressWarnings( "unchecked" ) final Class< LogFactory > customClass = ( Class< LogFactory > ) Class.forName( CUSTOM_LOG_FACTORY_CLASSNAME );
-                LOGFACTORY = customClass.newInstance();
-            } catch ( final Throwable e ) {
-                // We're going to fallback to the JDK logger anyway, so use it and log this problem ...
-                LOGFACTORY = new JdkLoggerFactory();
-                final java.util.logging.Logger jdkLogger = java.util.logging.Logger.getLogger( LogFactory.class.getName() );
-                final String msg = CommonI18n.errorInitializingCustomLoggerFactory.text( CUSTOM_LOG_FACTORY_CLASSNAME );
-                jdkLogger.log( java.util.logging.Level.WARNING, msg, e );
-            }
-        else if ( isSLF4JAvailable() )
-            LOGFACTORY = new SLF4JLoggerFactory();
-        else if ( isLog4jAvailable() )
-            LOGFACTORY = new Log4jLoggerFactory();
+        if ( isCustomLoggerAvailable() ) try {
+            @SuppressWarnings( "unchecked" ) final Class< LogFactory > customClass =
+                ( Class< LogFactory > ) Class.forName( CUSTOM_LOG_FACTORY_CLASSNAME );
+            LOGFACTORY = customClass.newInstance();
+        } catch ( final Throwable e ) {
+            // We're going to fallback to the JDK logger anyway, so use it and log this problem ...
+            LOGFACTORY = new JdkLoggerFactory();
+            final java.util.logging.Logger jdkLogger = java.util.logging.Logger.getLogger( LogFactory.class.getName() );
+            final String msg = CommonI18n.localize( "Error loading and/or instantiating the \"%s\" implementation, which is used "
+                                                    + "to tie into a custom logging framework (other than SLF4J, Log4J or the JDK "
+                                                    + "Logging). Falling back to JDK logging.",
+                                                    CUSTOM_LOG_FACTORY_CLASSNAME );
+            jdkLogger.log( java.util.logging.Level.WARNING, msg, e );
+        }
+        else if ( isSLF4JAvailable() ) LOGFACTORY = new SLF4JLoggerFactory();
+        else if ( isLog4jAvailable() ) LOGFACTORY = new Log4jLoggerFactory();
         else LOGFACTORY = new JdkLoggerFactory();
     }
-    
+
     static LogFactory getLogFactory() {
         return LOGFACTORY;
     }
-    
+
     private static boolean isCustomLoggerAvailable() {
         try {
             // Check if a custom log factory implementation is in the classpath and initialize the class
@@ -90,7 +91,7 @@ public abstract class LogFactory {
             return false;
         }
     }
-    
+
     private static boolean isLog4jAvailable() {
         try {
             // Check if the Log4J main interface is in the classpath and initialize the class
@@ -100,13 +101,13 @@ public abstract class LogFactory {
             return false;
         }
     }
-    
+
     private static boolean isSLF4JAvailable() {
         try {
             // check if the api is in the classpath and initialize the classes
             Class.forName( "org.slf4j.Logger" );
             Class.forName( "org.slf4j.LoggerFactory" );
-            
+
             // check if there's at least one implementation and initialize the classes
             Class.forName( "org.slf4j.impl.StaticLoggerBinder" );
             return true;
@@ -114,7 +115,7 @@ public abstract class LogFactory {
             return false;
         }
     }
-    
+
     /**
      * Return a logger named corresponding to the class passed as parameter.
      * 
@@ -125,7 +126,7 @@ public abstract class LogFactory {
     Logger getLogger( final Class< ? > clazz ) {
         return Logger.getLogger( clazz.getName() );
     }
-    
+
     /**
      * Return a logger named according to the name parameter.
      * 
@@ -134,5 +135,5 @@ public abstract class LogFactory {
      * @return logger
      */
     protected abstract Logger getLogger( String name );
-    
+
 }

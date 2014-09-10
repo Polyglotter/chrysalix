@@ -53,9 +53,11 @@ public final class I18n {
      * contains any problems encountered during localization.
      */
     static final ConcurrentMap< Locale, Map< Class< ? >, Set< String >>> LOCALE_TO_CLASS_TO_PROBLEMS_MAP =
-        new ConcurrentHashMap< Locale, Map< Class< ? >, Set< String >>>();
+        new ConcurrentHashMap<>();
 
     private static final Logger LOGGER = Logger.getLogger( I18n.class );
+
+    private static final ConcurrentMap< String, I18n > I18NS_BY_TEXT = new ConcurrentHashMap<>();
 
     /**
      * Note, calling this method will <em>not</em> trigger localization of the supplied internationalization class.
@@ -67,7 +69,7 @@ public final class I18n {
      */
     public static Set< Locale > localizationProblemLocales( final Class< ? > i18nClass ) {
         CheckArg.notNull( i18nClass, "i18nClass" );
-        final Set< Locale > locales = new HashSet< Locale >( LOCALE_TO_CLASS_TO_PROBLEMS_MAP.size() );
+        final Set< Locale > locales = new HashSet<>( LOCALE_TO_CLASS_TO_PROBLEMS_MAP.size() );
         for ( final Entry< Locale, Map< Class< ? >, Set< String >>> localeEntry : LOCALE_TO_CLASS_TO_PROBLEMS_MAP.entrySet() ) {
             for ( final Entry< Class< ? >, Set< String >> classEntry : localeEntry.getValue().entrySet() ) {
                 if ( !classEntry.getValue().isEmpty() ) {
@@ -131,7 +133,7 @@ public final class I18n {
         assert i18nClass != null;
         assert locale != null;
         // Create a class-to-problem map for this locale if one doesn't exist, else get the existing one.
-        Map< Class< ? >, Set< String >> classToProblemsMap = new ConcurrentHashMap< Class< ? >, Set< String >>();
+        Map< Class< ? >, Set< String >> classToProblemsMap = new ConcurrentHashMap<>();
         final Map< Class< ? >, Set< String >> existingClassToProblemsMap =
             LOCALE_TO_CLASS_TO_PROBLEMS_MAP.putIfAbsent( locale,
                                                          classToProblemsMap );
@@ -147,7 +149,7 @@ public final class I18n {
             // the synchronization block (1% use-case), else create a class-to-problems map for the class.
             Set< String > problems = classToProblemsMap.get( i18nClass );
             if ( problems == null ) {
-                problems = new CopyOnWriteArraySet< String >();
+                problems = new CopyOnWriteArraySet<>();
                 classToProblemsMap.put( i18nClass, problems );
             } else {
                 return locale;
@@ -186,8 +188,7 @@ public final class I18n {
                 final Properties props = prepareBundleLoading( i18nClass, locale, bundleUrl, problems );
 
                 try {
-                    final InputStream propStream = bundleUrl.openStream();
-                    try {
+                    try ( InputStream propStream = bundleUrl.openStream() ) {
                         props.load( propStream );
                         // Check for uninitialized fields
                         for ( final Field fld : i18nClass.getDeclaredFields() )
@@ -198,8 +199,6 @@ public final class I18n {
                                     // Would have already occurred in initialize method, but allowing for the impossible...
                                     problems.add( notPossible.getMessage() );
                                 }
-                    } finally {
-                        propStream.close();
                     }
                 } catch ( final IOException err ) {
                     problems.add( err.getMessage() );
@@ -207,6 +206,29 @@ public final class I18n {
             }
         }
         return locale;
+    }
+
+    /**
+     * @param i18nClass
+     *        the internationalization class used to localize the supplied text.
+     * @param locale
+     *        the locale, or <code>null</code> if the {@link Locale#getDefault() current (default) locale} should be used
+     * @param text
+     *        the text to be localized
+     * @param arguments
+     *        optional arguments applied to the supplied text as described in {@link String#format(String, Object...)}
+     * @return the localized form of the supplied text
+     */
+    public static String localize( final Class< ? > i18nClass,
+                                   final Locale locale,
+                                   final String text,
+                                   final Object... arguments ) {
+        I18n i18n = I18NS_BY_TEXT.get( text );
+        if ( i18n == null ) {
+            i18n = new I18n( text, i18nClass );
+            I18NS_BY_TEXT.put( text, i18n );
+        }
+        return i18n.text( locale, arguments );
     }
 
     private static Properties prepareBundleLoading( final Class< ? > i18nClass,
@@ -239,11 +261,11 @@ public final class I18n {
     final ConcurrentHashMap< Locale, String > localeToProblemMap = new ConcurrentHashMap<>();
 
     /**
-     * @param defaultMessagePattern
-     *        the message pattern to be used for
+     * @param text
+     *        the text to be localized
      */
-    public I18n( final String defaultMessagePattern ) {
-        CheckArg.notEmpty( defaultMessagePattern, "defaultMessagePattern" );
+    public I18n( final String text ) {
+        CheckArg.notEmpty( text, "text" );
         String id = null;
         Class< ? > i18nClass = null;
         final StackTraceElement elem = Thread.currentThread().getStackTrace()[ 2 ];
@@ -262,10 +284,20 @@ public final class I18n {
         } catch ( final ClassNotFoundException | IllegalArgumentException | IllegalAccessException e ) {
             throw new RuntimeException( e );
         }
-        if ( id == null ) throw new IllegalStateException( CommonI18n.i18nNotAssignedToStaticField.text( elem ) );
+        if ( id == null )
+            throw new IllegalStateException( CommonI18n.localize( "Internationalization object is not assigned to a static member variable\n\tat %s",
+                                                                  elem ) );
         this.id = id;
         this.i18nClass = i18nClass;
-        localeToTextMap.put( Locale.US, defaultMessagePattern );
+        localeToTextMap.put( Locale.US, text );
+    }
+
+    private I18n( final String text,
+                  final Class< ? > i18nClass ) {
+        CheckArg.notEmpty( text, "text" );
+        this.id = text;
+        this.i18nClass = i18nClass;
+        localeToTextMap.put( Locale.US, text );
     }
 
     /**
@@ -317,7 +349,9 @@ public final class I18n {
         }
         // If we get here, which will be at most once, there was at least one global localization error, so just return a message
         // indicating to look them up.
-        problem = CommonI18n.i18nLocalizationProblems.text( i18nClass, locale );
+        problem = CommonI18n.localize( locale,
+                                       "Problems were encountered while localizing internationalization %s to locale \"%s\"",
+                                       i18nClass, locale );
         localeToProblemMap.put( locale, problem );
         return problem;
     }
@@ -332,7 +366,7 @@ public final class I18n {
         }
         // If not, there was a problem, so throw it within an exception so upstream callers can tell the difference between normal
         // text and problem text.
-        throw new PolyglotterException( CommonI18n.text, problem( locale ) );
+        throw new PolyglotterException( problem( locale ) );
     }
 
     /**
@@ -350,9 +384,8 @@ public final class I18n {
             final String rawText = rawText( locale == null ? Locale.getDefault() : locale );
             return String.format( rawText, arguments );
         } catch ( final IllegalFormatException err ) {
-            throw new IllegalArgumentException( CommonI18n.i18nRequiredToSuppliedParameterMismatch.text( id,
-                                                                                                         i18nClass,
-                                                                                                         err.getMessage() ) );
+            throw new IllegalArgumentException( CommonI18n.localize( "Internationalization field \"%s\" in %s: %s",
+                                                                     id, i18nClass, err.getMessage() ) );
         } catch ( final PolyglotterException err ) {
             return '<' + err.getMessage() + '>';
         }

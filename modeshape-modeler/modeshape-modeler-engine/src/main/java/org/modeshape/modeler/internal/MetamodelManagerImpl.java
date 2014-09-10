@@ -270,34 +270,19 @@ final class MetamodelManagerImpl implements MetamodelManager {
         final String archiveName = String.format( SEQUENCER_ZIP_PATTERN, category, version() );
         final Path archivePath = library.resolve( archiveName );
         final String sequencerArchivePath = String.format( SEQUENCER_PATH_PATTERN, category, version(), archiveName );
-        boolean sequencerArchiveFound = false;
 
         // loop through repositories until we find the sequencer archive
         for ( final URL repositoryUrl : metamodelRepositories ) {
             final URL url = new URL( path( repositoryUrl.toString(), sequencerArchivePath ) );
-            InputStream urlStream = null;
-            IOException err = null;
 
             // copy archive over to library if found at this repository
-            try {
-                try {
-                    urlStream = url.openStream();
-                    sequencerArchiveFound = true;
-                } catch ( final IOException e ) {
-                    continue;
-                }
-
+            boolean archiveFound = false;
+            try ( InputStream urlStream = url.openStream() ) {
+                archiveFound = true;
                 Files.copy( urlStream, archivePath );
             } catch ( final IOException e ) {
-                err = e;
-            } finally {
-                if ( urlStream != null ) try {
-                    urlStream.close();
-                } catch ( final IOException e ) {
-                    if ( err == null ) throw e;
-                    err.addSuppressed( e );
-                    throw err;
-                }
+                if ( archiveFound ) throw e;
+                continue;
             }
 
             try ( final ZipFile archive = new ZipFile( archivePath.toFile() ) ) {
@@ -390,11 +375,9 @@ final class MetamodelManagerImpl implements MetamodelManager {
             }
 
             archivePath.toFile().delete();
+            return;
         }
-
-        if ( !sequencerArchiveFound ) {
-            throw new IllegalArgumentException( ModelerI18n.unableToFindMetamodelCategory.text( category ) );
-        }
+        throw new IllegalArgumentException( ModelerI18n.unableToFindMetamodelCategory.text( category ) );
     }
 
     void installMetamodel( final String category,

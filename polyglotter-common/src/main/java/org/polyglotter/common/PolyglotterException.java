@@ -28,19 +28,26 @@ package org.polyglotter.common;
  * 
  */
 public class PolyglotterException extends Exception {
-    
+
     /**
      * @param i18n
-     *        an internationalized message
+     *        an internationalizable message
      * @param arguments
-     *        arguments to the internationalized message
+     *        optional arguments to the internationalized message
      */
     public PolyglotterException( final I18n i18n,
                                  final Object... arguments ) {
         super( i18n.text( arguments ) );
-        
     }
-    
+
+    /**
+     * @param message
+     *        the <em>localized</em> exception message
+     */
+    public PolyglotterException( final String message ) {
+        super( message );
+    }
+
     /**
      * @param cause
      *        the underlying Throwable that caused of this exception
@@ -48,7 +55,7 @@ public class PolyglotterException extends Exception {
     public PolyglotterException( final Throwable cause ) {
         super( cause );
     }
-    
+
     /**
      * @param cause
      *        the underlying Throwable that caused of this exception

@@ -64,6 +64,12 @@ final class JdkLoggerImpl extends Logger {
     }
 
     @Override
+    public void error( final Throwable t,
+                       final String message ) {
+        log( java.util.logging.Level.SEVERE, message, t );
+    }
+
+    @Override
     public String getName() {
         return logger.getName();
     }

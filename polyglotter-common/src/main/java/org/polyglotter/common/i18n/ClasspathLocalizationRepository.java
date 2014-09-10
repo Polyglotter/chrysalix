@@ -42,7 +42,7 @@ import org.polyglotter.common.I18n;
  * named with a name that matches
  */
 public final class ClasspathLocalizationRepository {
-    
+
     /**
      * Obtain the URL to the properties file containing the localized messages given the supplied bundle name. This method is
      * responsible for searching to find the most appropriate localized messages given the locale, but does not need to search using
@@ -71,7 +71,7 @@ public final class ClasspathLocalizationRepository {
         }
         return url;
     }
-    
+
     /**
      * Returns a list of paths (as string) of the different bundles searched in the
      * {@link ClasspathLocalizationRepository#getLocalizationBundle(ClassLoader, String, java.util.Locale)} method.
@@ -84,11 +84,11 @@ public final class ClasspathLocalizationRepository {
      */
     public static List< String > getPathsToSearchForBundle( final String bundleName,
                                                             final Locale locale ) {
-        final List< String > result = new ArrayList< String >();
+        final List< String > result = new ArrayList<>();
         final String pathPrefix = bundleName.replaceAll( "\\.", "/" );
         String localeVariant = '_' + locale.toString();
         int ndx = localeVariant.lastIndexOf( '_' );
-        
+
         while ( ndx >= 0 ) {
             final String path = pathPrefix + localeVariant + ".properties";
             result.add( path );
@@ -98,6 +98,6 @@ public final class ClasspathLocalizationRepository {
         result.add( pathPrefix + localeVariant + ".properties" );
         return result;
     }
-    
+
     private ClasspathLocalizationRepository() {}
 }

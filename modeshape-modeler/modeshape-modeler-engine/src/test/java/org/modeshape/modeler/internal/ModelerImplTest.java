@@ -38,7 +38,6 @@ import org.mockito.Mock;
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.Modeler;
-import org.modeshape.modeler.internal.ModelerImpl;
 import org.modeshape.modeler.test.BaseModelerTest;
 
 @SuppressWarnings( "javadoc" )
@@ -207,9 +206,9 @@ public final class ModelerImplTest extends BaseModelerTest {
 
     @Test
     public void shouldGetDefaultConfigurationPathIfNotSet() throws Exception {
-        final Modeler modeler = new ModelerImpl( TEST_REPOSITORY_STORE_PARENT_PATH );
-        assertThat( modeler.configurationPath(), is( ModelerImpl.DEFAULT_CONFIGURATION_PATH ) );
-        modeler.close();
+        try ( final Modeler modeler = new ModelerImpl( TEST_REPOSITORY_STORE_PARENT_PATH ) ) {
+            assertThat( modeler.configurationPath(), is( ModelerImpl.DEFAULT_CONFIGURATION_PATH ) );
+        }
     }
 
     @Test
