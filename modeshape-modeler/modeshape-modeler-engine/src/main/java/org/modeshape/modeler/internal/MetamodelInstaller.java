@@ -1,17 +1,17 @@
 /*
- * Polyglotter (http://polyglotter.org)
+ * Modeler (http://Modeler.org)
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
  * See the AUTHORS.txt file in the distribution for a full listing of 
  * individual contributors.
  *
- * Polyglotter is free software. Unless otherwise indicated, all code in Polyglotter
+ * Modeler is free software. Unless otherwise indicated, all code in Modeler
  * is licensed to you under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
  *
- * Polyglotter is distributed in the hope that it will be useful,
+ * Modeler is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -41,11 +41,11 @@ import javax.jcr.NodeIterator;
 
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.Metamodel;
+import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.internal.MetamodelManagerImpl.LibraryClassLoader;
 import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 import org.modeshape.modeler.spi.metamodel.Exporter;
-import org.polyglotter.common.Logger;
 
 /**
  * A class that installs metamodel dependency processors and exporters.
@@ -56,8 +56,6 @@ public class MetamodelInstaller {
 
     // pass in category then version
     private static final String ARCHIVE_NAME = MODELER_PREFIX + "%s-%s-module-with-dependencies.zip";
-
-    static final Logger LOGGER = Logger.getLogger( MetamodelInstaller.class );
 
     // pass in category, version, name
     private static final String EXTENSION_PATH_PATTERN = MetamodelManagerImpl.MODESHAPE_GROUP + "/" + MODELER_PREFIX + "%s/%s/%s";
@@ -124,7 +122,7 @@ public class MetamodelInstaller {
 
         // don't install if already installed
         if ( archiveExists( categoryNode, archiveName ) ) {
-            LOGGER.debug( "Archive '%s' already exists", archiveName );
+            Modeler.LOGGER.debug( "Archive '%s' already exists", archiveName );
             return false;
         }
 
@@ -135,7 +133,7 @@ public class MetamodelInstaller {
             boolean archiveFound = false;
             try ( InputStream urlStream = url.openStream() ) {
                 archiveFound = true;
-                LOGGER.debug( "Archive found at URL '%s'", url );
+                Modeler.LOGGER.debug( "Archive found at URL '%s'", url );
 
                 // copy archive over to library if found at this repository
                 Files.copy( urlStream, archivePath );
@@ -151,7 +149,7 @@ public class MetamodelInstaller {
                 archivePath.toFile().delete();
             } catch ( final IOException e ) {
                 if ( archiveFound ) throw e;
-                LOGGER.debug( "Archive at URL '%s' was NOT found in repository", url );
+                Modeler.LOGGER.debug( "Archive at URL '%s' was NOT found in repository", url );
                 continue;
             }
 
@@ -171,7 +169,7 @@ public class MetamodelInstaller {
 
                         // see if this jar has already been installed
                         if ( jarPath.toFile().exists() ) {
-                            LOGGER.debug( "Jar already installed: %s", jarPath );
+                            Modeler.LOGGER.debug( "Jar already installed: %s", jarPath );
                             continue;
                         }
 
@@ -183,14 +181,14 @@ public class MetamodelInstaller {
 
                         // add to classpath
                         libraryClassLoader.addURL( jarPath.toUri().toURL() );
-                        LOGGER.debug( "Added jar '%s' to classpath", jarPath.toUri().toURL() );
+                        Modeler.LOGGER.debug( "Added jar '%s' to classpath", jarPath.toUri().toURL() );
 
                         // add jar to category node in repository
                         try ( final InputStream stream = archive.getInputStream( jarEntry ) ) {
                             final String nodePath =
                                 ( archivesNode( categoryNode ).getPath() + '/' + jarPath.getFileName().toString() );
                             new JcrTools().uploadFile( categoryNode.getSession(), nodePath, stream );
-                            LOGGER.debug( "Uploaded jar '%s' to category node", nodePath );
+                            Modeler.LOGGER.debug( "Uploaded jar '%s' to category node", nodePath );
                         }
 
                         // Iterate through entries looking for appropriate extension classes
@@ -205,19 +203,19 @@ public class MetamodelInstaller {
                                     // see if class is a possible exporter or dependency processor
                                     if ( isExporterName( name ) ) {
                                         exporterNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                        LOGGER.debug( "Found potential exporter '%s'", name );
+                                        Modeler.LOGGER.debug( "Found potential exporter '%s'", name );
                                     } else if ( isDependencyProcessorName( name ) ) {
                                         dependencyProcessorNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                        LOGGER.debug( "Found potential dependency processor '%s'", name );
+                                        Modeler.LOGGER.debug( "Found potential dependency processor '%s'", name );
                                     }
                                 }
                             }
                     } else if ( isExporterName( name ) ) {
                         exporterNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                        LOGGER.debug( "Found potential exporter '%s'", name );
+                        Modeler.LOGGER.debug( "Found potential exporter '%s'", name );
                     } else if ( isDependencyProcessorName( name ) ) {
                         dependencyProcessorNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                        LOGGER.debug( "Found potential dependency processor '%s'", name );
+                        Modeler.LOGGER.debug( "Found potential dependency processor '%s'", name );
                     }
                 }
             }
@@ -240,10 +238,10 @@ public class MetamodelInstaller {
                         metamodel.setExporter( exporter );
 
                         extensionInstalled = true;
-                        LOGGER.debug( "Installed exporter '%s' for metamodel '%s'", className, metamodelId );
+                        Modeler.LOGGER.debug( "Installed exporter '%s' for metamodel '%s'", className, metamodelId );
                     }
                 } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
-                    LOGGER.debug( "Potential exporter class '%s' cannot be loaded", clazz );
+                    Modeler.LOGGER.debug( "Potential exporter class '%s' cannot be loaded", clazz );
                 }
             }
 
@@ -266,10 +264,10 @@ public class MetamodelInstaller {
                         metamodel.setDependencyProcessor( dependencyProcessor );
 
                         extensionInstalled = true;
-                        LOGGER.debug( "Installed dependency processor '%s' for metamodel '%s'", className, metamodelId );
+                        Modeler.LOGGER.debug( "Installed dependency processor '%s' for metamodel '%s'", className, metamodelId );
                     }
                 } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
-                    LOGGER.debug( "Potential dependency processor class '%s' cannot be loaded", className );
+                    Modeler.LOGGER.debug( "Potential dependency processor class '%s' cannot be loaded", className );
                 }
             }
         }

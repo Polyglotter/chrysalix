@@ -48,14 +48,18 @@ import org.polyglotter.common.i18n.ClasspathLocalizationRepository;
  */
 public final class I18n {
 
+    private static final Logger LOGGER = Logger.logger( CommonI18n.class );
+
+    private static String i18nBundleNotFoundInClasspath =
+        "None of the bundle variants for %s in locale \"%s\" can be located in the classpath: %s";
+    private static String i18nUsingUsLocale = "Using default U.S. localization for %s";
+
     /**
      * The first level of this map indicates whether an i18n class has been localized to a particular locale. The second level
      * contains any problems encountered during localization.
      */
     static final ConcurrentMap< Locale, Map< Class< ? >, Set< String >>> LOCALE_TO_CLASS_TO_PROBLEMS_MAP =
         new ConcurrentHashMap<>();
-
-    private static final Logger LOGGER = Logger.getLogger( I18n.class );
 
     private static final ConcurrentMap< String, I18n > I18NS_BY_TEXT = new ConcurrentHashMap<>();
 
@@ -119,10 +123,10 @@ public final class I18n {
     }
 
     /**
-     * Synchronized on the supplied internalization class.
+     * Synchronized on the supplied internationalization class.
      * 
      * @param i18nClass
-     *        The internalization class being localized
+     *        The internationalization class being localized
      * @param locale
      *        The locale to which the supplied internationalization class should be localized.
      * @return the resulting locale, which will be the {@link Locale#US U.S. Locale} even if the supplied locale is different, but
@@ -164,12 +168,12 @@ public final class I18n {
                 bundleUrl =
                     ClasspathLocalizationRepository.getLocalizationBundle( i18nClass.getClassLoader(), localizationBaseName, locale );
                 if ( bundleUrl == null ) {
-                    LOGGER.warn( CommonI18n.i18nBundleNotFoundInClasspath, i18nClass, locale,
+                    LOGGER.warn( i18nBundleNotFoundInClasspath, i18nClass, locale,
                                  ClasspathLocalizationRepository.getPathsToSearchForBundle( localizationBaseName, locale ) );
                     // Nothing was found, so try the default locale
                     final Locale defaultLocale = Locale.getDefault();
                     if ( defaultLocale == Locale.US ) {
-                        LOGGER.warn( CommonI18n.i18nUsingUsLocale, i18nClass );
+                        LOGGER.warn( i18nUsingUsLocale, i18nClass );
                         return Locale.US;
                     }
                     if ( !defaultLocale.equals( locale ) )
@@ -177,10 +181,11 @@ public final class I18n {
                             ClasspathLocalizationRepository.getLocalizationBundle( i18nClass.getClassLoader(), localizationBaseName, defaultLocale );
                     // Return if no applicable localization file could be found
                     if ( bundleUrl == null ) {
-                        LOGGER.warn( CommonI18n.i18nBundleNotFoundInClasspath, i18nClass, defaultLocale,
-                                     ClasspathLocalizationRepository.getPathsToSearchForBundle( localizationBaseName, defaultLocale ) );
-                        LOGGER.warn( CommonI18n.i18nUsingUsLocale, i18nClass );
-                        problems.add( CommonI18n.i18nUsingUsLocale.text( i18nClass ) );
+                        LOGGER.warn( i18nBundleNotFoundInClasspath, i18nClass, defaultLocale,
+                                     ClasspathLocalizationRepository.getPathsToSearchForBundle( localizationBaseName,
+                                                                                                defaultLocale ) );
+                        LOGGER.warn( i18nUsingUsLocale, i18nClass );
+                        problems.add( CommonI18n.localize( i18nUsingUsLocale, i18nClass ) );
                         return Locale.US;
                     }
                 }
@@ -231,6 +236,21 @@ public final class I18n {
         return i18n.text( locale, arguments );
     }
 
+    /**
+     * @param i18nClass
+     *        the internationalization class used to localize the supplied text.
+     * @param text
+     *        the text to be localized
+     * @param arguments
+     *        optional arguments applied to the supplied text as described in {@link String#format(String, Object...)}
+     * @return the localized form of the supplied text
+     */
+    public static String localize( final Class< ? > i18nClass,
+                                   final String text,
+                                   final Object... arguments ) {
+        return localize( i18nClass, null, text, arguments );
+    }
+
     private static Properties prepareBundleLoading( final Class< ? > i18nClass,
                                                     final Locale locale,
                                                     final URL bundleUrl,
@@ -263,7 +283,9 @@ public final class I18n {
     /**
      * @param text
      *        the text to be localized
+     * @deprecated Use {@link #localize(Class, String, Object...)}
      */
+    @Deprecated
     public I18n( final String text ) {
         CheckArg.notEmpty( text, "text" );
         String id = null;

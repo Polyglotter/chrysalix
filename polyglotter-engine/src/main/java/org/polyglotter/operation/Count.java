@@ -23,6 +23,7 @@
  */
 package org.polyglotter.operation;
 
+import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.transformation.Operation;
@@ -88,7 +89,7 @@ public final class Count extends AbstractOperation< Integer > {
         try {
             addCategory( BuiltInCategory.ARITHMETIC );
         } catch ( final PolyglotterException e ) {
-            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+            Polyglotter.LOGGER.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
         }
     }
 

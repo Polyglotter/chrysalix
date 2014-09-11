@@ -27,9 +27,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
-import org.polyglotter.common.Logger;
 import org.polyglotter.transformation.Operation;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 import org.polyglotter.transformation.OperationDescriptor;
@@ -95,7 +95,7 @@ public final class Median extends AbstractOperation< Number > {
         try {
             addCategory( BuiltInCategory.ARITHMETIC );
         } catch ( final PolyglotterException e ) {
-            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+            Polyglotter.LOGGER.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
         }
     }
 
@@ -147,7 +147,7 @@ public final class Median extends AbstractOperation< Number > {
                     TransformationFactory.createError( transformationId(),
                                                        PolyglotterI18n.medianOperationError.text( transformationId() ) );
                 problems().add( problem );
-                Logger.getLogger( getClass() ).error( e, PolyglotterI18n.medianOperationError, transformationId() );
+                Polyglotter.LOGGER.error( e, PolyglotterI18n.medianOperationError, transformationId() );
             }
         }
 
@@ -197,7 +197,7 @@ public final class Median extends AbstractOperation< Number > {
                                                            PolyglotterI18n.operationValidationError.text( name(),
                                                                                                           transformationId() ) );
                     problems().add( problem );
-                    this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                    Polyglotter.LOGGER.error( e, PolyglotterI18n.message, problem.message() );
                 }
             }
         }

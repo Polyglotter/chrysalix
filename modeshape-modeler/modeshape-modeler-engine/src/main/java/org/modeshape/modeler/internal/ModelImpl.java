@@ -41,7 +41,6 @@ import org.modeshape.common.util.StringUtil;
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelerException;
-import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.internal.task.TaskWithResult;
 import org.modeshape.modeler.spi.metamodel.Dependency;
@@ -115,9 +114,8 @@ class ModelImpl extends ModelObjectImpl implements Model {
 
                                 final Dependency dependency = new Dependency( dependencyPath, refs, exists );
                                 result.add( dependency );
-                            } else {
-                                throw new ModelerException( ModelerI18n.dependencyDoesNotHaveSourceReferences, absolutePath() );
-                            }
+                            } else throw new ModelerException( "A dependency node exists for '%s' but has no source references",
+                                                               absolutePath() );
                         }
 
                         return result;

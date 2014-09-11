@@ -66,14 +66,11 @@ import org.modeshape.modeler.internal.task.WriteTask;
 import org.modeshape.modeler.internal.task.WriteTaskWithResult;
 import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 import org.modeshape.modeler.spi.metamodel.Exporter;
-import org.polyglotter.common.Logger;
 
 /**
  * 
  */
 public class ModelerImpl implements Modeler {
-
-    static final Logger LOGGER = Logger.getLogger( ModelerImpl.class );
 
     /**
      * The path to the default configuration, which uses a file-based repository
@@ -138,9 +135,9 @@ public class ModelerImpl implements Modeler {
         try {
             if ( engine != null ) engine.shutdown().get();
         } catch ( InterruptedException | ExecutionException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to shutdown modeler engine" );
         }
-        Logger.getLogger( getClass() ).info( ModelerI18n.modelerStopped );
+        Modeler.LOGGER.info( "Modeler stopped" );
     }
 
     /**
@@ -175,7 +172,7 @@ public class ModelerImpl implements Modeler {
         try {
             export( model, new FileOutputStream( file ) );
         } catch ( final FileNotFoundException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to export \"%s\" to \"%s\"", model, file );
         }
     }
 
@@ -200,7 +197,7 @@ public class ModelerImpl implements Modeler {
             }
         }
 
-        throw new ModelerException( ModelerI18n.modelExporterNotFound, model.name() );
+        throw new ModelerException( "Model '%s' cannot be exported since an exporter was not found", model.name() );
     }
 
     /**
@@ -216,7 +213,7 @@ public class ModelerImpl implements Modeler {
         try ( OutputStream stream = url.openConnection().getOutputStream() ) {
             export( model, stream );
         } catch ( final IOException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to export \"%s\" to \"%s\"", model, url );
         }
     }
 
@@ -275,7 +272,8 @@ public class ModelerImpl implements Modeler {
                         final MetamodelManagerImpl manager = ( MetamodelManagerImpl ) metamodelManager();
                         actualMetamodel = manager.defaultMetamodel( dataNode, manager.metamodels( dataNode ) );
                         if ( actualMetamodel == null )
-                            throw new IllegalArgumentException( ModelerI18n.unableToDetermineDefaultMetamodel.text( dataPath ) );
+                            throw new IllegalArgumentException( ModelerI18n.localize( "Unable to determine default metamodel for file %s",
+                                                                                      dataPath ) );
                         throw new UnsupportedOperationException( "Not yet implemented" );
                     }
                     // Build the model
@@ -311,7 +309,8 @@ public class ModelerImpl implements Modeler {
                         return model;
                     }
 
-                    throw new ModelerException( ModelerI18n.unableToCreateModel, actualMetamodel.name(), modelPath, dataPath );
+                    throw new ModelerException( "Unable to create %s model \"%s\" from data at \"%s\"",
+                                                actualMetamodel.name(), modelPath, dataPath );
                 }
             } );
         } finally {
@@ -345,7 +344,8 @@ public class ModelerImpl implements Modeler {
         try {
             return importData( file.toURI().toURL(), workspaceFolder, workspaceName );
         } catch ( final MalformedURLException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to import data from \"%s\" to \"%s/%s\"", file,
+                                        workspaceFolder, workspaceName );
         }
     }
 
@@ -400,7 +400,8 @@ public class ModelerImpl implements Modeler {
         } catch ( final FileNotFoundException e ) {
             throw new IllegalArgumentException( e );
         } catch ( final IOException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to import data from \"%s\" to \"%s/%s\"", url,
+                                        workspaceFolder, workspaceName );
         }
     }
 
@@ -430,7 +431,8 @@ public class ModelerImpl implements Modeler {
         try {
             return importModel( file.toURI().toURL(), modelFolder, modelName, metamodel );
         } catch ( final MalformedURLException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to import model from \"%s\" to \"%s/%s\"", file,
+                                        modelFolder, modelName );
         }
     }
 
@@ -500,7 +502,7 @@ public class ModelerImpl implements Modeler {
                     final String absPath = absolutePath( path );
                     final Node node = session.getNode( absPath );
                     if ( !node.isNodeType( ModelerLexicon.Model.MODEL_MIXIN ) )
-                        throw new IllegalArgumentException( ModelerI18n.notModelPath.text( absPath ) );
+                        throw new IllegalArgumentException( ModelerI18n.localize( "Not a path to a model: %s", absPath ) );
                     return new ModelImpl( ModelerImpl.this, absPath );
                 } catch ( final PathNotFoundException e ) {
                     return null;
@@ -522,14 +524,14 @@ public class ModelerImpl implements Modeler {
                               final ModelImpl model,
                               final boolean persistArtifacts ) throws Exception {
         if ( model.metamodel() == null ) {
-            Logger.getLogger( getClass() ).debug( "No metamodel found for model '%s'", modelNode.getName() );
+            Modeler.LOGGER.debug( "No metamodel found for model '%s'", modelNode.getName() );
             return;
         }
 
         final DependencyProcessor dependencyProcessor = model.metamodel().dependencyProcessor();
 
         if ( dependencyProcessor == null ) {
-            Logger.getLogger( getClass() ).debug( "No dependency processor found for model '%s'", modelNode.getName() );
+            Modeler.LOGGER.debug( "No dependency processor found for model '%s'", modelNode.getName() );
         } else {
             dependencyProcessor.process( dataPath, modelNode, this, persistArtifacts );
         }
@@ -554,7 +556,8 @@ public class ModelerImpl implements Modeler {
                 final Problems problems = config.validate();
                 if ( problems.hasProblems() ) {
                     for ( final Problem problem : problems )
-                        Logger.getLogger( getClass() ).error( problem.getThrowable(), problem.getMessageString() );
+                        Modeler.LOGGER.error( problem.getThrowable(), "Invalid repository configuration: %s",
+                                              problem.getMessageString() );
                     throw problems.iterator().next().getThrowable();
                 }
                 JcrRepository repository;
@@ -564,9 +567,9 @@ public class ModelerImpl implements Modeler {
                     repository = engine.deploy( config );
                 }
                 this.repository = repository;
-                Logger.getLogger( getClass() ).info( ModelerI18n.modelerStarted );
+                Modeler.LOGGER.info( "Modeler started" );
             } catch ( final Throwable e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to start repository" );
             }
         }
         return repository;
@@ -603,12 +606,12 @@ public class ModelerImpl implements Modeler {
             } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to perform system task" );
             } finally {
                 session.logout();
             }
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to open session for system task" );
         }
     }
 
@@ -634,12 +637,12 @@ public class ModelerImpl implements Modeler {
             } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to perform system task with result" );
             } finally {
                 session.logout();
             }
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to open session for system task with result" );
         }
     }
 
@@ -666,12 +669,12 @@ public class ModelerImpl implements Modeler {
             } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to perform write system task" );
             } finally {
                 session.logout();
             }
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to open session for write system task" );
         }
     }
 
@@ -692,12 +695,12 @@ public class ModelerImpl implements Modeler {
             } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to perform task" );
             } finally {
                 session.logout();
             }
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to open session for task" );
         }
     }
 
@@ -719,12 +722,12 @@ public class ModelerImpl implements Modeler {
             } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to perform task with result" );
             } finally {
                 session.logout();
             }
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to open session for task with result" );
         }
     }
 
@@ -747,12 +750,12 @@ public class ModelerImpl implements Modeler {
             } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to perform write task" );
             } finally {
                 session.logout();
             }
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to open session for write task" );
         }
     }
 
@@ -777,12 +780,12 @@ public class ModelerImpl implements Modeler {
             } catch ( final RuntimeException | ModelerException e ) {
                 throw e;
             } catch ( final Exception e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to perform write task with result" );
             } finally {
                 session.logout();
             }
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to open session for write task with result" );
         }
     }
 

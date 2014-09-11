@@ -30,14 +30,15 @@ import org.polyglotter.common.Logger;
  * Factory used to create the {@link Logger} implementation that uses the JDK logging framework.
  */
 public final class JdkLoggerFactory extends LogFactory {
-    
+
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.common.LogFactory#getLogger(java.lang.String)
+     * @see org.polyglotter.common.LogFactory#logger(java.lang.Class, java.lang.String)
      */
     @Override
-    protected Logger getLogger( final String name ) {
-        return new JdkLoggerImpl( name );
+    protected Logger logger( final Class< ? > i18nClass,
+                             final String context ) {
+        return new JdkLoggerImpl( i18nClass, context );
     }
 }

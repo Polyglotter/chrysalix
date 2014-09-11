@@ -32,9 +32,12 @@ import org.polyglotter.common.Logger;
 final class JdkLoggerImpl extends Logger {
 
     private final java.util.logging.Logger logger;
+    private final Class< ? > i18nClass;
 
-    public JdkLoggerImpl( final String category ) {
-        logger = java.util.logging.Logger.getLogger( category );
+    public JdkLoggerImpl( final Class< ? > i18nClass,
+                          final String context ) {
+        logger = java.util.logging.Logger.getLogger( context );
+        this.i18nClass = i18nClass;
     }
 
     @Override
@@ -51,22 +54,39 @@ final class JdkLoggerImpl extends Logger {
     }
 
     @Override
+    public boolean debugEnabled() {
+        return logger.isLoggable( java.util.logging.Level.FINE );
+    }
+
+    @Override
     public void error( final I18n message,
                        final Object... params ) {
-        log( java.util.logging.Level.SEVERE, message.text( getLoggingLocale(), params ), null );
+        log( java.util.logging.Level.SEVERE, message.text( locale(), params ), null );
+    }
+
+    @Override
+    public void error( final String message,
+                       final Object... arguments ) {
+        log( java.util.logging.Level.SEVERE, I18n.localize( i18nClass, locale(), message, arguments ), null );
     }
 
     @Override
     public void error( final Throwable t,
                        final I18n message,
                        final Object... params ) {
-        log( java.util.logging.Level.SEVERE, message.text( getLoggingLocale(), params ), t );
+        log( java.util.logging.Level.SEVERE, message.text( locale(), params ), t );
     }
 
     @Override
     public void error( final Throwable t,
-                       final String message ) {
-        log( java.util.logging.Level.SEVERE, message, t );
+                       final String message,
+                       final Object... params ) {
+        log( java.util.logging.Level.SEVERE, I18n.localize( i18nClass, locale(), message, params ), t );
+    }
+
+    @Override
+    public boolean errorEnabled() {
+        return logger.isLoggable( java.util.logging.Level.SEVERE );
     }
 
     @Override
@@ -77,39 +97,32 @@ final class JdkLoggerImpl extends Logger {
     @Override
     public void info( final I18n message,
                       final Object... params ) {
-        log( java.util.logging.Level.INFO, message.text( getLoggingLocale(), params ), null );
+        log( java.util.logging.Level.INFO, message.text( locale(), params ), null );
+    }
+
+    @Override
+    public void info( final String message,
+                      final Object... arguments ) {
+        log( java.util.logging.Level.INFO, I18n.localize( i18nClass, locale(), message, arguments ), null );
     }
 
     @Override
     public void info( final Throwable t,
                       final I18n message,
                       final Object... params ) {
-        log( java.util.logging.Level.INFO, message.text( getLoggingLocale(), params ), t );
+        log( java.util.logging.Level.INFO, message.text( locale(), params ), t );
     }
 
     @Override
-    public boolean isDebugEnabled() {
-        return logger.isLoggable( java.util.logging.Level.FINE );
+    public void info( final Throwable t,
+                      final String message,
+                      final Object... arguments ) {
+        log( java.util.logging.Level.INFO, I18n.localize( i18nClass, locale(), message, arguments ), t );
     }
 
     @Override
-    public boolean isErrorEnabled() {
-        return logger.isLoggable( java.util.logging.Level.SEVERE );
-    }
-
-    @Override
-    public boolean isInfoEnabled() {
+    public boolean infoEnabled() {
         return logger.isLoggable( java.util.logging.Level.INFO );
-    }
-
-    @Override
-    public boolean isTraceEnabled() {
-        return logger.isLoggable( java.util.logging.Level.FINER );
-    }
-
-    @Override
-    public boolean isWarnEnabled() {
-        return logger.isLoggable( java.util.logging.Level.WARNING );
     }
 
     private void log( final java.util.logging.Level level,
@@ -150,7 +163,7 @@ final class JdkLoggerImpl extends Logger {
                 logger.setLevel( java.util.logging.Level.SEVERE );
                 break;
             }
-            case WARNING: {
+            case WARN: {
                 logger.setLevel( java.util.logging.Level.WARNING );
                 break;
             }
@@ -184,16 +197,39 @@ final class JdkLoggerImpl extends Logger {
     }
 
     @Override
+    public boolean traceEnabled() {
+        return logger.isLoggable( java.util.logging.Level.FINER );
+    }
+
+    @Override
     public void warn( final I18n message,
                       final Object... params ) {
-        log( java.util.logging.Level.WARNING, message.text( getLoggingLocale(), params ), null );
+        log( java.util.logging.Level.WARNING, message.text( locale(), params ), null );
+    }
+
+    @Override
+    public void warn( final String message,
+                      final Object... arguments ) {
+        log( java.util.logging.Level.WARNING, I18n.localize( i18nClass, locale(), message, arguments ), null );
     }
 
     @Override
     public void warn( final Throwable t,
                       final I18n message,
                       final Object... params ) {
-        log( java.util.logging.Level.WARNING, message.text( getLoggingLocale(), params ), t );
+        log( java.util.logging.Level.WARNING, message.text( locale(), params ), t );
 
+    }
+
+    @Override
+    public void warn( final Throwable t,
+                      final String message,
+                      final Object... arguments ) {
+        log( java.util.logging.Level.WARNING, I18n.localize( i18nClass, locale(), message, arguments ), t );
+    }
+
+    @Override
+    public boolean warnEnabled() {
+        return logger.isLoggable( java.util.logging.Level.WARNING );
     }
 }

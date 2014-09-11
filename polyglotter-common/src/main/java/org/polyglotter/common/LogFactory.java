@@ -23,6 +23,12 @@
  */
 package org.polyglotter.common;
 
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtMethod;
+import javassist.NotFoundException;
+
 import org.polyglotter.common.logging.JdkLoggerFactory;
 import org.polyglotter.common.logging.Log4jLoggerFactory;
 import org.polyglotter.common.logging.SLF4JLoggerFactory;
@@ -59,7 +65,7 @@ public abstract class LogFactory {
     private static LogFactory LOGFACTORY;
 
     static {
-        if ( isCustomLoggerAvailable() ) try {
+        if ( customLoggerAvailable() ) try {
             @SuppressWarnings( "unchecked" ) final Class< LogFactory > customClass =
                 ( Class< LogFactory > ) Class.forName( CUSTOM_LOG_FACTORY_CLASSNAME );
             LOGFACTORY = customClass.newInstance();
@@ -73,16 +79,12 @@ public abstract class LogFactory {
                                                     CUSTOM_LOG_FACTORY_CLASSNAME );
             jdkLogger.log( java.util.logging.Level.WARNING, msg, e );
         }
-        else if ( isSLF4JAvailable() ) LOGFACTORY = new SLF4JLoggerFactory();
-        else if ( isLog4jAvailable() ) LOGFACTORY = new Log4jLoggerFactory();
+        else if ( slf4jAvailable() ) LOGFACTORY = new SLF4JLoggerFactory();
+        else if ( log4jAvailable() ) LOGFACTORY = new Log4jLoggerFactory();
         else LOGFACTORY = new JdkLoggerFactory();
     }
 
-    static LogFactory getLogFactory() {
-        return LOGFACTORY;
-    }
-
-    private static boolean isCustomLoggerAvailable() {
+    private static boolean customLoggerAvailable() {
         try {
             // Check if a custom log factory implementation is in the classpath and initialize the class
             Class.forName( CUSTOM_LOG_FACTORY_CLASSNAME );
@@ -92,7 +94,7 @@ public abstract class LogFactory {
         }
     }
 
-    private static boolean isLog4jAvailable() {
+    private static boolean log4jAvailable() {
         try {
             // Check if the Log4J main interface is in the classpath and initialize the class
             Class.forName( "org.apache.log4j.Logger" );
@@ -102,7 +104,11 @@ public abstract class LogFactory {
         }
     }
 
-    private static boolean isSLF4JAvailable() {
+    static LogFactory logFactory() {
+        return LOGFACTORY;
+    }
+
+    private static boolean slf4jAvailable() {
         try {
             // check if the api is in the classpath and initialize the classes
             Class.forName( "org.slf4j.Logger" );
@@ -116,24 +122,55 @@ public abstract class LogFactory {
         }
     }
 
-    /**
-     * Return a logger named corresponding to the class passed as parameter.
-     * 
-     * @param clazz
-     *        the returned logger will be named after clazz
-     * @return logger
-     */
-    Logger getLogger( final Class< ? > clazz ) {
-        return Logger.getLogger( clazz.getName() );
+    String context() {
+        try {
+            final StackTraceElement trace = Thread.currentThread().getStackTrace()[ 3 ];
+            final CtClass ctClass = ClassPool.getDefault().get( trace.getClassName() );
+            final CtConstructor classInitializer = ctClass.getClassInitializer();
+            if ( classInitializer != null && trace.getMethodName().equals( classInitializer.getName() ) )
+                return classInitializer.getLongName();
+            CtMethod ctMethod = null;
+            int delta = Short.MAX_VALUE;
+            // // jpav: remove
+            // System.out.println( trace.getMethodName() );
+            // // jpav: remove
+            // System.out.println( ctClass.getClassInitializer().getName() );
+            for ( final CtMethod method : ctClass.getDeclaredMethods() ) {
+                final int methodDelta = trace.getLineNumber() - method.getMethodInfo().getLineNumber( 0 );
+                if ( methodDelta >= 0 && methodDelta < delta ) {
+                    delta = methodDelta;
+                    ctMethod = method;
+                }
+            }
+            if ( ctMethod == null )
+                throw new RuntimeException();
+            return ctMethod.getLongName();
+        } catch ( final NotFoundException e ) {
+            throw new RuntimeException( e );
+        }
     }
 
     /**
-     * Return a logger named according to the name parameter.
+     * Return a logger for the context identified by the calling method
      * 
-     * @param name
-     *        The name of the logger.
+     * @param i18nClass
+     *        the internationalization class used to localize logged messages
      * @return logger
      */
-    protected abstract Logger getLogger( String name );
+    Logger logger( final Class< ? > i18nClass ) {
+        return logger( i18nClass, context() );
+    }
+
+    /**
+     * Return a logger for the supplied context
+     * 
+     * @param i18nClass
+     *        the internationalization class used to localize logged messages
+     * @param context
+     *        The context of the logger.
+     * @return logger
+     */
+    protected abstract Logger logger( Class< ? > i18nClass,
+                                      String context );
 
 }

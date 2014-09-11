@@ -28,7 +28,6 @@ import java.lang.reflect.ParameterizedType;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
-import org.polyglotter.common.Logger;
 import org.polyglotter.transformation.Value;
 import org.polyglotter.transformation.ValueDescriptor;
 
@@ -48,11 +47,6 @@ public class ValueImpl< T > implements Value< T > {
     protected T value;
 
     /**
-     * The logger.
-     */
-    protected final Logger logger;
-
-    /**
      * @param valueDescriptor
      *        the value descriptor (cannot be <code>null</code>)
      */
@@ -60,7 +54,6 @@ public class ValueImpl< T > implements Value< T > {
         CheckArg.notNull( valueDescriptor, "valueDescriptor" );
 
         this.descriptor = valueDescriptor;
-        this.logger = Logger.getLogger( getClass() );
     }
 
     /**

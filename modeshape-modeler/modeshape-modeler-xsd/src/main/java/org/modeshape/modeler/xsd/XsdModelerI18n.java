@@ -31,6 +31,8 @@ import org.polyglotter.common.I18n;
 @SuppressWarnings( "javadoc" )
 public class XsdModelerI18n {
 
-    public static I18n errorImportingXsdDependencyArtifact = new I18n( "Error uploading XSD dependency from '%s' for node '%s'" );
-
+    public static String localize( final String text,
+                                   final Object... arguments ) {
+        return I18n.localize( XsdModelerI18n.class, text, arguments );
+    }
 }

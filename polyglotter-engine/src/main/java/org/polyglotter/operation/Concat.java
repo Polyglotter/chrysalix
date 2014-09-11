@@ -23,6 +23,7 @@
  */
 package org.polyglotter.operation;
 
+import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.transformation.Operation;
@@ -89,7 +90,7 @@ public final class Concat extends AbstractOperation< String > {
         try {
             addCategory( BuiltInCategory.STRING );
         } catch ( final PolyglotterException e ) {
-            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+            Polyglotter.LOGGER.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
         }
     }
 

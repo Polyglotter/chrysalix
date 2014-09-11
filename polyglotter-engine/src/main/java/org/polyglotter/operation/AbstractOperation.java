@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.common.CheckArg;
@@ -414,7 +415,7 @@ abstract class AbstractOperation< T > extends ValueImpl< T > implements Operatio
         this.inputs.remove( descriptorId );
 
         if ( ( valuesBeingSet == null ) || ( valuesBeingSet.length == 0 ) ) {
-            this.logger.debug( "Input values for descriptor '%s' were removed", descriptorId );
+            Polyglotter.LOGGER.debug( "Input values for descriptor '%s' were removed", descriptorId );
             return;
         }
 

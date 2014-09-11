@@ -41,45 +41,27 @@ final class SLF4JLoggerImpl extends Logger {
     private static Boolean warnEnabled;
 
     private final org.slf4j.Logger logger;
+    private final Class< ? > i18nClass;
 
-    public SLF4JLoggerImpl( final String category ) {
-        logger = LoggerFactory.getLogger( category );
+    public SLF4JLoggerImpl( final Class< ? > i18nClass,
+                            final String context ) {
+        logger = LoggerFactory.getLogger( context );
+        this.i18nClass = i18nClass;
     }
 
-    /**
-     * Log a message at the DEBUG level according to the specified format and (optional) parameters. The message should contain a
-     * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
-     * and avoids superfluous object creation when the logger is disabled for the DEBUG level.
-     * 
-     * @param message
-     *        the message string
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
     @Override
     public void debug( final String message,
                        final Object... params ) {
-        if ( !isDebugEnabled() ) return;
+        if ( !debugEnabled() ) return;
         if ( message == null ) return;
         logger.debug( String.format( message, params ) );
     }
 
-    /**
-     * Log an exception (throwable) at the DEBUG level with an accompanying message. If the exception is null, then this method
-     * calls {@link #debug(String, Object...)}.
-     * 
-     * @param t
-     *        the exception (throwable) to log
-     * @param message
-     *        the message accompanying the exception
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
     @Override
     public void debug( final Throwable t,
                        final String message,
                        final Object... params ) {
-        if ( !isDebugEnabled() ) return;
+        if ( !debugEnabled() ) return;
         if ( t == null ) {
             debug( message, params );
             return;
@@ -91,40 +73,30 @@ final class SLF4JLoggerImpl extends Logger {
         logger.debug( String.format( message, params ), t );
     }
 
-    /**
-     * Log a message at the ERROR level according to the specified format and (optional) parameters. The message should contain a
-     * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
-     * and avoids superfluous object creation when the logger is disabled for the ERROR level.
-     * 
-     * @param message
-     *        the message string
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
+    @Override
+    public boolean debugEnabled() {
+        return debugEnabled == null ? logger.isDebugEnabled() : debugEnabled;
+    }
+
     @Override
     public void error( final I18n message,
                        final Object... params ) {
-        if ( !isErrorEnabled() ) return;
-        if ( message == null ) return;
-        logger.error( message.text( getLoggingLocale(), params ) );
+        if ( !errorEnabled() || message == null ) return;
+        logger.error( message.text( locale(), params ) );
     }
 
-    /**
-     * Log an exception (throwable) at the ERROR level with an accompanying message. If the exception is null, then this method
-     * calls {@link Logger#error(I18n, Object...)}.
-     * 
-     * @param t
-     *        the exception (throwable) to log
-     * @param message
-     *        the message accompanying the exception
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
+    @Override
+    public void error( final String message,
+                       final Object... arguments ) {
+        if ( !errorEnabled() ) return;
+        logger.error( I18n.localize( i18nClass, locale(), message, arguments ) );
+    }
+
     @Override
     public void error( final Throwable t,
                        final I18n message,
                        final Object... params ) {
-        if ( !isErrorEnabled() ) return;
+        if ( !errorEnabled() ) return;
         if ( t == null ) {
             error( message, params );
             return;
@@ -133,22 +105,28 @@ final class SLF4JLoggerImpl extends Logger {
             logger.error( null, t );
             return;
         }
-        logger.error( message.text( getLoggingLocale(), params ), t );
+        logger.error( message.text( locale(), params ), t );
     }
 
     @Override
     public void error( final Throwable t,
-                       final String message ) {
-        if ( !isErrorEnabled() ) return;
+                       final String message,
+                       final Object... params ) {
+        if ( !errorEnabled() ) return;
         if ( t == null ) {
-            logger.error( message );
+            error( message, params );
             return;
         }
         if ( message == null ) {
             logger.error( null, t );
             return;
         }
-        logger.error( message, t );
+        logger.error( I18n.localize( i18nClass, locale(), message, params ), t );
+    }
+
+    @Override
+    public boolean errorEnabled() {
+        return errorEnabled == null ? logger.isErrorEnabled() : errorEnabled;
     }
 
     @Override
@@ -156,40 +134,25 @@ final class SLF4JLoggerImpl extends Logger {
         return logger.getName();
     }
 
-    /**
-     * Log a message at the INFO level according to the specified format and (optional) parameters. The message should contain a
-     * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
-     * and avoids superfluous object creation when the logger is disabled for the INFO level.
-     * 
-     * @param message
-     *        the message string
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
     @Override
     public void info( final I18n message,
                       final Object... params ) {
-        if ( !isInfoEnabled() ) return;
-        if ( message == null ) return;
-        logger.info( message.text( getLoggingLocale(), params ) );
+        if ( !infoEnabled() || message == null ) return;
+        logger.info( message.text( locale(), params ) );
     }
 
-    /**
-     * Log an exception (throwable) at the INFO level with an accompanying message. If the exception is null, then this method calls
-     * {@link Logger#info(I18n, Object...)}.
-     * 
-     * @param t
-     *        the exception (throwable) to log
-     * @param message
-     *        the message accompanying the exception
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
+    @Override
+    public void info( final String message,
+                      final Object... arguments ) {
+        if ( !infoEnabled() ) return;
+        logger.info( I18n.localize( i18nClass, locale(), message, arguments ) );
+    }
+
     @Override
     public void info( final Throwable t,
                       final I18n message,
                       final Object... params ) {
-        if ( !isInfoEnabled() ) return;
+        if ( !infoEnabled() ) return;
         if ( t == null ) {
             info( message, params );
             return;
@@ -198,82 +161,52 @@ final class SLF4JLoggerImpl extends Logger {
             logger.info( null, t );
             return;
         }
-        logger.info( message.text( getLoggingLocale(), params ), t );
+        logger.info( message.text( locale(), params ), t );
     }
 
     @Override
-    public boolean isDebugEnabled() {
-        return debugEnabled == null ? logger.isDebugEnabled() : debugEnabled;
+    public void info( final Throwable t,
+                      final String message,
+                      final Object... arguments ) {
+        if ( !infoEnabled() ) return;
+        if ( t == null ) {
+            info( message, arguments );
+            return;
+        }
+        if ( message == null ) {
+            logger.info( null, t );
+            return;
+        }
+        logger.info( I18n.localize( i18nClass, locale(), message, arguments ), t );
     }
 
     @Override
-    public boolean isErrorEnabled() {
-        return errorEnabled == null ? logger.isErrorEnabled() : errorEnabled;
-    }
-
-    @Override
-    public boolean isInfoEnabled() {
+    public boolean infoEnabled() {
         return infoEnabled == null ? logger.isInfoEnabled() : infoEnabled;
     }
 
     @Override
-    public boolean isTraceEnabled() {
-        return traceEnabled == null ? logger.isTraceEnabled() : traceEnabled;
-    }
-
-    @Override
-    public boolean isWarnEnabled() {
-        return warnEnabled == null ? logger.isWarnEnabled() : warnEnabled;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.polyglotter.common.Logger#setLevel(org.polyglotter.common.Logger.Level)
-     */
-    @Override
     public void setLevel( final Level level ) {
         errorEnabled = level.ordinal() >= Level.ERROR.ordinal();
-        warnEnabled = level.ordinal() >= Level.WARNING.ordinal();
+        warnEnabled = level.ordinal() >= Level.WARN.ordinal();
         infoEnabled = level.ordinal() >= Level.INFO.ordinal();
         debugEnabled = level.ordinal() >= Level.DEBUG.ordinal();
         traceEnabled = level.ordinal() >= Level.TRACE.ordinal();
     }
 
-    /**
-     * Log a message at the TRACE level according to the specified format and (optional) parameters. The message should contain a
-     * pair of empty curly braces for each of the parameter, which should be passed in the correct order. This method is efficient
-     * and avoids superfluous object creation when the logger is disabled for the TRACE level.
-     * 
-     * @param message
-     *        the message string
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
     @Override
     public void trace( final String message,
                        final Object... params ) {
-        if ( !isTraceEnabled() ) return;
+        if ( !traceEnabled() ) return;
         if ( message == null ) return;
         logger.trace( String.format( message, params ) );
     }
 
-    /**
-     * Log an exception (throwable) at the TRACE level with an accompanying message. If the exception is null, then this method
-     * calls {@link #trace(String, Object...)}.
-     * 
-     * @param t
-     *        the exception (throwable) to log
-     * @param message
-     *        the message accompanying the exception
-     * @param params
-     *        the parameter values that are to replace the variables in the format string
-     */
     @Override
     public void trace( final Throwable t,
                        final String message,
                        final Object... params ) {
-        if ( !isTraceEnabled() ) return;
+        if ( !traceEnabled() ) return;
         if ( t == null ) {
             this.trace( message, params );
             return;
@@ -286,18 +219,29 @@ final class SLF4JLoggerImpl extends Logger {
     }
 
     @Override
+    public boolean traceEnabled() {
+        return traceEnabled == null ? logger.isTraceEnabled() : traceEnabled;
+    }
+
+    @Override
     public void warn( final I18n message,
                       final Object... params ) {
-        if ( !isWarnEnabled() ) return;
-        if ( message == null ) return;
-        logger.warn( message.text( getLoggingLocale(), params ) );
+        if ( !warnEnabled() || message == null ) return;
+        logger.warn( message.text( locale(), params ) );
+    }
+
+    @Override
+    public void warn( final String message,
+                      final Object... arguments ) {
+        if ( !warnEnabled() ) return;
+        logger.warn( I18n.localize( i18nClass, locale(), message, arguments ) );
     }
 
     @Override
     public void warn( final Throwable t,
                       final I18n message,
                       final Object... params ) {
-        if ( !isWarnEnabled() ) return;
+        if ( !warnEnabled() ) return;
         if ( t == null ) {
             warn( message, params );
             return;
@@ -306,7 +250,28 @@ final class SLF4JLoggerImpl extends Logger {
             logger.warn( null, t );
             return;
         }
-        logger.warn( message.text( getLoggingLocale(), params ), t );
+        logger.warn( message.text( locale(), params ), t );
+    }
+
+    @Override
+    public void warn( final Throwable t,
+                      final String message,
+                      final Object... arguments ) {
+        if ( !warnEnabled() ) return;
+        if ( t == null ) {
+            warn( message, arguments );
+            return;
+        }
+        if ( message == null ) {
+            logger.warn( null, t );
+            return;
+        }
+        logger.warn( I18n.localize( i18nClass, locale(), message, arguments ), t );
+    }
+
+    @Override
+    public boolean warnEnabled() {
+        return warnEnabled == null ? logger.isWarnEnabled() : warnEnabled;
     }
 
 }

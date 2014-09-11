@@ -65,7 +65,7 @@ public final class JcrUtil {
         try {
             return node.getProperty( propertyName ).getString();
         } catch ( final Exception e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to get value of property \"%s\" from node \"%s\"", propertyName, node );
         }
     }
 
@@ -94,7 +94,7 @@ public final class JcrUtil {
 
             return result;
         } catch ( final Exception e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to get values of property \"%s\" from node \"%s\"", propertyName, node );
         }
     }
 

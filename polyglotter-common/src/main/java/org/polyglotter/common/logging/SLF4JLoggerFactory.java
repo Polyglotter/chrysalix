@@ -30,15 +30,16 @@ import org.polyglotter.common.Logger;
  * Factory used to create the {@link Logger} implementation that uses the SLF4J logging framework.
  */
 public final class SLF4JLoggerFactory extends LogFactory {
-    
+
     /**
      * {@inheritDoc}
      * 
-     * @see org.polyglotter.common.LogFactory#getLogger(java.lang.String)
+     * @see org.polyglotter.common.LogFactory#logger(java.lang.Class, java.lang.String)
      */
     @Override
-    protected Logger getLogger( final String name ) {
-        return new SLF4JLoggerImpl( name );
+    protected Logger logger( final Class< ? > i18nClass,
+                             final String context ) {
+        return new SLF4JLoggerImpl( i18nClass, context );
     }
-    
+
 }

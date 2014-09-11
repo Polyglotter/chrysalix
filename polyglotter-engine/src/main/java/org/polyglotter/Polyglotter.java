@@ -33,17 +33,25 @@ import org.modeshape.modeler.MetamodelManager;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
+import org.polyglotter.common.Logger;
 
 /**
  * 
  */
 public final class Polyglotter implements Modeler {
 
+    /**
+     * 
+     */
+    public static final Logger LOGGER = Logger.logger( PolyglotterI18n.class );
+
     private final Modeler modeler;
+
     /**
      * The Polyglotter namespace. Value is {@value} .
      */
     public static final String NAMESPACE_URI = "www.redhat.com/polyglotter/1.0";
+
     /**
      * The Polyglotter namespace prefix. Value is {@value} .
      */
