@@ -483,4 +483,8 @@ public class PolyglotterI18n {
     public static I18n voidTermDescription = new I18n( "A term with a void or null value" );
     public static I18n voidTermName = new I18n( "Void" );
 
+    public static String localize( final String text,
+                                   final Object... arguments ) {
+        return I18n.localize( PolyglotterI18n.class, text, arguments );
+    }
 }

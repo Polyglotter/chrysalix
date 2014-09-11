@@ -47,7 +47,7 @@ import org.polyglotter.common.Logger;
  */
 public final class XsdDependencyProcessor implements DependencyProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger( XsdDependencyProcessor.class );
+    private static final Logger LOGGER = Logger.logger( XsdModelerI18n.class );
 
     /**
      * @param path
@@ -308,7 +308,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
             return dependenciesNode.getPath();
         } catch ( final Exception e ) {
             if ( e instanceof ModelerException ) throw ( ModelerException ) e;
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to resolve dependencies for \"%s\"", modelNode );
         }
     }
 
@@ -383,7 +383,7 @@ public final class XsdDependencyProcessor implements DependencyProcessor {
                 LOGGER.debug( "Generating model for XSD dependency of model '%s' from path '%s'", modelName, modelPath );
                 ( ( ModelerImpl ) modeler ).generateModel( dependencyArtifactPath, modelPath, metamodel, persistArtifacts );
             } catch ( final Exception e ) {
-                LOGGER.error( e, XsdModelerI18n.errorImportingXsdDependencyArtifact, extPath, modelName );
+                LOGGER.error( e, "Error uploading XSD dependency from '%s' for node '%s'", extPath, modelName );
             }
         }
     }

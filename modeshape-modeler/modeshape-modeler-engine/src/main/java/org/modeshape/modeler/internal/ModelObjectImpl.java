@@ -53,7 +53,6 @@ import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelerException;
-import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.internal.task.Task;
 import org.modeshape.modeler.internal.task.TaskWithResult;
@@ -963,7 +962,7 @@ class ModelObjectImpl implements ModelObject {
                     value = property.getValue();
                     propType = property.getType();
                 } catch ( final RepositoryException e ) {
-                    throw new ModelerException( e );
+                    throw new ModelerException( e, "Unable to get value for property \"%s\"", propertyName );
                 }
 
                 return value( value, propType );
@@ -989,7 +988,7 @@ class ModelObjectImpl implements ModelObject {
                     return value.toString();
             }
         } catch ( final Exception e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to get value of type %d", propertyType );
         }
     }
 
@@ -1008,9 +1007,8 @@ class ModelObjectImpl implements ModelObject {
                 try {
                     final Property prop = session.getNode( path ).getProperty( propertyName );
 
-                    if ( !prop.isMultiple() ) {
-                        throw new ModelerException( ModelerI18n.notMultiValuedProperty, propertyName );
-                    }
+                    if ( !prop.isMultiple() )
+                        throw new ModelerException( "Property \"%s\" is not a multi-value property", propertyName );
 
                     final int propType = prop.getType();
                     final Value[] values = prop.getValues();
@@ -1023,7 +1021,7 @@ class ModelObjectImpl implements ModelObject {
 
                     return result;
                 } catch ( final Exception e ) {
-                    throw new ModelerException( e );
+                    throw new ModelerException( e, "Unable to get values for property \"%s\"", propertyName );
                 }
             }
         } );

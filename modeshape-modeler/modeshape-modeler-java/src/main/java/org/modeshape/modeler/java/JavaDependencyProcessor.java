@@ -61,7 +61,7 @@ public class JavaDependencyProcessor implements DependencyProcessor {
             new JcrTools().printSubgraph( modelNode );
             return null;
         } catch ( final RepositoryException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to resolve dependencies for \"%s\"", modelNode );
         }
     }
 

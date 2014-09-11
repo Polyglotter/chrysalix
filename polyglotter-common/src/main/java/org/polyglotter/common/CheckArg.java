@@ -29,7 +29,59 @@ package org.polyglotter.common;
  */
 public final class CheckArg {
 
-    //
+    // public static I18n argumentDidNotContainKey = new I18n( "" );
+    // public static I18n argumentDidNotContainObject = new I18n( "" );
+    private static String argumentMayNotBeEmpty = "The \"%s\" argument may not be empty";
+
+    // public static I18n argumentMayNotBeGreaterThan = new I18n( "" );
+    // public static I18n argumentMayNotBeLessThan = new I18n( "" );
+    private static String argumentMayNotBeNegative = "The \"%s\" argument's value, \"%s\", may not be negative";
+    private static String argumentMayNotBeNull = "The \"%s\" argument may not be null";
+
+    // public static I18n argumentMayNotBePositive = new I18n( "" );
+    private static String argumentMayNotBeZeroLength = "The \"%s\" argument may not be zero-length";
+
+    // public static I18n argumentMayNotContainNullValue = new I18n( "" );
+    // public static I18n argumentMustBeEmpty = new I18n( "" );
+    // public static I18n argumentMustBeEquals = new I18n( "" );
+    // public static I18n argumentMustBeGreaterThan = new I18n( "" );
+    // public static I18n argumentMustBeGreaterThanOrEqualTo = new I18n( "" );
+    // public static I18n argumentMustBeInstanceOf = new I18n( "" );
+    // public static I18n argumentMustBeLessThan = new I18n( "" );
+    // public static I18n argumentMustBeLessThanOrEqualTo = new I18n( "" );
+    // public static I18n argumentMustBeNegative = new I18n( "" );
+    // public static I18n argumentMustBeNull = new I18n( "" );
+    // public static I18n argumentMustBeNumber = new I18n( "" );
+    // public static I18n argumentMustBeOfMaximumSize = new I18n( "" );
+    // public static I18n argumentMustBeOfMinimumSize = new I18n( "" );
+    // public static I18n argumentMustBePositive = new I18n( "" );
+    // public static I18n argumentMustBeSameAs = new I18n( "" );
+    // public static I18n argumentMustNotBeEquals = new I18n( "" );
+    // public static I18n argumentMustNotBeSameAs = new I18n( "" );
+    // argumentDidNotContainKey = "The {0} argument did not contain the expected key {1}
+    // argumentDidNotContainObject = "The {0} argument did not contain the expected object {1}
+    // argumentMayNotBeGreaterThan = The {0} argument value, {1}, may not be greater than {2}
+    // argumentMayNotBeLessThan = The {0} argument value, {1}, may not be less than {2}
+    // argumentMayNotBeNegative = The {0} argument value, {1}, may not be negative
+    // argumentMayNotBePositive = The {0} argument value, {1}, may not be positive
+    // argumentMayNotContainNullValue = The {0} argument may not contain a null value (first null found at position {1})
+    // argumentMustBeEmpty = The {0} argument must be empty.
+    // argumentMustBeEquals = The {0} argument is not equal to {1}
+    // argumentMustBeGreaterThan = The {0} argument value, {1}, must be greater than {2}
+    // argumentMustBeGreaterThanOrEqualTo = The {0} argument value, {1}, must be greater than or equal to {2}
+    // argumentMustBeInstanceOf = The {0} argument was an instance of {1} but was expected to be an instance of {2}
+    // argumentMustBeLessThan = The {0} argument value, {1}, must be less than {2}
+    // argumentMustBeLessThanOrEqualTo = The {0} argument value, {1}, must be less than or equal to {2}
+    // argumentMustBeNegative = The {0} argument value, {1}, must be negative
+    // argumentMustBeNull = The {0} argument must be null
+    // argumentMustBeNumber = The {0} argument value must be a number
+    // argumentMustBeOfMaximumSize = The {0} argument is a {1} with {2} elements but must have no more than {3}
+    // argumentMustBeOfMinimumSize = The {0} argument is a {1} with {2} elements but must have at least {3}
+    // argumentMustBePositive = The {0} argument value, {1}, must be positive
+    // argumentMustBeSameAs = The {0} argument is not the same as "{1}"
+    // argumentMustNotBeEquals = The {0} argument is equal to {1}
+    // argumentMustNotBeSameAs = The {0} argument is the same as "{1}"
+
     // /**
     // * Check that the collection contains the value
     // *
@@ -537,7 +589,7 @@ public final class CheckArg {
      */
     public static void isNonNegative( final int argument,
                                       final String name ) {
-        if ( argument < 0 ) throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNegative.text( name, argument ) );
+        if ( argument < 0 ) throw new IllegalArgumentException( CommonI18n.localize( argumentMayNotBeNegative, name, argument ) );
     }
 
     //
@@ -662,9 +714,7 @@ public final class CheckArg {
     public static void isNotEmpty( final Object[] argument,
                                    final String name ) {
         notNull( argument, name );
-        if ( argument.length == 0 ) {
-            throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
-        }
+        if ( argument.length == 0 ) throw new IllegalArgumentException( CommonI18n.localize( argumentMayNotBeEmpty, name ) );
     }
 
     //
@@ -877,9 +927,8 @@ public final class CheckArg {
     public static void notEmpty( final String argument,
                                  final String name ) {
         notZeroLength( argument, name );
-        if ( argument.trim().length() == 0 ) {
-            throw new IllegalArgumentException( CommonI18n.argumentMayNotBeEmpty.text( name ) );
-        }
+        if ( argument.trim().length() == 0 )
+            throw new IllegalArgumentException( CommonI18n.localize( argumentMayNotBeEmpty, name ) );
     }
 
     /**
@@ -894,9 +943,7 @@ public final class CheckArg {
      */
     public static void notNull( final Object argument,
                                 final String name ) {
-        if ( argument == null ) {
-            throw new IllegalArgumentException( CommonI18n.argumentMayNotBeNull.text( name ) );
-        }
+        if ( argument == null ) throw new IllegalArgumentException( CommonI18n.localize( argumentMayNotBeNull, name ) );
     }
 
     /**
@@ -912,9 +959,7 @@ public final class CheckArg {
     public static void notZeroLength( final String argument,
                                       final String name ) {
         notNull( argument, name );
-        if ( argument.length() <= 0 ) {
-            throw new IllegalArgumentException( CommonI18n.argumentMayNotBeZeroLength.text( name ) );
-        }
+        if ( argument.length() <= 0 ) throw new IllegalArgumentException( CommonI18n.localize( argumentMayNotBeZeroLength, name ) );
     }
 
     private CheckArg() {

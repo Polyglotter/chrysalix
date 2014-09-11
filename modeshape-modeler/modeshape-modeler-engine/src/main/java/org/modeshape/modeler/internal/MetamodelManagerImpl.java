@@ -69,14 +69,11 @@ import org.modeshape.modeler.internal.task.WriteSystemTask;
 import org.modeshape.modeler.spi.metamodel.DependencyProcessor;
 import org.modeshape.modeler.spi.metamodel.Exporter;
 import org.modeshape.modeler.spi.metamodel.Importer;
-import org.polyglotter.common.Logger;
 
 /**
  * The default implementation of a metamodel modeler.
  */
 final class MetamodelManagerImpl implements MetamodelManager {
-
-    static final Logger LOGGER = Logger.getLogger( MetamodelManagerImpl.class );
 
     static final String MODESHAPE_GROUP = "org/modeshape";
 
@@ -87,6 +84,11 @@ final class MetamodelManagerImpl implements MetamodelManager {
 
     // pass in category, version
     private static final String SEQUENCER_ZIP_PATTERN = SEQUENCER_PREFIX + "%s-%s-module-with-dependencies.zip";
+
+    private static final String unableToFindMetamodelCategory =
+        "Unable to find metamodel category '%s' in registered metamodel repositories";
+
+    private static final String urlNotFound = "URL not found: %s";
 
     private final MetamodelInstaller metamodelInstaller;
     final ModelerImpl modeler;
@@ -103,7 +105,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
         try {
             library = Files.createTempDirectory( null );
         } catch ( final IOException e ) {
-            throw new ModelerException( e );
+            throw new ModelerException( e, "Unable to create temporary folder for library" );
         }
         library.toFile().deleteOnExit();
 
@@ -142,9 +144,8 @@ final class MetamodelManagerImpl implements MetamodelManager {
     Node categoryNode( final String category,
                        final Node systemNode,
                        final boolean create ) throws Exception {
-        if ( !systemNode.hasNode( ModelerLexicon.METAMODEL_CATEGORIES ) ) {
-            throw new ModelerException( ModelerI18n.metamodelCategoryParentNodeNotFound, systemNode.getPath() );
-        }
+        if ( !systemNode.hasNode( ModelerLexicon.METAMODEL_CATEGORIES ) )
+            throw new ModelerException( "Expected categories child node of '%s' was not found", systemNode.getPath() );
 
         final Node categoriesNode = systemNode.getNode( ModelerLexicon.METAMODEL_CATEGORIES );
         Node categoryNode = null;
@@ -154,11 +155,11 @@ final class MetamodelManagerImpl implements MetamodelManager {
                 categoryNode = categoriesNode.addNode( category, ModelerLexicon.Metamodel.Category.NODE_TYPE );
                 categoryNode.addNode( ModelerLexicon.Metamodel.Category.ARCHIVES, ModelerLexicon.Metamodel.Category.ARCHIVES );
                 categoryNode.addNode( ModelerLexicon.Metamodel.Category.METAMODELS, ModelerLexicon.Metamodel.Category.METAMODELS );
-                LOGGER.debug( "Created category node '%s'", category );
+                Modeler.LOGGER.debug( "Created category node '%s'", category );
             }
         } else {
             categoryNode = categoriesNode.getNode( category );
-            LOGGER.debug( "Found category node '%s'", category );
+            Modeler.LOGGER.debug( "Found category node '%s'", category );
         }
 
         return categoryNode;
@@ -205,16 +206,16 @@ final class MetamodelManagerImpl implements MetamodelManager {
     @Override
     public void install( final String category ) throws ModelerException {
         CheckArg.isNotEmpty( category, "category" );
-        LOGGER.debug( "Installing category '%s'", category );
+        Modeler.LOGGER.debug( "Installing category '%s'", category );
         modeler.run( this, new WriteSystemTask() {
 
             @Override
             public void run( final Session session,
                              final Node systemNode ) throws Exception {
-                LOGGER.debug( "Installing importer for category '%s'", category );
+                Modeler.LOGGER.debug( "Installing importer for category '%s'", category );
                 installImporter( category, session, systemNode );
 
-                LOGGER.debug( "Installing metamodel for category '%s'", category );
+                Modeler.LOGGER.debug( "Installing metamodel for category '%s'", category );
                 installMetamodel( category, session, systemNode );
             }
         } );
@@ -252,7 +253,8 @@ final class MetamodelManagerImpl implements MetamodelManager {
                     }
                 }
             } catch ( final IOException e ) {
-                throw new ModelerException( e );
+                throw new ModelerException( e, "Unable to install metamodel categories for %s",
+                                            path( repositoryUrl.toString(), MODESHAPE_GROUP ) );
             }
         }
         return categories.toArray( new String[ categories.size() ] );
@@ -297,7 +299,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                     String name = archiveEntry.getName().toLowerCase();
 
                     if ( !name.endsWith( ".jar" ) || name.endsWith( "-tests.jar" ) || name.endsWith( "-sources.jar" ) ) {
-                        LOGGER.debug( "Ignoring Jar: %s", name );
+                        Modeler.LOGGER.debug( "Ignoring Jar: %s", name );
                         continue;
                     }
 
@@ -306,7 +308,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                         library.resolve( archiveEntry.getName().substring( archiveEntry.getName().lastIndexOf( '/' ) + 1 ) );
 
                     if ( jarPath.toFile().exists() ) {
-                        LOGGER.debug( "Jar already installed: %s", jarPath );
+                        Modeler.LOGGER.debug( "Jar already installed: %s", jarPath );
                         continue;
                     }
 
@@ -338,7 +340,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                                 // see if class is a possible sequencer
                                 if ( name.endsWith( "Sequencer.class" ) ) {
                                     potentialSequencerClassNames.add( name.replace( '/', '.' ).substring( 0, name.length() - ".class".length() ) );
-                                    LOGGER.debug( "Potential sequencer: %s", name );
+                                    Modeler.LOGGER.debug( "Potential sequencer: %s", name );
                                 }
                             }
                         }
@@ -369,7 +371,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                             metamodels.add( metamodel );
                         }
                     } catch ( final NoClassDefFoundError | ClassNotFoundException ignored ) {
-                        LOGGER.debug( "Potential importer class '%s' cannot be loaded", sequencerClass );
+                        Modeler.LOGGER.debug( "Potential importer class '%s' cannot be loaded", sequencerClass );
                     }
                 }
             }
@@ -377,7 +379,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
             archivePath.toFile().delete();
             return;
         }
-        throw new IllegalArgumentException( ModelerI18n.unableToFindMetamodelCategory.text( category ) );
+        throw new IllegalArgumentException( ModelerI18n.localize( unableToFindMetamodelCategory, category ) );
     }
 
     void installMetamodel( final String category,
@@ -391,9 +393,9 @@ final class MetamodelManagerImpl implements MetamodelManager {
                                          metamodelRepositories,
                                          version(),
                                          metamodels ) ) {
-            LOGGER.debug( "Installed extensions for category '%s'", category );
+            Modeler.LOGGER.debug( "Installed extensions for category '%s'", category );
         } else {
-            LOGGER.debug( "No extensions installed for category '%s'", category );
+            Modeler.LOGGER.debug( "No extensions installed for category '%s'", category );
         }
     }
 
@@ -401,7 +403,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                          final Node systemNode ) throws Exception {
         if ( !systemNode.hasNode( ModelerLexicon.METAMODEL_CATEGORIES ) ) {
             systemNode.addNode( ModelerLexicon.METAMODEL_CATEGORIES );
-            LOGGER.debug( "'%s' node created", ModelerLexicon.METAMODEL_CATEGORIES );
+            Modeler.LOGGER.debug( "'%s' node created", ModelerLexicon.METAMODEL_CATEGORIES );
         } else {
             final Node categoriesNode = systemNode.getNode( ModelerLexicon.METAMODEL_CATEGORIES );
 
@@ -417,7 +419,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                                final Node categoryNode ) throws Exception {
         if ( !categoryNode.hasNode( ModelerLexicon.Metamodel.Category.ARCHIVES ) ) {
             categoryNode.addNode( ModelerLexicon.Metamodel.Category.ARCHIVES );
-            LOGGER.debug( "'%s' node created", ModelerLexicon.Metamodel.Category.ARCHIVES );
+            Modeler.LOGGER.debug( "'%s' node created", ModelerLexicon.Metamodel.Category.ARCHIVES );
         } else {
             final Node archivesNode = categoryNode.getNode( ModelerLexicon.Metamodel.Category.ARCHIVES );
 
@@ -432,7 +434,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
 
                 archivePath.toFile().deleteOnExit();
                 libraryClassLoader.addURL( archivePath.toUri().toURL() );
-                LOGGER.debug( "Loaded archive: %s", archivePath );
+                Modeler.LOGGER.debug( "Loaded archive: %s", archivePath );
             }
         }
     }
@@ -455,7 +457,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                          final Node categoryNode ) throws Exception {
         if ( !categoryNode.hasNode( ModelerLexicon.Metamodel.Category.METAMODELS ) ) {
             categoryNode.addNode( ModelerLexicon.Metamodel.Category.METAMODELS );
-            LOGGER.debug( "'%s' node created", ModelerLexicon.Metamodel.Category.METAMODELS );
+            Modeler.LOGGER.debug( "'%s' node created", ModelerLexicon.Metamodel.Category.METAMODELS );
         } else {
             final Node metamodelsNode = categoryNode.getNode( ModelerLexicon.Metamodel.Category.METAMODELS );
             final String category = categoryNode.getName();
@@ -481,7 +483,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                                                             ModelerLexicon.Metamodel.DEPENDENCY_PROCESSOR_CLASS_NAME );
                     metamodel.setDependencyProcessor( ( DependencyProcessor ) libraryClassLoader.loadClass( className ).newInstance() );
                 }
-                LOGGER.debug( "Loaded metamodel: %s", metamodel.id() );
+                Modeler.LOGGER.debug( "Loaded metamodel: %s", metamodel.id() );
             }
         }
     }
@@ -591,7 +593,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
     public URL[] moveMetamodelRepositoryDown( final URL repositoryUrl ) throws ModelerException {
         CheckArg.isNotNull( repositoryUrl, "repositoryUrl" );
         final int ndx = metamodelRepositories.indexOf( repositoryUrl );
-        if ( ndx < 0 ) throw new IllegalArgumentException( ModelerI18n.urlNotFound.text( repositoryUrl ) );
+        if ( ndx < 0 ) throw new IllegalArgumentException( ModelerI18n.localize( urlNotFound, repositoryUrl ) );
         metamodelRepositories.remove( ndx );
         metamodelRepositories.add( Math.min( ndx + 1, metamodelRepositories.size() ), repositoryUrl );
         saveMetamodelRepositories();
@@ -607,7 +609,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
     public URL[] moveMetamodelRepositoryUp( final URL repositoryUrl ) throws ModelerException {
         CheckArg.isNotNull( repositoryUrl, "repositoryUrl" );
         final int ndx = metamodelRepositories.indexOf( repositoryUrl );
-        if ( ndx < 0 ) throw new IllegalArgumentException( ModelerI18n.urlNotFound.text( repositoryUrl ) );
+        if ( ndx < 0 ) throw new IllegalArgumentException( ModelerI18n.localize( urlNotFound, repositoryUrl ) );
         metamodelRepositories.remove( ndx );
         metamodelRepositories.add( Math.max( ndx - 1, 0 ), repositoryUrl );
         saveMetamodelRepositories();
@@ -681,13 +683,11 @@ final class MetamodelManagerImpl implements MetamodelManager {
             if ( category.equals( metamodel.category() ) ) {
                 deleted = true;
                 iter.remove();
-                LOGGER.debug( "Uninstalled metamodel '%s'", metamodel.id() );
+                Modeler.LOGGER.debug( "Uninstalled metamodel '%s'", metamodel.id() );
             }
         }
 
-        if ( !deleted ) {
-            throw new ModelerException( ModelerI18n.unableToFindMetamodelCategory, category );
-        }
+        if ( !deleted ) throw new ModelerException( unableToFindMetamodelCategory, category );
 
         // delete from MS repository
         modeler.run( this, new WriteSystemTask() {
@@ -696,7 +696,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
             public void run( final Session session,
                              final Node systemNode ) throws Exception {
                 final Node categoryNode = categoryNode( category, systemNode, false );
-                if ( categoryNode == null ) throw new ModelerException( ModelerI18n.unableToFindMetamodelCategory, category );
+                if ( categoryNode == null ) throw new ModelerException( unableToFindMetamodelCategory, category );
 
                 // remove category archive paths from classpath
                 if ( categoryNode.hasNode( ModelerLexicon.Metamodel.Category.ARCHIVES ) ) {
@@ -705,7 +705,7 @@ final class MetamodelManagerImpl implements MetamodelManager {
                     for ( final NodeIterator iter = archivesNode.getNodes(); iter.hasNext(); ) {
                         final Node archiveNode = iter.nextNode();
                         final Path archivePath = library.resolve( archiveNode.getName() );
-                        if ( !archivePath.toFile().delete() ) LOGGER.debug( "Unable to delete jar: %s", archivePath );
+                        if ( !archivePath.toFile().delete() ) Modeler.LOGGER.debug( "Unable to delete jar: %s", archivePath );
                     }
                 }
 

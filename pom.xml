@@ -102,6 +102,7 @@
         <!-- Dependency versions -->
         <eclipse.gef.version>3.9.0</eclipse.gef.version>
         <eclipse.m2e.version>1.0.0</eclipse.m2e.version>
+        <javassist.version>3.18.2-GA</javassist.version>
         <jcr.version>2.0</jcr.version>
         <jsoup.version>1.7.2</jsoup.version>
         <junit.version>4.11</junit.version>
@@ -115,7 +116,7 @@
         <slf4j.nop.version>1.6.1</slf4j.nop.version>
         <tycho.version>0.20.0</tycho.version>
 
-        <!-- Polyglotter -->
+        <!-- Polyglotter versions -->
         <polyglotter.common.version>${project.version}</polyglotter.common.version>
         <polyglotter.eclipse.version>${project.version}</polyglotter.eclipse.version>
         <polyglotter.engine.version>${project.version}</polyglotter.engine.version>
@@ -460,6 +461,13 @@
             <!-- ================================================================== -->
             <!-- Other -->
             <!-- ================================================================== -->
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${javassist.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>

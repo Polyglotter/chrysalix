@@ -29,11 +29,17 @@ import java.io.OutputStream;
 import java.net.URL;
 
 import org.modeshape.modeler.internal.ModelerImpl;
+import org.polyglotter.common.Logger;
 
 /**
  * 
  */
 public interface Modeler extends AutoCloseable {
+
+    /**
+     * 
+     */
+    Logger LOGGER = Logger.logger( ModelerI18n.class );
 
     /**
      * @return the path to the configuration for the embedded repository supplied when this Modeler was instantiated.

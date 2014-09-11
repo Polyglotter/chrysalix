@@ -28,6 +28,7 @@ import java.util.List;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 import org.modeshape.modeler.ModelerException;
+import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
 import org.polyglotter.transformation.Operation;
@@ -135,7 +136,7 @@ public final class Map extends AbstractOperation< Void > {
         try {
             addCategory( BuiltInCategory.ASSIGNMENT );
         } catch ( final PolyglotterException e ) {
-            this.logger.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
+            Polyglotter.LOGGER.error( e, PolyglotterI18n.errorAddingBuiltInCategory, transformationId() );
         }
     }
 
@@ -205,7 +206,7 @@ public final class Map extends AbstractOperation< Void > {
                                                                PolyglotterI18n.operationValidationError.text( name(),
                                                                                                               transformationId() ) );
                         problems().add( problem );
-                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                        Polyglotter.LOGGER.error( e, PolyglotterI18n.message, problem.message() );
                     }
                 }
             }
@@ -237,7 +238,7 @@ public final class Map extends AbstractOperation< Void > {
                                                                PolyglotterI18n.operationValidationError.text( name(),
                                                                                                               transformationId() ) );
                         problems().add( problem );
-                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                        Polyglotter.LOGGER.error( e, PolyglotterI18n.message, problem.message() );
                     }
                 }
             }
@@ -269,7 +270,7 @@ public final class Map extends AbstractOperation< Void > {
                                                                PolyglotterI18n.operationValidationError.text( name(),
                                                                                                               transformationId() ) );
                         problems().add( problem );
-                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                        Polyglotter.LOGGER.error( e, PolyglotterI18n.message, problem.message() );
                     }
                 }
             }
@@ -301,7 +302,7 @@ public final class Map extends AbstractOperation< Void > {
                                                                PolyglotterI18n.operationValidationError.text( name(),
                                                                                                               transformationId() ) );
                         problems().add( problem );
-                        this.logger.error( e, PolyglotterI18n.message, problem.message() );
+                        Polyglotter.LOGGER.error( e, PolyglotterI18n.message, problem.message() );
                     }
                 }
             }
