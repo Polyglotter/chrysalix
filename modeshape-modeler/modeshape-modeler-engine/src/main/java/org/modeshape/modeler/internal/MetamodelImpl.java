@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.Session;
+import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 
 import org.modeshape.common.util.StringUtil;
@@ -40,7 +41,7 @@ import org.modeshape.modeler.spi.metamodel.Importer;
 
 final class MetamodelImpl implements Metamodel {
 
-    private final ModelerImpl modeler;
+    final ModelerImpl modeler;
     private final String category;
     private final String id;
 
@@ -100,8 +101,8 @@ final class MetamodelImpl implements Metamodel {
             public Descriptor[] run( final Session session ) throws Exception {
                 final List< Descriptor > descriptors = new ArrayList<>();
                 for ( final NodeTypeIterator iter = session.getWorkspace().getNodeTypeManager().getAllNodeTypes(); iter.hasNext(); ) {
-                    iter.nextNodeType();
-                    descriptors.add( new Descriptor() {} );
+                    final NodeType nodeType = iter.nextNodeType();
+                    descriptors.add( new DescriptorImpl( modeler, nodeType.getName() ) );
                 }
                 return descriptors.toArray( new Descriptor[ descriptors.size() ] );
             }

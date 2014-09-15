@@ -23,9 +23,7 @@
  */
 package org.modeshape.modeler.internal;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,40 +45,45 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 import org.modeshape.common.util.CheckArg;
+import org.modeshape.common.util.StringUtil;
 import org.modeshape.jcr.JcrLexicon;
 import org.modeshape.jcr.JcrNtLexicon;
 import org.modeshape.jcr.api.JcrTools;
+import org.modeshape.modeler.Descriptor;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
+import org.modeshape.modeler.ModelProperty;
+import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
+import org.modeshape.modeler.ModelerI18n;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.internal.task.Task;
 import org.modeshape.modeler.internal.task.TaskWithResult;
 import org.modeshape.modeler.internal.task.WriteTask;
-import org.polyglotter.common.ObjectUtil;
-import org.polyglotter.common.TextUtil;
+import org.modeshape.modeler.internal.task.WriteTaskWithResult;
 
 class ModelObjectImpl implements ModelObject {
 
-    /**
-     * 
-     */
-    public final ModelerImpl modeler;
+    private static final String UNABLE_TO_REMOVE_CHILD = "Unable to remove child named '%s' in parent '%s'";
+    private static final String UNABLE_TO_FIND_PROPERTY = "Unable to find property '%s' at node '%s'";
+    private static final String UNABLE_TO_REMOVE_PROPERTY_THAT_DOES_NOT_EXIST =
+        "Unable to remove property '%s' because it does not exist for node '%s'";
+    static final String UNABLE_TO_REMOVE_SINGLE_VALUE_PROPERTY_WITH_EMPTY_ARRAY =
+        "Unable to remove property '%s' of node '%s' because it is a single-valued property and an empty array cannot be used.";
+    static final String UNABLE_TO_SET_SINGLE_VALUE_PROPERTY_WITH_MULTIPLE_VALUES =
+        "Unable to set property '%s' of node '%s' because it is a single-valued property and an values were passed in.";
 
-    /**
-     * 
-     */
-    public final String path;
+    final ModelerImpl modeler;
+    final String path;
+    final int index;
 
-    /**
-     * 
-     */
-    public final int index;
-
-    ModelObjectImpl( final ModelerImpl modeler,
+    ModelObjectImpl( final Modeler modeler,
                      final String path,
                      final int index ) {
-        this.modeler = modeler;
+        CheckArg.isNotNull( modeler, "modeler" );
+        CheckArg.isNotEmpty( path, "path" );
+
+        this.modeler = ( ModelerImpl ) modeler;
         this.path = path;
         this.index = index;
     }
@@ -101,9 +104,9 @@ class ModelObjectImpl implements ModelObject {
      * @see org.modeshape.modeler.ModelObject#addChild(java.lang.String, java.lang.String[])
      */
     @Override
-    public void addChild( final String name,
-                          final String... additionalNames ) throws ModelerException {
-        addChildOfType( null, name, additionalNames );
+    public ModelObject[] addChild( final String name,
+                                   final String... additionalNames ) throws ModelerException {
+        return addChildOfType( null, name, additionalNames );
     }
 
     /**
@@ -112,19 +115,20 @@ class ModelObjectImpl implements ModelObject {
      * @see org.modeshape.modeler.ModelObject#addChildOfType(java.lang.String, java.lang.String, java.util.Map)
      */
     @Override
-    public void addChildOfType( final String primaryTypeId,
-                                final String name,
-                                final Map< String, ? > valuesByProperty ) throws ModelerException {
+    public ModelObject addChildOfType( final String primaryTypeId,
+                                       final String name,
+                                       final Map< String, ? > valuesByProperty ) throws ModelerException {
         CheckArg.isNotEmpty( name, "name" );
-        modeler.run( new WriteTask() {
+        return modeler.run( new WriteTaskWithResult< ModelObject >() {
 
             @Override
-            public void run( final Session session ) throws Exception {
-                final String id = TextUtil.empty( primaryTypeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryTypeId;
+            public ModelObject run( final Session session ) throws Exception {
+                final String id = StringUtil.isBlank( primaryTypeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryTypeId;
                 try {
                     final Node node = session.getNode( path ).addNode( name, id );
                     setProperty( session, node, valuesByProperty );
                     session.save(); // To catch possible constraint violation due to invalid type
+                    return new ModelObjectImpl( modeler, node.getPath(), node.getIndex() );
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
                     throw new IllegalArgumentException( e );
                 }
@@ -138,24 +142,42 @@ class ModelObjectImpl implements ModelObject {
      * @see org.modeshape.modeler.ModelObject#addChildOfType(java.lang.String, java.lang.String, java.lang.String[])
      */
     @Override
-    public void addChildOfType( final String primaryTypeId,
-                                final String name,
-                                final String... additionalNames ) throws ModelerException {
+    public ModelObject[] addChildOfType( final String primaryTypeId,
+                                         final String name,
+                                         final String... additionalNames ) throws ModelerException {
         CheckArg.isNotEmpty( name, "name" );
-        modeler.run( new WriteTask() {
+        return modeler.run( new WriteTaskWithResult< ModelObject[] >() {
 
             @Override
-            public void run( final Session session ) throws Exception {
+            public ModelObject[] run( final Session session ) throws Exception {
+                final List< ModelObject > newKids = new ArrayList<>();
                 final Node node = session.getNode( path );
-                final String id = TextUtil.empty( primaryTypeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryTypeId;
+                final String id = StringUtil.isBlank( primaryTypeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : primaryTypeId;
+
                 try {
-                    node.addNode( name, id );
-                    if ( additionalNames != null )
-                        for ( final String additionalName : additionalNames ) {
-                            CheckArg.isNotEmpty( additionalName, "additionalName" );
-                            node.addNode( additionalName, id );
+                    { // create first new child
+                        final Node kidNode = node.addNode( name, id );
+                        final ModelObject newModelObject = new ModelObjectImpl( modeler,
+                                                                                kidNode.getPath(),
+                                                                                kidNode.getIndex() );
+                        newKids.add( newModelObject );
+                    }
+
+                    { // create additional children
+                        if ( additionalNames != null ) {
+                            for ( final String additionalName : additionalNames ) {
+                                CheckArg.isNotEmpty( additionalName, "additionalName" );
+                                final Node kidNode = node.addNode( additionalName, id );
+                                final ModelObject newModelObject = new ModelObjectImpl( modeler,
+                                                                                        kidNode.getPath(),
+                                                                                        kidNode.getIndex() );
+                                newKids.add( newModelObject );
+                            }
                         }
+                    }
+
                     session.save(); // To catch possible constraint violation due to invalid type
+                    return newKids.toArray( new ModelObject[ newKids.size() ] );
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
                     throw new IllegalArgumentException( e );
                 }
@@ -212,58 +234,6 @@ class ModelObjectImpl implements ModelObject {
                     session.save(); // To catch possible constraint violation due to invalid type
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
                     throw new IllegalArgumentException( e );
-                }
-            }
-        } );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.ModelObject#booleanValue(java.lang.String)
-     */
-    @Override
-    public Boolean booleanValue( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< Boolean >() {
-
-            @Override
-            public Boolean run( final Session session ) throws Exception {
-                try {
-                    return session.getNode( path ).getProperty( propertyName ).getBoolean();
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
-                }
-            }
-        } );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.ModelObject#booleanValues(java.lang.String)
-     */
-    @Override
-    public Boolean[] booleanValues( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< Boolean[] >() {
-
-            @Override
-            public Boolean[] run( final Session session ) throws Exception {
-                try {
-                    final Property prop = session.getNode( path ).getProperty( propertyName );
-                    if ( !prop.isMultiple() ) return new Boolean[] { prop.getBoolean() };
-                    final Value[] vals = prop.getValues();
-                    final Boolean[] booleanVals = new Boolean[ vals.length ];
-                    for ( int ndx = 0; ndx < booleanVals.length; ndx++ )
-                        booleanVals[ ndx ] = vals[ ndx ].getBoolean();
-                    return booleanVals;
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
                 }
             }
         } );
@@ -342,19 +312,46 @@ class ModelObjectImpl implements ModelObject {
         } );
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.ModelObject#childrenOfType(java.lang.String)
+     */
+    @Override
+    public ModelObject[] childrenOfType( final String primaryTypeId ) throws ModelerException {
+        CheckArg.isNotEmpty( primaryTypeId, "primaryTypeId" );
+
+        return modeler.run( new TaskWithResult< ModelObject[] >() {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modeshape.modeler.internal.task.TaskWithResult#run(javax.jcr.Session)
+             */
+            @Override
+            public ModelObject[] run( final Session session ) throws Exception {
+                ModelObject[] kids = children( session.getNode( path ).getNodes() );
+
+                if ( kids.length != 0 ) {
+                    final List< ModelObject > result = new ArrayList<>( kids.length );
+
+                    for ( final ModelObject kid : kids ) {
+                        if ( primaryTypeId.equals( kid.primaryType() ) ) {
+                            result.add( kid );
+                        }
+                    }
+
+                    kids = result.toArray( new ModelObject[ result.size() ] );
+                }
+
+                return kids;
+            }
+        } );
+    }
+
     void clearMixinTypes( final Node node ) throws RepositoryException {
         for ( final NodeType type : node.getMixinNodeTypes() )
             node.removeMixin( type.getName() );
-    }
-
-    Value createValue( final ValueFactory factory,
-                       final Object value ) {
-        if ( value instanceof Boolean ) return factory.createValue( Boolean.class.cast( value ) );
-        if ( value instanceof Long ) return factory.createValue( Long.class.cast( value ) );
-        if ( value instanceof Double ) return factory.createValue( Double.class.cast( value ) );
-        if ( value instanceof Calendar ) return factory.createValue( Calendar.class.cast( value ) );
-        if ( value instanceof BigDecimal ) return factory.createValue( BigDecimal.class.cast( value ) );
-        return factory.createValue( value.toString() );
     }
 
     /**
@@ -451,71 +448,23 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.ModelObject#longValue(java.lang.String)
-     */
-    @Override
-    public Long longValue( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< Long >() {
-
-            @Override
-            public Long run( final Session session ) throws Exception {
-                try {
-                    return session.getNode( path ).getProperty( propertyName ).getLong();
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
-                }
-            }
-        } );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.ModelObject#longValues(java.lang.String)
-     */
-    @Override
-    public Long[] longValues( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< Long[] >() {
-
-            @Override
-            public Long[] run( final Session session ) throws Exception {
-                try {
-                    final Property prop = session.getNode( path ).getProperty( propertyName );
-                    if ( !prop.isMultiple() ) return new Long[] { prop.getLong() };
-                    final Value[] vals = prop.getValues();
-                    final Long[] longVals = new Long[ vals.length ];
-                    for ( int ndx = 0; ndx < longVals.length; ndx++ )
-                        longVals[ ndx ] = vals[ ndx ].getLong();
-                    return longVals;
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
-                }
-            }
-        } );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
      * @see org.modeshape.modeler.ModelObject#mixinTypes()
      */
     @Override
-    public String[] mixinTypes() throws ModelerException {
-        return modeler.run( new TaskWithResult< String[] >() {
+    public Descriptor[] mixinTypes() throws ModelerException {
+        return modeler.run( new TaskWithResult< Descriptor[] >() {
 
             @Override
-            public String[] run( final Session session ) throws Exception {
+            public Descriptor[] run( final Session session ) throws Exception {
                 final Node node = session.getNode( path );
                 final NodeType[] nodeTypes = node.getMixinNodeTypes();
-                final String[] mixins = new String[ nodeTypes.length ];
-                for ( int ndx = 0; ndx < mixins.length; ndx++ )
-                    mixins[ ndx ] = nodeTypes[ ndx ].getName();
+                final Descriptor[] mixins = new Descriptor[ nodeTypes.length ];
+                int i = 0;
+
+                for ( final NodeType nodeType : nodeTypes ) {
+                    mixins[ i++ ] = new DescriptorImpl( modeler, nodeType.getName() );
+                }
+
                 return mixins;
             }
         } );
@@ -535,6 +484,10 @@ class ModelObjectImpl implements ModelObject {
                 return new ModelImpl( modeler, modelNode( session ).getPath() );
             }
         } );
+    }
+
+    Modeler modeler() {
+        return this.modeler;
     }
 
     Node modelNode( final Session session ) throws Exception {
@@ -582,12 +535,13 @@ class ModelObjectImpl implements ModelObject {
      * @see org.modeshape.modeler.ModelObject#primaryType()
      */
     @Override
-    public String primaryType() throws ModelerException {
-        return modeler.run( new TaskWithResult< String >() {
+    public Descriptor primaryType() throws ModelerException {
+        return modeler.run( new TaskWithResult< Descriptor >() {
 
             @Override
-            public String run( final Session session ) throws Exception {
-                return session.getNode( path ).getProperty( JcrLexicon.PRIMARY_TYPE.toString() ).getString();
+            public Descriptor run( final Session session ) throws Exception {
+                final NodeType nodeType = session.getNode( path ).getPrimaryNodeType();
+                return new DescriptorImpl( modeler, nodeType.getName() );
             }
         } );
     }
@@ -613,19 +567,28 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.ModelObject#propertyHasMultipleValues(java.lang.String)
+     * @see org.modeshape.modeler.ModelObject#property(java.lang.String)
      */
     @Override
-    public boolean propertyHasMultipleValues( final String propertyName ) throws ModelerException {
+    public ModelProperty property( final String propertyName ) throws ModelerException {
         CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< Boolean >() {
 
+        return modeler.run( new TaskWithResult< ModelProperty >() {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modeshape.modeler.internal.task.TaskWithResult#run(javax.jcr.Session)
+             */
             @Override
-            public Boolean run( final Session session ) throws Exception {
+            public ModelProperty run( final Session session ) throws ModelerException {
                 try {
-                    return session.getNode( path ).getProperty( propertyName ).isMultiple();
+                    final Property jcrProperty = session.getNode( path ).getProperty( propertyName );
+                    return new ModelPropertyImpl( ModelObjectImpl.this, jcrProperty );
                 } catch ( final PathNotFoundException e ) {
-                    return false;
+                    return null;
+                } catch ( final Exception e ) {
+                    throw new ModelerException( e, ModelerI18n.localize( UNABLE_TO_FIND_PROPERTY, propertyName, path ) );
                 }
             }
         } );
@@ -667,10 +630,13 @@ class ModelObjectImpl implements ModelObject {
             @Override
             public void run( final Session session ) throws Exception {
                 final Node node = session.getNode( path );
+
                 if ( node.hasNode( name ) ) node.getNode( name ).remove();
+                else throw new ModelerException( ModelerI18n.localize( UNABLE_TO_REMOVE_CHILD, name, path ) );
+
                 for ( final String additionalName : additionalNames ) {
-                    CheckArg.isNotEmpty( additionalName, "additionalName" );
                     if ( node.hasNode( additionalName ) ) node.getNode( additionalName ).remove();
+                    else throw new ModelerException( ModelerI18n.localize( UNABLE_TO_REMOVE_CHILD, additionalName, path ) );
                 }
             }
         } );
@@ -756,17 +722,16 @@ class ModelObjectImpl implements ModelObject {
                                  final Node node,
                                  final ValueFactory factory,
                                  final String name,
-                                 final Object value,
-                                 final Object[] additionalValues ) throws RepositoryException {
-        final Value[] values = new Value[ additionalValues.length + 1 ];
-        values[ 0 ] = createValue( factory, value );
-        int ndx = 1;
-        for ( final Object val : additionalValues )
-            values[ ndx++ ] = createValue( factory, val );
-        int type = PropertyType.UNDEFINED;
-        if ( node.hasProperty( name ) ) type = node.getProperty( name ).getDefinition().getRequiredType();
-        if ( type == PropertyType.UNDEFINED ) node.setProperty( name, values );
-        else node.setProperty( name, values, type );
+                                 final Object[] propValues,
+                                 final int propertyType ) throws Exception {
+        final Value[] values = new Value[ propValues.length ];
+        int ndx = 0;
+
+        for ( final Object val : propValues ) {
+            values[ ndx++ ] = ModelPropertyImpl.createValue( factory, val, propertyType );
+        }
+
+        node.setProperty( name, values );
     }
 
     /**
@@ -781,7 +746,7 @@ class ModelObjectImpl implements ModelObject {
             @Override
             public void run( final Session session ) throws Exception {
                 try {
-                    final String id = TextUtil.empty( typeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : typeId;
+                    final String id = StringUtil.isBlank( typeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : typeId;
                     session.getNode( path ).setPrimaryType( id );
                     session.save(); // To catch possible constraint violation due to invalid type
                 } catch ( final ConstraintViolationException | NoSuchNodeTypeException e ) {
@@ -805,7 +770,7 @@ class ModelObjectImpl implements ModelObject {
             public void run( final Session session ) throws Exception {
                 try {
                     final Node node = session.getNode( path );
-                    final String id = TextUtil.empty( typeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : typeId;
+                    final String id = StringUtil.isBlank( typeId ) ? JcrNtLexicon.UNSTRUCTURED.getString() : typeId;
                     node.setPrimaryType( id );
                     setProperty( session, node, valuesByProperty );
                     session.save(); // To catch possible constraint violation due to invalid type
@@ -818,42 +783,80 @@ class ModelObjectImpl implements ModelObject {
 
     void setProperty( final Session session,
                       final Node node,
-                      final Map< String, ? > valuesByProperty ) throws RepositoryException {
-        if ( valuesByProperty != null )
+                      final Map< String, ? > valuesByProperty ) throws Exception {
+        if ( valuesByProperty != null ) {
             for ( final Entry< String, ? > entry : valuesByProperty.entrySet() ) {
-                if ( entry.getValue().getClass().isArray() ) {
-                    final Object[] array = ( Object[] ) entry.getValue();
-                    final Object value = array.length == 0 ? null : array[ 0 ];
-                    Object[] additionalValues = null;
-                    if ( array.length > 1 ) {
-                        additionalValues = new Object[ array.length - 1 ];
-                        for ( int ndx = 1; ndx < array.length; ndx++ )
-                            additionalValues[ ndx - 1 ] = array[ ndx ];
-                    }
-                    setProperty( session, node, entry.getKey(), value, additionalValues );
-                } else setProperty( session, node, entry.getKey(), entry.getValue(), null );
+                setProperty( session, node, entry.getKey(), entry.getValue() );
             }
+        }
     }
 
     void setProperty( final Session session,
                       final Node node,
                       final String name,
-                      final Object value,
-                      final Object[] additionalValues ) throws RepositoryException {
+                      final Object... values ) throws Exception {
         final ValueFactory factory = session.getValueFactory();
+
         try {
-            if ( additionalValues == null || additionalValues.length == 0 ) {
-                if ( value == null ) {
-                    if ( node.hasProperty( name ) ) node.getProperty( name ).remove();
-                } else if ( node.hasProperty( name ) && node.getProperty( name ).isMultiple() ) {
-                    setMultiValuedProperty( session, node, factory, name, value, ObjectUtil.EMPTY_ARRAY );
+            final boolean exists = node.hasProperty( name );
+
+            // remove property
+            if ( values == null ) {
+                if ( exists ) {
+                    node.getProperty( name ).remove();
                 } else {
-                    int type = PropertyType.UNDEFINED;
-                    if ( node.hasProperty( name ) ) type = node.getProperty( name ).getDefinition().getRequiredType();
-                    if ( type == PropertyType.UNDEFINED ) node.setProperty( name, createValue( factory, value ) );
-                    else node.setProperty( name, createValue( factory, value ), type );
+                    throw new ModelerException( ModelerI18n.localize( UNABLE_TO_REMOVE_PROPERTY_THAT_DOES_NOT_EXIST,
+                                                                      name,
+                                                                      node.getName() ) );
                 }
-            } else setMultiValuedProperty( session, node, factory, name, value, additionalValues );
+            } else {
+                // must be an array at this point
+                final int count = values.length;
+
+                if ( exists ) {
+                    final Property property = node.getProperty( name );
+                    final int type = property.getType();
+                    final boolean multiple = property.isMultiple();
+
+                    if ( count == 0 ) {
+                        if ( multiple ) {
+                            property.remove();
+                        } else {
+                            throw new ModelerException( ModelerI18n.localize( UNABLE_TO_REMOVE_SINGLE_VALUE_PROPERTY_WITH_EMPTY_ARRAY,
+                                                                              name,
+                                                                              node.getName() ) );
+                        }
+                    } else if ( count > 1 ) {
+                        if ( multiple ) {
+                            setMultiValuedProperty( session, node, factory, name, values, type );
+                        } else {
+                            throw new ModelerException( ModelerI18n.localize( UNABLE_TO_SET_SINGLE_VALUE_PROPERTY_WITH_MULTIPLE_VALUES,
+                                                                              name,
+                                                                              node.getName() ) );
+                        }
+                    } else {
+                        // only one value so set property
+                        if ( multiple ) {
+                            setMultiValuedProperty( session, node, factory, name, values, type );
+                        } else {
+                            node.setProperty( name, ModelPropertyImpl.createValue( factory, values[ 0 ] ) );
+                        }
+                    }
+                } else {
+                    // property does not exist and no values being set
+                    if ( count == 0 ) {
+                        throw new ModelerException( ModelerI18n.localize( UNABLE_TO_REMOVE_PROPERTY_THAT_DOES_NOT_EXIST,
+                                                                          name,
+                                                                          node.getName() ) );
+                    }
+
+                    if ( count > 1 ) {
+                        setMultiValuedProperty( session, node, factory, name, values, PropertyType.UNDEFINED );
+                    } else {
+                        node.setProperty( name, ModelPropertyImpl.createValue( factory, values[ 0 ] ) );
+                    }
+                }
+            }
         } catch ( final ConstraintViolationException | PathNotFoundException | ValueFormatException e ) {
             throw new IllegalArgumentException( e );
         }
@@ -862,72 +865,24 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.ModelObject#setProperty(java.lang.String, java.lang.Boolean, java.lang.Boolean[])
+     * @see org.modeshape.modeler.ModelObject#setProperty(java.lang.String, java.lang.Object[])
      */
     @Override
     public void setProperty( final String name,
-                             final Object value,
-                             final Object... additionalValues ) throws ModelerException {
+                             final Object... values ) throws ModelerException {
         CheckArg.isNotEmpty( name, "name" );
-        CheckArg.isNotNull( additionalValues, "additionalValues" );
+
         modeler.run( new WriteTask() {
 
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modeshape.modeler.internal.task.WriteTask#run(javax.jcr.Session)
+             */
             @Override
             public void run( final Session session ) throws Exception {
-                setProperty( session, session.getNode( path ), name, value, additionalValues );
-            }
-        } );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.ModelObject#stringValue(java.lang.String)
-     */
-    @Override
-    public String stringValue( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< String >() {
-
-            @Override
-            public String run( final Session session ) throws Exception {
                 final Node node = session.getNode( path );
-                try {
-                    return node.getProperty( propertyName ).getString();
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
-                }
-            }
-        } );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.ModelObject#stringValues(java.lang.String)
-     */
-    @Override
-    public String[] stringValues( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< String[] >() {
-
-            @Override
-            public String[] run( final Session session ) throws Exception {
-                try {
-                    final Property prop = session.getNode( path ).getProperty( propertyName );
-                    if ( !prop.isMultiple() ) return new String[] { prop.getString() };
-                    final Value[] vals = prop.getValues();
-                    final String[] stringVals = new String[ vals.length ];
-                    for ( int ndx = 0; ndx < stringVals.length; ndx++ )
-                        stringVals[ ndx ] = vals[ ndx ].getString();
-                    return stringVals;
-                } catch ( final ValueFormatException e ) {
-                    throw new IllegalArgumentException( e );
-                } catch ( final PathNotFoundException e ) {
-                    return null;
-                }
+                setProperty( session, node, name, values );
             }
         } );
     }
@@ -942,88 +897,4 @@ class ModelObjectImpl implements ModelObject {
         return path;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.ModelObject#value(java.lang.String)
-     */
-    @Override
-    public Object value( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< Object >() {
-
-            @Override
-            public Object run( final Session session ) throws ModelerException {
-                Value value;
-                int propType;
-
-                try {
-                    final Property property = session.getNode( path ).getProperty( propertyName );
-                    value = property.getValue();
-                    propType = property.getType();
-                } catch ( final RepositoryException e ) {
-                    throw new ModelerException( e, "Unable to get value for property \"%s\"", propertyName );
-                }
-
-                return value( value, propType );
-            }
-        } );
-    }
-
-    Object value( final Value value,
-                  final int propertyType ) throws ModelerException {
-        try {
-            switch ( propertyType ) {
-                case PropertyType.BOOLEAN:
-                    return value.getBoolean();
-                case PropertyType.LONG:
-                    return value.getLong();
-                case PropertyType.DOUBLE:
-                    return value.getDouble();
-                case PropertyType.DATE:
-                    return value.getDate();
-                case PropertyType.DECIMAL:
-                    return value.getDecimal();
-                default:
-                    return value.toString();
-            }
-        } catch ( final Exception e ) {
-            throw new ModelerException( e, "Unable to get value of type %d", propertyType );
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.ModelObject#stringValues(java.lang.String)
-     */
-    @Override
-    public Object[] values( final String propertyName ) throws ModelerException {
-        CheckArg.isNotEmpty( propertyName, "propertyName" );
-        return modeler.run( new TaskWithResult< Object[] >() {
-
-            @Override
-            public Object[] run( final Session session ) throws ModelerException {
-                try {
-                    final Property prop = session.getNode( path ).getProperty( propertyName );
-
-                    if ( !prop.isMultiple() )
-                        throw new ModelerException( "Property \"%s\" is not a multi-value property", propertyName );
-
-                    final int propType = prop.getType();
-                    final Value[] values = prop.getValues();
-                    final Object[] result = new Object[ values.length ];
-                    int i = 0;
-
-                    for ( final Value value : values ) {
-                        result[ i++ ] = value( value, propType );
-                    }
-
-                    return result;
-                } catch ( final Exception e ) {
-                    throw new ModelerException( e, "Unable to get values for property \"%s\"", propertyName );
-                }
-            }
-        } );
-    }
 }

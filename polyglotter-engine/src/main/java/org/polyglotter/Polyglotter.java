@@ -101,6 +101,16 @@ public final class Polyglotter implements Modeler {
     /**
      * {@inheritDoc}
      * 
+     * @see org.modeshape.modeler.Modeler#deleteModel(java.lang.String)
+     */
+    @Override
+    public boolean deleteModel( final String path ) throws ModelerException {
+        return modeler.deleteModel( path );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
      * @see org.modeshape.modeler.Modeler#export(org.modeshape.modeler.Model, java.io.File)
      */
     @Override
@@ -291,6 +301,29 @@ public final class Polyglotter implements Modeler {
     @Override
     public Model model( final String path ) throws ModelerException {
         return modeler.model( path );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#newModel(java.lang.String, java.lang.String)
+     */
+    @Override
+    public Model newModel( final String modelPath,
+                           final String metamodelId ) throws ModelerException {
+        return modeler.newModel( modelPath, metamodelId );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#newModel(java.lang.String, java.lang.String, boolean)
+     */
+    @Override
+    public Model newModel( final String modelPath,
+                           final String metamodelId,
+                           final boolean override ) throws ModelerException {
+        return modeler.newModel( modelPath, metamodelId, override );
     }
 
     /**

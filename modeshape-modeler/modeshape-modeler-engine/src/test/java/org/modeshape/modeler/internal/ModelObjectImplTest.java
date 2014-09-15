@@ -41,6 +41,11 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
+    public void shouldFailPropertyNameIsEmpty() throws Exception {
+        modelObject().property( " " );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToAddChildIfEmptyName() throws Exception {
         modelObject().addChild( " " );
     }
@@ -91,26 +96,6 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetBooleanValueIfPropertyEmpty() throws Exception {
-        modelObject().booleanValue( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetBooleanValueIfPropertyNull() throws Exception {
-        modelObject().booleanValue( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetBooleanValuesIfPropertyEmpty() throws Exception {
-        modelObject().booleanValues( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetBooleanValuesIfPropertyNull() throws Exception {
-        modelObject().booleanValues( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetChildIfNameEmpty() throws Exception {
         modelObject().child( " " );
     }
@@ -128,46 +113,6 @@ public class ModelObjectImplTest extends BaseTest {
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailToGetChildrenIfNameNull() throws Exception {
         modelObject().children( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValueIfNameEmpty() throws Exception {
-        modelObject().longValue( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValueIfNameNull() throws Exception {
-        modelObject().longValue( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValuesIfNameEmpty() throws Exception {
-        modelObject().longValues( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetLongValuesIfNameNull() throws Exception {
-        modelObject().longValues( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValueIfNameEmpty() throws Exception {
-        modelObject().stringValue( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValueIfNameNull() throws Exception {
-        modelObject().stringValue( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValuesIfNameEmpty() throws Exception {
-        modelObject().stringValues( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToGetStringValuesIfNameNull() throws Exception {
-        modelObject().stringValues( null );
     }
 
     @Test( expected = IllegalArgumentException.class )
@@ -201,16 +146,6 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToIndicateIfPropertyHasMultipleValuesIfNameEmpty() throws Exception {
-        modelObject().propertyHasMultipleValues( " " );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToIndicateIfPropertyHasMultipleValuesIfNameNull() throws Exception {
-        modelObject().propertyHasMultipleValues( null );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
     public void shouldFailToRemoveChildIfEmptyName() throws Exception {
         modelObject().removeChild( " " );
     }
@@ -221,12 +156,18 @@ public class ModelObjectImplTest extends BaseTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetPropertyIfEmptyName() throws Exception {
-        modelObject().setProperty( " ", false );
+    public void shouldFailWhenFindingChildrenIfEmptyPrimaryType() throws Exception {
+        modelObject().childrenOfType( " " );
+        modelObject().childrenOfType( "" );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToSetPropertyIfNullName() throws Exception {
-        modelObject().setProperty( null, false );
+    public void shouldFailWhenFindingChildrenIfNullPrimaryType() throws Exception {
+        modelObject().childrenOfType( null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailWhenPropertyNameIsNull() throws Exception {
+        modelObject().property( null );
     }
 }

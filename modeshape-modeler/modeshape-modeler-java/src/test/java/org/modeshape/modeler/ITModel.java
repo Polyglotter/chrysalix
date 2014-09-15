@@ -42,12 +42,19 @@ public class ITModel extends JavaIntegrationTest {
     public void shouldGetExternalLocation() throws Exception {
         final Model model = importModel();
         assertThat( model, notNullValue() );
-        assertThat( model.stringValue( ModelerLexicon.Model.EXTERNAL_LOCATION ).endsWith( MODEL_PATH ), is( true ) );
+        assertThat( model.property( ModelerLexicon.Model.EXTERNAL_LOCATION ).stringValue().endsWith( MODEL_PATH ), is( true ) );
     }
 
     @Test
     public void shouldGetIndex() throws Exception {
         assertThat( importModel().index(), is( -1 ) );
+    }
+
+    @Test
+    public void shouldGetMetamodel() throws Exception {
+        final Metamodel metamodel = importModel().metamodel();
+        assertThat( metamodel, notNullValue() );
+        assertThat( metamodel.id(), is( METAMODEL_ID ) );
     }
 
     @Test
@@ -64,12 +71,5 @@ public class ITModel extends JavaIntegrationTest {
     @Test
     public void shouldGetModelRelativePath() throws Exception {
         assertThat( importModel().modelRelativePath(), is( "" ) );
-    }
-
-    @Test
-    public void shouldGetMetamodel() throws Exception {
-        final Metamodel metamodel = importModel().metamodel();
-        assertThat( metamodel, notNullValue() );
-        assertThat( metamodel.id(), is( METAMODEL_ID ) );
     }
 }

@@ -73,4 +73,9 @@ public interface Model extends ModelObject {
      */
     Set< Dependency > missingDependencies() throws ModelerException;
 
+    /**
+     * @return the {@link Modeler modeler} used to communicate with the persistent store (never <code>null</code>)
+     */
+    Modeler modeler();
+
 }
