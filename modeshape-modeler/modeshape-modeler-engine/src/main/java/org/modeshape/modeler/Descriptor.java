@@ -23,10 +23,31 @@
  */
 package org.modeshape.modeler;
 
-
 /**
- * 
+ * Represents a {@link ModelObject model object} type definition.
  */
 public interface Descriptor {
+
+    /**
+     * @return the child {@link ModelObject model object} {@link Descriptor descriptors} (never <code>null</code> but can be empty)
+     * @throws ModelerException
+     *         if an error occurs
+     */
+    Descriptor[] childDescriptors() throws ModelerException;
+
+    /**
+     * @return the type name (never <code>null</code> or empty)
+     * @throws ModelerException
+     *         if an error occurs
+     */
+    String name() throws ModelerException;
+
+    /**
+     * @return the {@link ModelObject model object} {@link ModelProperty property} {@link PropertyDescriptor descriptors} (never
+     *         <code>null</code> but can be empty)
+     * @throws ModelerException
+     *         if an error occurs
+     */
+    PropertyDescriptor[] propertyDescriptors() throws ModelerException;
 
 }

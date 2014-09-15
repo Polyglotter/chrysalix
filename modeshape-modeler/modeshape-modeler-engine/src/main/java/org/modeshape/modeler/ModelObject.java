@@ -26,7 +26,7 @@ package org.modeshape.modeler;
 import java.util.Map;
 
 /**
- * 
+ * Represents a model object.
  */
 public interface ModelObject {
 
@@ -40,11 +40,12 @@ public interface ModelObject {
      *        the first name of the new children to be added to this object
      * @param additionalNames
      *        additional names of the new children to be added to this object
+     * @return the child model object(s) created (never <code>null</code> or empty)
      * @throws ModelerException
      *         if any error occurs
      */
-    void addChild( String name,
-                   String... additionalNames ) throws ModelerException;
+    ModelObject[] addChild( final String name,
+                            final String... additionalNames ) throws ModelerException;
 
     /**
      * Adds a child with the supplied name and primary type. If the primary type has mandatory properties, use
@@ -56,12 +57,13 @@ public interface ModelObject {
      *        the name of the new child to be added to this object
      * @param valuesByProperty
      *        values identified by their (possibly mandatory) properties to be set on the new child
+     * @return the model object created (never <code>null</code>)
      * @throws ModelerException
      *         if any error occurs
      */
-    void addChildOfType( String primaryTypeId,
-                         String name,
-                         Map< String, ? > valuesByProperty ) throws ModelerException;
+    ModelObject addChildOfType( final String primaryTypeId,
+                                final String name,
+                                final Map< String, ? > valuesByProperty ) throws ModelerException;
 
     /**
      * Adds a child with the supplied name and primary type. If the primary type has mandatory properties, use
@@ -73,12 +75,13 @@ public interface ModelObject {
      *        the first name of the new children to be added to this object
      * @param additionalNames
      *        additional names of the new children to be added to this object
+     * @return the model object(s) created (never <code>null</code> or empty)
      * @throws ModelerException
      *         if any error occurs
      */
-    void addChildOfType( String primaryTypeId,
-                         String name,
-                         String... additionalNames ) throws ModelerException;
+    ModelObject[] addChildOfType( final String primaryTypeId,
+                                  final String name,
+                                  final String... additionalNames ) throws ModelerException;
 
     /**
      * @param typeId
@@ -88,8 +91,8 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void addMixinType( String typeId,
-                       Map< String, ? > valuesByProperty ) throws ModelerException;
+    void addMixinType( final String typeId,
+                       final Map< String, ? > valuesByProperty ) throws ModelerException;
 
     /**
      * @param typeId
@@ -99,26 +102,8 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void addMixinType( String typeId,
-                       String... additionalTypeIds ) throws ModelerException;
-
-    /**
-     * @param propertyName
-     *        the name of one of this model object's single-valued properties
-     * @return the Boolean value of the supplied property, or <code>null</code> if the property doesn't exist
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    Boolean booleanValue( String propertyName ) throws ModelerException;
-
-    /**
-     * @param propertyName
-     *        the name of one of this model object's properties
-     * @return the Boolean values of the supplied property, or <code>null</code> if the property doesn't exist
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    Boolean[] booleanValues( String propertyName ) throws ModelerException;
+    void addMixinType( final String typeId,
+                       final String... additionalTypeIds ) throws ModelerException;
 
     /**
      * @param childName
@@ -127,7 +112,7 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    ModelObject child( String childName ) throws ModelerException;
+    ModelObject child( final String childName ) throws ModelerException;
 
     /**
      * @param childName
@@ -136,7 +121,7 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    boolean childHasSameNameSiblings( String childName ) throws ModelerException;
+    boolean childHasSameNameSiblings( final String childName ) throws ModelerException;
 
     /**
      * @return the child model objects of this model object
@@ -152,7 +137,16 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    ModelObject[] children( String childName ) throws ModelerException;
+    ModelObject[] children( final String childName ) throws ModelerException;
+
+    /**
+     * @param primaryTypeId
+     *        the primary type ID of the children being requested (cannot be <code>null</code> or empty)
+     * @return the matching children (never <code>null</code> but can be empty)
+     * @throws ModelerException
+     *         if an error occurs
+     */
+    ModelObject[] childrenOfType( final String primaryTypeId ) throws ModelerException;
 
     /**
      * @param childName
@@ -161,7 +155,7 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    boolean hasChild( String childName ) throws ModelerException;
+    boolean hasChild( final String childName ) throws ModelerException;
 
     /**
      * @return <code>true</code> if this model object has children
@@ -184,7 +178,7 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    boolean hasProperty( String propertyName ) throws ModelerException;
+    boolean hasProperty( final String propertyName ) throws ModelerException;
 
     /**
      * @return this model object's 0-based index relative to any other same-name-siblings, or -1 if this is a model
@@ -192,29 +186,11 @@ public interface ModelObject {
     int index();
 
     /**
-     * @param propertyName
-     *        the name of one of this model object's single-valued properties
-     * @return the Long value of the supplied property, or <code>null</code> if the property doesn't exist
+     * @return this model object's mixin type descriptors (never <code>null</code> but can be empty)
      * @throws ModelerException
      *         if any error occurs
      */
-    Long longValue( String propertyName ) throws ModelerException;
-
-    /**
-     * @param propertyName
-     *        the name of one of this model object's properties
-     * @return the Long values of the supplied property, or <code>null</code> if the property doesn't exist
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    Long[] longValues( String propertyName ) throws ModelerException;
-
-    /**
-     * @return this model object's mixin types
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    String[] mixinTypes() throws ModelerException;
+    Descriptor[] mixinTypes() throws ModelerException;
 
     /**
      * @return this model object's enclosing model
@@ -238,11 +214,11 @@ public interface ModelObject {
     String name() throws ModelerException;
 
     /**
-     * @return this model object's primary type
+     * @return this model object's primary type descriptor (never <code>null</code>)
      * @throws ModelerException
      *         if any error occurs
      */
-    String primaryType() throws ModelerException;
+    Descriptor primaryType() throws ModelerException;
 
     /**
      * Prints this object's subtree to standard out
@@ -254,12 +230,12 @@ public interface ModelObject {
 
     /**
      * @param propertyName
-     *        the name of one of this model object's properties
-     * @return <code>true</code> if the supplied property exists and has multiple values
+     *        the name of model object property being selected (cannot be <code>null</code> or empty)
+     * @return the property or <code>null</code> if the property doesn't exist
      * @throws ModelerException
      *         if any error occurs
      */
-    boolean propertyHasMultipleValues( String propertyName ) throws ModelerException;
+    ModelProperty property( final String propertyName ) throws ModelerException;
 
     /**
      * @return the property names for this model object
@@ -276,8 +252,8 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void removeChild( String name,
-                      String... additionalNames ) throws ModelerException;
+    void removeChild( final String name,
+                      final String... additionalNames ) throws ModelerException;
 
     /**
      * @param typeId
@@ -287,8 +263,8 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void removeMixinType( String typeId,
-                          String... additionalTypeIds ) throws ModelerException;
+    void removeMixinType( final String typeId,
+                          final String... additionalTypeIds ) throws ModelerException;
 
     /**
      * @param typeId
@@ -298,8 +274,8 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void setMixinType( String typeId,
-                       Map< String, ? > valuesByProperty ) throws ModelerException;
+    void setMixinType( final String typeId,
+                       final Map< String, ? > valuesByProperty ) throws ModelerException;
 
     /**
      * @param typeIds
@@ -307,7 +283,7 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void setMixinTypes( String... typeIds ) throws ModelerException;
+    void setMixinTypes( final String... typeIds ) throws ModelerException;
 
     /**
      * @param typeId
@@ -315,7 +291,7 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void setPrimaryType( String typeId ) throws ModelerException;
+    void setPrimaryType( final String typeId ) throws ModelerException;
 
     /**
      * @param typeId
@@ -325,56 +301,23 @@ public interface ModelObject {
      * @throws ModelerException
      *         if any error occurs
      */
-    void setPrimaryType( String typeId,
-                         Map< String, ? > valuesByProperty ) throws ModelerException;
+    void setPrimaryType( final String typeId,
+                         final Map< String, ? > valuesByProperty ) throws ModelerException;
 
     /**
+     * Creates the property if it does not exist. Passing a <code>null</code> value will remove the property. Passing multiple
+     * values should only be used for creating and setting multi-valued properties.
+     * 
      * @param propertyName
-     *        the name of one of this model object's properties
-     * @param value
-     *        the (first) value of the supplied property
-     * @param additionalValues
-     *        additional value(s) of the supplied property if it is multi-valued
+     *        the name of one of this model object's properties (cannot be <code>null</code> or empty)
+     * @param values
+     *        one or more new values
      * @throws ModelerException
-     *         if any error occurs
+     *         if an error occurs
+     * @throws IllegalArgumentException
+     *         if trying to set a single-valued property with multiple values or trying to set values that are not compatible with
+     *         the property definition
      */
-    void setProperty( String propertyName,
-                      Object value,
-                      Object... additionalValues ) throws ModelerException;
-
-    /**
-     * @param propertyName
-     *        the name of one of this model object's single-valued properties
-     * @return the String value of the supplied property, or <code>null</code> if the property doesn't exist
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    String stringValue( String propertyName ) throws ModelerException;
-
-    /**
-     * @param propertyName
-     *        the name of one of this model object's properties
-     * @return the String values of the supplied property, or <code>null</code> if the property doesn't exist
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    String[] stringValues( String propertyName ) throws ModelerException;
-
-    /**
-     * @param propertyName
-     *        the name of one of this model object's single-valued properties
-     * @return the value of the supplied property, or <code>null</code> if the property doesn't exist
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    Object value( String propertyName ) throws ModelerException;
-
-    /**
-     * @param propertyName
-     *        the name of one of this model object's properties
-     * @return the values of the supplied property, or <code>null</code> if the property doesn't exist
-     * @throws ModelerException
-     *         if any error occurs
-     */
-    Object[] values( String propertyName ) throws ModelerException;
+    void setProperty( final String propertyName,
+                      final Object... values ) throws ModelerException;
 }

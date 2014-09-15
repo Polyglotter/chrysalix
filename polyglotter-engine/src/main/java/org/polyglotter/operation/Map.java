@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
-import org.modeshape.modeler.ModelerException;
 import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
@@ -148,20 +147,20 @@ public final class Map extends AbstractOperation< Void > {
     @Override
     protected Void calculate() throws PolyglotterException {
         assert !problems().isError();
+        /*
+                final ModelObject sourceModel = ( ModelObject ) inputs( SOURCE_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
+                final String sourceProp = ( String ) inputs( SOURCE_PROP_DESCRIPTOR.id() ).get( 0 ).get();
 
-        final ModelObject sourceModel = ( ModelObject ) inputs( SOURCE_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
-        final String sourceProp = ( String ) inputs( SOURCE_PROP_DESCRIPTOR.id() ).get( 0 ).get();
+                final ModelObject targetModel = ( ModelObject ) inputs( TARGET_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
+                final String targetProp = ( String ) inputs( TARGET_PROP_DESCRIPTOR.id() ).get( 0 ).get();
 
-        final ModelObject targetModel = ( ModelObject ) inputs( TARGET_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
-        final String targetProp = ( String ) inputs( TARGET_PROP_DESCRIPTOR.id() ).get( 0 ).get();
-
-        try {
-            final Object value = sourceModel.value( sourceProp );
-            targetModel.setProperty( targetProp, value );
-        } catch ( final ModelerException e ) {
-            throw new PolyglotterException( e, "Unable to calculate operation result" );
-        }
-
+                try {
+                    final Object value = sourceModel.value( sourceProp );
+                    targetModel.setProperty( targetProp, value );
+                } catch ( final ModelerException e ) {
+                    throw new PolyglotterException( e, "Unable to calculate operation result" );
+                }
+        */
         return null;
     }
 

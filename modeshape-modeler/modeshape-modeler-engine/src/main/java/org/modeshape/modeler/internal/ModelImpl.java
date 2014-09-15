@@ -40,6 +40,7 @@ import javax.jcr.nodetype.NodeType;
 import org.modeshape.common.util.StringUtil;
 import org.modeshape.modeler.Metamodel;
 import org.modeshape.modeler.Model;
+import org.modeshape.modeler.Modeler;
 import org.modeshape.modeler.ModelerException;
 import org.modeshape.modeler.ModelerLexicon;
 import org.modeshape.modeler.internal.task.TaskWithResult;
@@ -55,7 +56,7 @@ class ModelImpl extends ModelObjectImpl implements Model {
      * @param modelPath
      *        a path to a model
      */
-    ModelImpl( final ModelerImpl modeler,
+    ModelImpl( final Modeler modeler,
                final String modelPath ) {
         super( modeler, modelPath, -1 );
     }
@@ -229,6 +230,16 @@ class ModelImpl extends ModelObjectImpl implements Model {
     @Override
     public Model model() {
         return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.internal.ModelObjectImpl#modeler()
+     */
+    @Override
+    public Modeler modeler() {
+        return super.modeler();
     }
 
     private boolean modelNode( final Node node ) throws Exception {

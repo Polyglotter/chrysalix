@@ -72,6 +72,10 @@ import org.modeshape.modeler.spi.metamodel.Exporter;
  */
 public class ModelerImpl implements Modeler {
 
+    private static final String EXISTING_MODEL_HAS_WRONG_METAMODEL_TYPE =
+        "Existing model at '%s' did not have metamodel type of '%s.";
+    private static final String NOT_MODEL_PATH = "Not a path to a model: %s";
+
     /**
      * The path to the default configuration, which uses a file-based repository
      */
@@ -157,6 +161,39 @@ public class ModelerImpl implements Modeler {
         } catch ( final PathNotFoundException e ) {
             throw new IllegalArgumentException( e );
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#deleteModel(java.lang.String)
+     */
+    @Override
+    public boolean deleteModel( final String path ) throws ModelerException {
+        return run( new WriteTaskWithResult< Boolean >() {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modeshape.modeler.internal.task.WriteTaskWithResult#run(javax.jcr.Session)
+             */
+            @Override
+            public Boolean run( final Session session ) throws Exception {
+                final String absPath = absolutePath( path );
+
+                if ( session.nodeExists( absPath ) ) {
+                    final Node node = session.getNode( absPath );
+
+                    if ( !node.isNodeType( ModelerLexicon.Model.MODEL_MIXIN ) ) {
+                        throw new IllegalArgumentException( ModelerI18n.localize( NOT_MODEL_PATH, absPath ) );
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+        } );
     }
 
     /**
@@ -517,6 +554,72 @@ public class ModelerImpl implements Modeler {
         workspaceName = url.getPath();
         workspaceName = workspaceName.substring( workspaceName.lastIndexOf( '/' ) + 1 );
         return workspaceName;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#newModel(java.lang.String, java.lang.String)
+     */
+    @Override
+    public Model newModel( final String modelPath,
+                           final String metamodelId ) throws ModelerException {
+        return newModel( modelPath, metamodelId, false );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modeshape.modeler.Modeler#newModel(java.lang.String, java.lang.String, boolean)
+     */
+    @Override
+    public Model newModel( final String modelPath,
+                           final String metamodelId,
+                           final boolean override ) throws ModelerException {
+        CheckArg.isNotEmpty( modelPath, "modelPath" );
+        CheckArg.isNotEmpty( metamodelId, "metamodelId" );
+
+        return run( new TaskWithResult< Model >() {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modeshape.modeler.internal.task.TaskWithResult#run(javax.jcr.Session)
+             */
+            @Override
+            public Model run( final Session session ) throws Exception {
+                boolean create = true;
+                final String absPath = absolutePath( modelPath );
+
+                if ( session.nodeExists( absPath ) ) {
+                    if ( override ) {
+                        // delete
+                        session.getNode( absPath ).remove();
+                    } else {
+                        final Node node = session.getNode( absPath );
+
+                        // make sure it is a model with the right metamodel ID
+                        if ( !node.isNodeType( ModelerLexicon.Model.MODEL_MIXIN )
+                             || !node.hasProperty( ModelerLexicon.Model.METAMODEL )
+                             || !metamodelId.equals( node.getProperty( ModelerLexicon.Model.METAMODEL ).getValue().getString() ) ) {
+                            throw new ModelerException( ModelerI18n.localize( EXISTING_MODEL_HAS_WRONG_METAMODEL_TYPE,
+                                                                              absPath,
+                                                                              metamodelId ) );
+                        }
+
+                        create = false;
+                    }
+                }
+
+                if ( create ) {
+                    final Node modelNode = new JcrTools().findOrCreateNode( session, absPath );
+                    modelNode.addMixin( ModelerLexicon.Model.MODEL_MIXIN );
+                    modelNode.setProperty( ModelerLexicon.Model.METAMODEL, metamodelId );
+                }
+
+                return new ModelImpl( ModelerImpl.this, absPath );
+            }
+        } );
     }
 
     void processDependencies( final String dataPath,

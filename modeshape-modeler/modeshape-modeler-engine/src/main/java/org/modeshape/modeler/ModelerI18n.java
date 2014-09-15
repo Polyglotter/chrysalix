@@ -35,4 +35,5 @@ public final class ModelerI18n {
                                    final Object... arguments ) {
         return I18n.localize( ModelerI18n.class, text, arguments );
     }
+
 }

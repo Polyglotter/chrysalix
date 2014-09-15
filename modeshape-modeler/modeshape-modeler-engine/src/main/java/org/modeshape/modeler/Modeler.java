@@ -47,6 +47,16 @@ public interface Modeler extends AutoCloseable {
     String configurationPath();
 
     /**
+     * 
+     * @param path
+     *        the path of the model being deleted (cannot be <code>null</code> or empty)
+     * @return <code>true</code> if deleted or <code>false</code> if node at that path does not exist
+     * @throws ModelerException
+     *         if node is not a model at that path
+     */
+    boolean deleteModel( String path ) throws ModelerException;
+
+    /**
      * @param model
      *        a workspace model
      * @param file
@@ -274,6 +284,37 @@ public interface Modeler extends AutoCloseable {
      *         if any error occurs
      */
     Model model( final String path ) throws ModelerException;
+
+    /**
+     * Creates a new model or returns an existing one.
+     * 
+     * @param modelPath
+     *        the workspace path where the model should be created (cannot be <code>null</code> or empty)
+     * @param metamodelId
+     *        the metamodel identifier (cannot be <code>null</code> or empty)
+     * @return the new model or the existing one (never <code>null</code>)
+     * @throws ModelerException
+     *         if the path already exists and the node is not a model with the specified metamodel ID
+     */
+    Model newModel( final String modelPath,
+                    final String metamodelId ) throws ModelerException;
+
+    /**
+     * Creates a new model or returns an existing one.
+     * 
+     * @param modelPath
+     *        the workspace path where the model should be created (cannot be <code>null</code> or empty)
+     * @param metamodelId
+     *        the metamodel identifier (cannot be <code>null</code> or empty)
+     * @param override
+     *        <code>true</code> if an existing model is found and should be replaced
+     * @return the new model or the existing one (never <code>null</code>)
+     * @throws ModelerException
+     *         when not in override mode, if the path already exists and the node is not a model with the specified metamodel ID
+     */
+    Model newModel( final String modelPath,
+                    final String metamodelId,
+                    boolean override ) throws ModelerException;
 
     /**
      * @return the path to the folder that should contain the repository store

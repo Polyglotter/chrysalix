@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 
 import org.junit.Test;
+import org.modeshape.modeler.Descriptor;
 import org.modeshape.modeler.Model;
 import org.modeshape.modeler.ModelObject;
 
@@ -55,14 +56,14 @@ public class ITTeiidDdl extends TeiidDdlIntegrationTest {
                     for ( final String prop : statement.propertyNames() ) {
                         System.out.println( "  CHILD >>>> Property = " + prop.toString() );
                     }
-                    final String exp = ( String ) statement.value( "ddl:expression" );
+                    final String exp = statement.property( "ddl:expression" ).stringValue();
                     System.out.println( "  CHILD >>>> Expression = " + exp );
                 }
                 if ( statement.hasChildren() ) {
                     for ( final ModelObject state_child : statement.children() ) {
                         System.out.println( "  CHILD >>>> StatementChild = " + state_child.name() );
-                        final String[] mixinTypes = state_child.mixinTypes();
-                        for ( final String type : mixinTypes ) {
+                        final Descriptor[] mixinTypes = state_child.mixinTypes();
+                        for ( final Descriptor type : mixinTypes ) {
                             System.out.println( "                 >>> MixinType = " + type );
                         }
                         if ( state_child.hasProperties() ) {
