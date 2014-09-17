@@ -6,8 +6,8 @@
     <!-- Parent -->
     <!-- ================================================================== -->
     <parent>
-        <groupId>org.polyglotter</groupId>
-        <artifactId>polyglotter</artifactId>
+        <groupId>org.chrysalix</groupId>
+        <artifactId>chrysalix</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 

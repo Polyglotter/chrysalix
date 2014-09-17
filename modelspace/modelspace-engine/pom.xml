@@ -6,7 +6,7 @@
     <!-- Parent -->
     <!-- ================================================================== -->
     <parent>
-        <groupId>org.polyglotter</groupId>
+        <groupId>org.chrysalix</groupId>
         <artifactId>modelspace</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -24,11 +24,11 @@
     <dependencies>
 
         <!-- ================================================================== -->
-        <!-- Polyglotter -->
+        <!-- Chrysalix -->
         <!-- ================================================================== -->
         <dependency>
-            <groupId>org.polyglotter</groupId>
-            <artifactId>polyglotter-common</artifactId>
+            <groupId>org.chrysalix</groupId>
+            <artifactId>chrysalix-common</artifactId>
         </dependency>
 
         <!-- ================================================================== -->
@@ -71,8 +71,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.polyglotter</groupId>
-            <artifactId>polyglotter-common</artifactId>
+            <groupId>org.chrysalix</groupId>
+            <artifactId>chrysalix-common</artifactId>
             <type>test-jar</type>
         </dependency>
     </dependencies>

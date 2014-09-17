@@ -24,8 +24,8 @@
 
 package org.modelspace;
 
-import org.polyglotter.common.BaseException;
-import org.polyglotter.common.I18n;
+import org.chrysalix.common.BaseException;
+import org.chrysalix.common.I18n;
 
 /**
  * 

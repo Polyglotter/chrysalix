@@ -6,7 +6,7 @@
     <!-- Parent -->
     <!-- ================================================================== -->
     <parent>
-        <groupId>org.polyglotter</groupId>
+        <groupId>org.chrysalix</groupId>
         <artifactId>modelspace</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -27,17 +27,17 @@
         <!-- Polyglotter -->
         <!-- ================================================================== -->
         <dependency>
-            <groupId>org.polyglotter</groupId>
-            <artifactId>polyglotter-common</artifactId>
+            <groupId>org.chrysalix</groupId>
+            <artifactId>chrysalix-common</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.polyglotter</groupId>
+            <groupId>org.chrysalix</groupId>
             <artifactId>modelspace-engine</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.polyglotter</groupId>
+            <groupId>org.chrysalix</groupId>
             <artifactId>modelspace-engine</artifactId>
             <type>test-jar</type>
         </dependency>
@@ -90,7 +90,7 @@
                             <descriptors>
                                 <descriptor>src/assembly/module-with-dependencies.xml</descriptor>
                             </descriptors>
-                            <outputDirectory>${project.build.directory}/org/polyglotter/modelspace-ddl/${modeshape.version}</outputDirectory>
+                            <outputDirectory>${project.build.directory}/org/chrysalix/modelspace-ddl/${modeshape.version}</outputDirectory>
                             <finalName>modelspace-ddl-${modeshape.version}</finalName>
                         </configuration>
                     </execution>

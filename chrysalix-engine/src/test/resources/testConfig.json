@@ -1,0 +1,8 @@
+{
+    "name" : "Chrysalix Repository",
+    "workspaces" : {
+        "predefined" : ["Modelspace"],
+        "default" : "default"
+    },
+    "node-types" : ["metamodel.cnd"]
+}

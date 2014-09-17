@@ -1,0 +1,71 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ================================================================== -->
+    <!-- Parent -->
+    <!-- ================================================================== -->
+    <parent>
+        <groupId>org.chrysalix</groupId>
+        <artifactId>chrysalix</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <!-- ================================================================== -->
+    <!-- Self -->
+    <!-- ================================================================== -->
+    <artifactId>chrysalix-engine</artifactId>
+    <name>Chrysalix Engine</name>
+    <description>The Chrysalix data transformation engine.</description>
+
+    <!-- ================================================================== -->
+    <!-- Dependencies -->
+    <!-- ================================================================== -->
+    <dependencies>
+
+        <!-- ================================================================== -->
+        <!-- Polyglotter -->
+        <!-- ================================================================== -->
+
+        <dependency>
+            <groupId>org.chrysalix</groupId>
+            <artifactId>chrysalix-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.chrysalix</groupId>
+            <artifactId>modelspace-engine</artifactId>
+        </dependency>
+
+        <!-- ================================================================== -->
+        <!-- ModeShape -->
+        <!-- ================================================================== -->
+
+        <dependency>
+            <groupId>org.modeshape</groupId>
+            <artifactId>modeshape-jcr</artifactId>
+        </dependency>
+
+        <!-- ================================================================== -->
+        <!-- Testing -->
+        <!-- ================================================================== -->
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.chrysalix</groupId>
+            <artifactId>chrysalix-common</artifactId>
+            <type>test-jar</type>
+        </dependency>
+
+    </dependencies>
+
+</project>
