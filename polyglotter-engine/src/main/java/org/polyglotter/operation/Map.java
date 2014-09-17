@@ -25,8 +25,8 @@ package org.polyglotter.operation;
 
 import java.util.List;
 
-import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelObject;
+import org.modelspace.Model;
+import org.modelspace.ModelObject;
 import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
@@ -157,7 +157,7 @@ public final class Map extends AbstractOperation< Void > {
                 try {
                     final Object value = sourceModel.value( sourceProp );
                     targetModel.setProperty( targetProp, value );
-                } catch ( final ModelerException e ) {
+                } catch ( final ModelspaceException e ) {
                     throw new PolyglotterException( e, "Unable to calculate operation result" );
                 }
         */

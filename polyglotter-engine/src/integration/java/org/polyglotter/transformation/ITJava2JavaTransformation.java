@@ -34,9 +34,9 @@ import java.net.URL;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.modeshape.modeler.Metamodel;
-import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelObject;
+import org.modelspace.Metamodel;
+import org.modelspace.Model;
+import org.modelspace.ModelObject;
 import org.polyglotter.operation.Map;
 import org.polyglotter.operation.OperationTestConstants;
 import org.polyglotter.test.BaseTest;
@@ -45,7 +45,7 @@ import org.polyglotter.test.BaseTest;
 public final class ITJava2JavaTransformation extends BaseTest {
 
     protected static final String CATEGORY = "java";
-    private static final String METAMODEL_ID = "org.modeshape.modeler.java.JavaFile";
+    private static final String METAMODEL_ID = "org.modelspace.java.JavaFile";
 
     private static final String SOURCE_MODEL_NAME = "RocketSkates.java";
     private static final String SOURCE_MODEL_PATH = "src/test/resources/org/acme/" + SOURCE_MODEL_NAME;

@@ -1,0 +1,16 @@
+{
+    "name" : "Modelspace Repository",
+    "workspaces" : {
+        "predefined" : ["Modelspace"],
+        "default" : "default"
+    },
+    "storage" : {
+        "cacheName" : "ModelspaceRepository",
+        "cacheConfiguration" : "infinispan.xml",
+        "binaryStorage" : {
+            "type" : "file",
+            "directory" : "${org.modelspace.repositoryStoreParentPath}/modelspaceRepository/binaries"
+        }
+    },
+    "node-types" : ["metamodel.cnd"]
+}

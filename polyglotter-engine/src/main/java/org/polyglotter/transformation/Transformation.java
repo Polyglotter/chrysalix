@@ -23,7 +23,7 @@
  */
 package org.polyglotter.transformation;
 
-import org.modeshape.modeler.Model;
+import org.modelspace.Model;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.common.CheckArg;
 

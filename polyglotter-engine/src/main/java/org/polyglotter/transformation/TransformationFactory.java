@@ -31,8 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.modeshape.modeler.Model;
-import org.modeshape.modeler.ModelerException;
+import org.modelspace.Model;
+import org.modelspace.ModelspaceException;
 import org.polyglotter.Polyglotter;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.PolyglotterI18n;
@@ -758,7 +758,7 @@ public final class TransformationFactory {
          * {@inheritDoc}
          * 
          * @see org.polyglotter.transformation.Transformation#add(org.polyglotter.transformation.Transformation.ModelType,
-         *      org.modeshape.modeler.Model[])
+         *      org.modelspace.Model[])
          */
         @Override
         public void add( final ModelType modelType,
@@ -784,7 +784,7 @@ public final class TransformationFactory {
 
                         try {
                             modelName = model.name();
-                        } catch ( final ModelerException e ) {
+                        } catch ( final ModelspaceException e ) {
                             throw new PolyglotterException( e,
                                                             PolyglotterI18n.errorAddingTransformationModel,
                                                             id(),
@@ -860,7 +860,7 @@ public final class TransformationFactory {
         /**
          * {@inheritDoc}
          * 
-         * @see org.polyglotter.transformation.Transformation#remove(org.modeshape.modeler.Model[])
+         * @see org.polyglotter.transformation.Transformation#remove(org.modelspace.Model[])
          */
         @Override
         public void remove( final Model... modelsBeingRemoved ) throws PolyglotterException {
@@ -880,7 +880,7 @@ public final class TransformationFactory {
 
                     try {
                         modelName = model.name();
-                    } catch ( final ModelerException e ) {
+                    } catch ( final ModelspaceException e ) {
                         throw new PolyglotterException( e,
                                                         PolyglotterI18n.errorRemovingUnaddedTransformationModel,
                                                         id() );
@@ -899,7 +899,7 @@ public final class TransformationFactory {
          * {@inheritDoc}
          * 
          * @see org.polyglotter.transformation.Transformation#remove(org.polyglotter.transformation.Transformation.ModelType,
-         *      org.modeshape.modeler.Model[])
+         *      org.modelspace.Model[])
          */
         @Override
         public void remove( final ModelType modelType,
@@ -921,7 +921,7 @@ public final class TransformationFactory {
 
                     try {
                         modelName = model.name();
-                    } catch ( final ModelerException e ) {
+                    } catch ( final ModelspaceException e ) {
                         throw new PolyglotterException( e,
                                                         PolyglotterI18n.errorRemovingUnaddedTransformationModel,
                                                         id() );
@@ -946,7 +946,7 @@ public final class TransformationFactory {
 
                     try {
                         modelName = model.name();
-                    } catch ( final ModelerException e ) {
+                    } catch ( final ModelspaceException e ) {
                         throw new PolyglotterException( e,
                                                         PolyglotterI18n.errorRemovingTransformationModel,
                                                         id(),

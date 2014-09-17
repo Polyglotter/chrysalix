@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.modeshape.modeler.Model;
+import org.modelspace.Model;
 import org.polyglotter.PolyglotterException;
 import org.polyglotter.transformation.OperationCategory.BuiltInCategory;
 

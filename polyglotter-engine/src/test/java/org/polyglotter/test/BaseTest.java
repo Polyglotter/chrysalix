@@ -48,7 +48,7 @@ public abstract class BaseTest {
     protected static final String TEST_REPOSITORY_STORE_PARENT_PATH;
 
     protected static final String XML_METAMODEL_CATEGORY = "xml";
-    protected static final String XML_METAMODEL_NAME = "org.modeshape.modeler.xml.Xml";
+    protected static final String XML_METAMODEL_NAME = "org.modelspace.xml.Xml";
     protected static final String XML_DECLARATION = "<?xml version='1.0' encoding='UTF-8'?>";
     protected static final String XML_ROOT = "root";
     protected static final String XML_ROOT_PROPERTY = "property";
