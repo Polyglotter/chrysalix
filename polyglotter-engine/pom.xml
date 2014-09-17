@@ -34,7 +34,7 @@
 
         <dependency>
             <groupId>org.polyglotter</groupId>
-            <artifactId>modeshape-modeler-engine</artifactId>
+            <artifactId>modelspace-engine</artifactId>
         </dependency>
 
         <!-- ================================================================== -->

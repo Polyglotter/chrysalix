@@ -28,24 +28,24 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
-import org.modeshape.modeler.Metamodel;
-import org.modeshape.modeler.MetamodelManager;
-import org.modeshape.modeler.Model;
-import org.modeshape.modeler.Modeler;
-import org.modeshape.modeler.ModelerException;
+import org.modelspace.Metamodel;
+import org.modelspace.MetamodelManager;
+import org.modelspace.Model;
+import org.modelspace.Modelspace;
+import org.modelspace.ModelspaceException;
 import org.polyglotter.common.Logger;
 
 /**
  * 
  */
-public final class Polyglotter implements Modeler {
+public final class Polyglotter implements Modelspace {
 
     /**
      * 
      */
     public static final Logger LOGGER = Logger.logger( PolyglotterI18n.class );
 
-    private final Modeler modeler;
+    private final Modelspace modelspace;
 
     /**
      * The Polyglotter namespace. Value is {@value} .
@@ -64,7 +64,7 @@ public final class Polyglotter implements Modeler {
      *        the file path to the folder that should contain the repository store
      */
     public Polyglotter( final String repositoryStoreParentPath ) {
-        modeler = Modeler.Factory.instance( repositoryStoreParentPath );
+        modelspace = Modelspace.Factory.instance( repositoryStoreParentPath );
     }
 
     /**
@@ -75,7 +75,7 @@ public final class Polyglotter implements Modeler {
      */
     public Polyglotter( final String repositoryStoreParentPath,
                         final String configurationPath ) {
-        modeler = Modeler.Factory.instance( repositoryStoreParentPath, configurationPath );
+        modelspace = Modelspace.Factory.instance( repositoryStoreParentPath, configurationPath );
     }
 
     /**
@@ -85,254 +85,254 @@ public final class Polyglotter implements Modeler {
      */
     @Override
     public void close() throws Exception {
-        modeler.close();
+        modelspace.close();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#configurationPath()
+     * @see Modelspace#configurationPath()
      */
     @Override
     public String configurationPath() {
-        return modeler.configurationPath();
+        return modelspace.configurationPath();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.Modeler#deleteModel(java.lang.String)
+     * @see org.modelspace.Modelspace#deleteModel(java.lang.String)
      */
     @Override
-    public boolean deleteModel( final String path ) throws ModelerException {
-        return modeler.deleteModel( path );
+    public boolean deleteModel( final String path ) throws ModelspaceException {
+        return modelspace.deleteModel( path );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.Modeler#export(org.modeshape.modeler.Model, java.io.File)
-     */
-    @Override
-    public void export( final Model model,
-                        final File file ) throws ModelerException {
-        modeler.export( model, file );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modeshape.modeler.Modeler#export(org.modeshape.modeler.Model, java.io.OutputStream)
+     * @see org.modelspace.Modelspace#export(org.modelspace.Model, java.io.File)
      */
     @Override
     public void export( final Model model,
-                        final OutputStream stream ) throws ModelerException {
-        modeler.export( model, stream );
+                        final File file ) throws ModelspaceException {
+        modelspace.export( model, file );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.Modeler#export(org.modeshape.modeler.Model, java.net.URL)
+     * @see org.modelspace.Modelspace#export(org.modelspace.Model, java.io.OutputStream)
      */
     @Override
     public void export( final Model model,
-                        final URL url ) throws ModelerException {
-        modeler.export( model, url );
+                        final OutputStream stream ) throws ModelspaceException {
+        modelspace.export( model, stream );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(String, String)
+     * @see org.modelspace.Modelspace#export(org.modelspace.Model, java.net.URL)
+     */
+    @Override
+    public void export( final Model model,
+                        final URL url ) throws ModelspaceException {
+        modelspace.export( model, url );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see Modelspace#generateModel(String, String)
      */
     @Override
     public Model generateModel( final String dataPath,
-                                final String modelPath ) throws ModelerException {
-        return modeler.generateModel( dataPath, modelPath );
+                                final String modelPath ) throws ModelspaceException {
+        return modelspace.generateModel( dataPath, modelPath );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#generateModel(String, String, Metamodel)
+     * @see Modelspace#generateModel(String, String, Metamodel)
      */
     @Override
     public Model generateModel( final String dataPath,
                                 final String modelPath,
-                                final Metamodel metamodel ) throws ModelerException {
-        return modeler.generateModel( dataPath, modelPath, metamodel );
+                                final Metamodel metamodel ) throws ModelspaceException {
+        return modelspace.generateModel( dataPath, modelPath, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importData(File, String)
+     * @see Modelspace#importData(File, String)
      */
     @Override
     public String importData( final File file,
-                              final String workspaceFolder ) throws ModelerException {
-        return modeler.importData( file, workspaceFolder );
+                              final String workspaceFolder ) throws ModelspaceException {
+        return modelspace.importData( file, workspaceFolder );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importData(File, String, String)
+     * @see Modelspace#importData(File, String, String)
      */
     @Override
     public String importData( final File file,
                               final String workspaceFolder,
-                              final String workspaceName ) throws ModelerException {
-        return modeler.importData( file, workspaceFolder, workspaceName );
+                              final String workspaceName ) throws ModelspaceException {
+        return modelspace.importData( file, workspaceFolder, workspaceName );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importData(InputStream, String)
+     * @see Modelspace#importData(InputStream, String)
      */
     @Override
     public String importData( final InputStream stream,
-                              final String workspacePath ) throws ModelerException {
-        return modeler.importData( stream, workspacePath );
+                              final String workspacePath ) throws ModelspaceException {
+        return modelspace.importData( stream, workspacePath );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importData(URL, String)
+     * @see Modelspace#importData(URL, String)
      */
     @Override
     public String importData( final URL url,
-                              final String workspaceFolder ) throws ModelerException {
-        return modeler.importData( url, workspaceFolder );
+                              final String workspaceFolder ) throws ModelspaceException {
+        return modelspace.importData( url, workspaceFolder );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importData(URL, String, String)
+     * @see Modelspace#importData(URL, String, String)
      */
     @Override
     public String importData( final URL url,
                               final String workspaceFolder,
-                              final String workspaceName ) throws ModelerException {
-        return modeler.importData( url, workspaceFolder, workspaceName );
+                              final String workspaceName ) throws ModelspaceException {
+        return modelspace.importData( url, workspaceFolder, workspaceName );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importModel(File, String, Metamodel)
+     * @see Modelspace#importModel(File, String, Metamodel)
      */
     @Override
     public Model importModel( final File file,
                               final String modelFolder,
-                              final Metamodel metamodel ) throws ModelerException {
-        return modeler.importModel( file, modelFolder, metamodel );
+                              final Metamodel metamodel ) throws ModelspaceException {
+        return modelspace.importModel( file, modelFolder, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importModel(File, String, String, Metamodel)
+     * @see Modelspace#importModel(File, String, String, Metamodel)
      */
     @Override
     public Model importModel( final File file,
                               final String modelFolder,
                               final String modelName,
-                              final Metamodel metamodel ) throws ModelerException {
-        return modeler.importModel( file, modelFolder, modelName, metamodel );
+                              final Metamodel metamodel ) throws ModelspaceException {
+        return modelspace.importModel( file, modelFolder, modelName, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importModel(InputStream, String, Metamodel)
+     * @see Modelspace#importModel(InputStream, String, Metamodel)
      */
     @Override
     public Model importModel( final InputStream stream,
                               final String modelPath,
-                              final Metamodel metamodel ) throws ModelerException {
-        return modeler.importModel( stream, modelPath, metamodel );
+                              final Metamodel metamodel ) throws ModelspaceException {
+        return modelspace.importModel( stream, modelPath, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importModel(URL, String, Metamodel)
+     * @see Modelspace#importModel(URL, String, Metamodel)
      */
     @Override
     public Model importModel( final URL dataUrl,
                               final String modelFolder,
-                              final Metamodel metamodel ) throws ModelerException {
-        return modeler.importModel( dataUrl, modelFolder, metamodel );
+                              final Metamodel metamodel ) throws ModelspaceException {
+        return modelspace.importModel( dataUrl, modelFolder, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#importModel(URL, String, String, Metamodel)
+     * @see Modelspace#importModel(URL, String, String, Metamodel)
      */
     @Override
     public Model importModel( final URL dataUrl,
                               final String modelFolder,
                               final String modelName,
-                              final Metamodel metamodel ) throws ModelerException {
-        return modeler.importModel( dataUrl, modelFolder, modelName, metamodel );
+                              final Metamodel metamodel ) throws ModelspaceException {
+        return modelspace.importModel( dataUrl, modelFolder, modelName, metamodel );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#metamodelManager()
+     * @see Modelspace#metamodelManager()
      */
     @Override
-    public MetamodelManager metamodelManager() throws ModelerException {
-        return modeler.metamodelManager();
+    public MetamodelManager metamodelManager() throws ModelspaceException {
+        return modelspace.metamodelManager();
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#model(String)
+     * @see Modelspace#model(String)
      */
     @Override
-    public Model model( final String path ) throws ModelerException {
-        return modeler.model( path );
+    public Model model( final String path ) throws ModelspaceException {
+        return modelspace.model( path );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.Modeler#newModel(java.lang.String, java.lang.String)
+     * @see org.modelspace.Modelspace#newModel(java.lang.String, java.lang.String)
      */
     @Override
     public Model newModel( final String modelPath,
-                           final String metamodelId ) throws ModelerException {
-        return modeler.newModel( modelPath, metamodelId );
+                           final String metamodelId ) throws ModelspaceException {
+        return modelspace.newModel( modelPath, metamodelId );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.modeshape.modeler.Modeler#newModel(java.lang.String, java.lang.String, boolean)
+     * @see org.modelspace.Modelspace#newModel(java.lang.String, java.lang.String, boolean)
      */
     @Override
     public Model newModel( final String modelPath,
                            final String metamodelId,
-                           final boolean override ) throws ModelerException {
-        return modeler.newModel( modelPath, metamodelId, override );
+                           final boolean override ) throws ModelspaceException {
+        return modelspace.newModel( modelPath, metamodelId, override );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see Modeler#repositoryStoreParentPath()
+     * @see Modelspace#repositoryStoreParentPath()
      */
     @Override
     public String repositoryStoreParentPath() {
-        return modeler.repositoryStoreParentPath();
+        return modelspace.repositoryStoreParentPath();
     }
 }

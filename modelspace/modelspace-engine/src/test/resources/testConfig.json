@@ -1,0 +1,8 @@
+{
+    "name" : "Modelspace Repository",
+    "workspaces" : {
+        "predefined" : ["Modelspace"],
+        "default" : "default"
+    },
+    "node-types" : ["metamodel.cnd"]
+}

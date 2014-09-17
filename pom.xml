@@ -121,9 +121,9 @@
         <polyglotter.eclipse.version>${project.version}</polyglotter.eclipse.version>
         <polyglotter.engine.version>${project.version}</polyglotter.engine.version>
         <polyglotter.test.version>${project.version}</polyglotter.test.version>
-        <modeshape.modeler.engine.version>${project.version}</modeshape.modeler.engine.version>
-        <modeshape.modeler.java.version>${project.version}</modeshape.modeler.java.version>
-        <modeshape.modeler.xsd.version>${project.version}</modeshape.modeler.xsd.version>
+        <modelspace.engine.version>${project.version}</modelspace.engine.version>
+        <modelspace.java.version>${project.version}</modelspace.java.version>
+        <modelspace.xsd.version>${project.version}</modelspace.xsd.version>
 
     </properties>
 
@@ -392,28 +392,28 @@
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
-                <artifactId>modeshape-modeler-engine</artifactId>
-                <version>${modeshape.modeler.engine.version}</version>
+                <artifactId>modelspace-engine</artifactId>
+                <version>${modelspace.engine.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
-                <artifactId>modeshape-modeler-engine</artifactId>
-                <version>${modeshape.modeler.engine.version}</version>
+                <artifactId>modelspace-engine</artifactId>
+                <version>${modelspace.engine.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
-                <artifactId>modeshape-modeler-java</artifactId>
-                <version>${modeshape.modeler.java.version}</version>
+                <artifactId>modelspace-java</artifactId>
+                <version>${modelspace.java.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.polyglotter</groupId>
-                <artifactId>modeshape-modeler-xsd</artifactId>
-                <version>${modeshape.modeler.xsd.version}</version>
+                <artifactId>modelspace-xsd</artifactId>
+                <version>${modelspace.xsd.version}</version>
             </dependency>
 
             <dependency>
@@ -626,7 +626,7 @@
     <!-- Modules -->
     <!-- ================================================================== -->
     <modules>
-        <module>modeshape-modeler</module>
+        <module>modelspace</module>
         <module>polyglotter-common</module>
         <module>polyglotter-engine</module>
     </modules>
