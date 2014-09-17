@@ -1,17 +1,17 @@
 /*
- * Polyglotter (http://polyglotter.org)
+ * Chrysalix
  * See the COPYRIGHT.txt file distributed with this work for information
  * regarding copyright ownership.  Some portions may be licensed
  * to Red Hat, Inc. under one or more contributor license agreements.
  * See the AUTHORS.txt file in the distribution for a full listing of 
  * individual contributors.
  *
- * Polyglotter is free software. Unless otherwise indicated, all code in Polyglotter
+ * Chrysalix is free software. Unless otherwise indicated, all code in Chrysalix
  * is licensed to you under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
  *
- * Polyglotter is distributed in the hope that it will be useful,
+ * Chrysalix is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -23,7 +23,7 @@
  */
 package org.modelspace;
 
-import org.polyglotter.common.BaseI8nTest;
+import org.chrysalix.common.BaseI8nTest;
 
 @SuppressWarnings( "javadoc" )
 public class ModelspaceI18nTest extends BaseI8nTest {}

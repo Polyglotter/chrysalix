@@ -5,12 +5,12 @@
     <!-- ================================================================== -->
     <!-- Self -->
     <!-- ================================================================== -->
-    <groupId>org.polyglotter</groupId>
-    <artifactId>polyglotter</artifactId>
+    <groupId>org.chrysalix</groupId>
+    <artifactId>chrysalix</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Polyglotter</name>
-    <description>Polyglotter is a data transformation engine.</description>
+    <name>Chrysalix</name>
+    <description>Chrysalix is a tool for transforming data from one form to another.</description>
     <inceptionYear>2013</inceptionYear>
 
     <organization>
@@ -116,11 +116,11 @@
         <slf4j.nop.version>1.6.1</slf4j.nop.version>
         <tycho.version>0.20.0</tycho.version>
 
-        <!-- Polyglotter versions -->
-        <polyglotter.common.version>${project.version}</polyglotter.common.version>
-        <polyglotter.eclipse.version>${project.version}</polyglotter.eclipse.version>
-        <polyglotter.engine.version>${project.version}</polyglotter.engine.version>
-        <polyglotter.test.version>${project.version}</polyglotter.test.version>
+        <!-- Chrysalix versions -->
+        <chrysalix.common.version>${project.version}</chrysalix.common.version>
+        <chrysalix.eclipse.version>${project.version}</chrysalix.eclipse.version>
+        <chrysalix.engine.version>${project.version}</chrysalix.engine.version>
+        <chrysalix.test.version>${project.version}</chrysalix.test.version>
         <modelspace.engine.version>${project.version}</modelspace.engine.version>
         <modelspace.java.version>${project.version}</modelspace.java.version>
         <modelspace.xsd.version>${project.version}</modelspace.xsd.version>
@@ -368,36 +368,36 @@
         <dependencies>
 
             <!-- ================================================================== -->
-            <!-- Polyglotter subprojects -->
+            <!-- Chrysalix subprojects -->
             <!-- ================================================================== -->
             <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>polyglotter-common</artifactId>
-                <version>${polyglotter.common.version}</version>
+                <groupId>org.chrysalix</groupId>
+                <artifactId>chrysalix-common</artifactId>
+                <version>${chrysalix.common.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>polyglotter-common</artifactId>
-                <version>${polyglotter.common.version}</version>
+                <groupId>org.chrysalix</groupId>
+                <artifactId>chrysalix-common</artifactId>
+                <version>${chrysalix.common.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>polyglotter-engine</artifactId>
-                <version>${polyglotter.engine.version}</version>
+                <groupId>org.chrysalix</groupId>
+                <artifactId>chrysalix-engine</artifactId>
+                <version>${chrysalix.engine.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
+                <groupId>org.chrysalix</groupId>
                 <artifactId>modelspace-engine</artifactId>
                 <version>${modelspace.engine.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
+                <groupId>org.chrysalix</groupId>
                 <artifactId>modelspace-engine</artifactId>
                 <version>${modelspace.engine.version}</version>
                 <type>test-jar</type>
@@ -405,27 +405,27 @@
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
+                <groupId>org.chrysalix</groupId>
                 <artifactId>modelspace-java</artifactId>
                 <version>${modelspace.java.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
+                <groupId>org.chrysalix</groupId>
                 <artifactId>modelspace-xsd</artifactId>
                 <version>${modelspace.xsd.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>org.polyglotter.eclipse</artifactId>
+                <groupId>org.chrysalix</groupId>
+                <artifactId>org.chrysalix.eclipse</artifactId>
                 <version>${polyglotter.eclipse.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.polyglotter</groupId>
-                <artifactId>polyglotter-test</artifactId>
-                <version>${polyglotter.test.version}</version>
+                <groupId>org.chrysalix</groupId>
+                <artifactId>chrysalix-test</artifactId>
+                <version>${chrysalix.test.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
@@ -627,8 +627,8 @@
     <!-- ================================================================== -->
     <modules>
         <module>modelspace</module>
-        <module>polyglotter-common</module>
-        <module>polyglotter-engine</module>
+        <module>chrysalix-common</module>
+        <module>chrysalix-engine</module>
     </modules>
 
 </project>

@@ -58,7 +58,7 @@ public class MetamodelInstaller {
     private static final String ARCHIVE_NAME = MODELSPACE_PREFIX + "%s-%s-module-with-dependencies.zip";
 
     // pass in category, version, name
-    private static final String EXTENSION_PATH_PATTERN = "org/polyglotter/" + MODELSPACE_PREFIX + "%s/%s/%s";
+    private static final String EXTENSION_PATH_PATTERN = "org/chrysalix/" + MODELSPACE_PREFIX + "%s/%s/%s";
 
     private boolean archiveExists( final Node categoryNode,
                                    final String archiveName ) throws Exception {
