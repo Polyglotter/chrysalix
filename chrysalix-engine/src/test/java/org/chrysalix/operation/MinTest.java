@@ -26,44 +26,51 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Min;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class MinTest {
 
-    private static final String ID = Min.TERM_DESCRIPTOR.id();
+    private static final String ID = Min.TERM_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Number > DOUBLE_TERM;
     private static Value< Number > INT_TERM;
     private static Value< Number > INT2_TERM;
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        DOUBLE_TERM = TransformationFactory.createValue( Min.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
-        INT_TERM = TransformationFactory.createValue( Min.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        INT2_TERM = TransformationFactory.createValue( Min.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        FACTORY = new TransformationTestFactory();
+        DOUBLE_TERM = FACTORY.createNumberValue( "/my/path/double", Min.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        INT_TERM = FACTORY.createNumberValue( "/my/path/int", Min.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = FACTORY.createNumberValue( "/my/path/int2", Min.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private Min operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Min( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Min( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
+        assertThat( this.operation.inputs().length, is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs()[ 0 ], is( INT_TERM ) );
     }
 
     @Test
@@ -81,8 +88,8 @@ public final class MinTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Min.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Min.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Min.class ) ) );
     }
 
@@ -96,18 +103,12 @@ public final class MinTest {
     @Test
     public void shouldFindMinOfMultipleinputs() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM, INT2_TERM, DOUBLE_TERM );
-        assertThat( this.operation.inputs().size(), is( 3 ) );
+        assertThat( this.operation.inputs().length, is( 3 ) );
         assertThat( this.operation.get(), is( ( Number ) Integer.valueOf( INT_TERM.get().intValue() ).doubleValue() ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -120,18 +121,13 @@ public final class MinTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
     @Test( expected = ChrysalixException.class )
     public void shouldNotBeAbleToGetResultAfterConstruction() throws ChrysalixException {
         this.operation.get();
-    }
-
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( INT_TERM );
     }
 
     @Test
@@ -142,18 +138,18 @@ public final class MinTest {
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.minOperationDescription.text() ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Min.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.minOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Min.NAME ) ) );
     }
 
 }

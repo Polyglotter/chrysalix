@@ -23,11 +23,11 @@
  */
 package org.chrysalix.transformation;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import org.chrysalix.ChrysalixException;
+import org.modelspace.ModelElement;
+import org.modelspace.ModelObject;
 
 /**
  * An input or output {@link Value value}.
@@ -35,7 +35,7 @@ import org.chrysalix.ChrysalixException;
  * @param <T>
  *        the type of value
  */
-public interface Value< T > {
+public interface Value< T > extends ModelElement {
 
     /**
      * A {@link Number number} term sorter that sorts the term values in ascending order. If there is an error accessing either
@@ -90,23 +90,32 @@ public interface Value< T > {
     };
 
     /**
-     * An empty list of values.
+     * An empty array of values.
      */
-    List< Value< ? > > NO_VALUES = Collections.emptyList();
+    Value< ? >[] NO_VALUES = new Value< ? >[ 0 ];
 
     /**
-     * @return the descriptor (never <code>null</code>)
+     * @return the descriptor identifier (never <code>null</code>)
+     * @throws ChrysalixException
+     *         if an error occurs
      */
-    ValueDescriptor< T > descriptor();
+    String descriptorId() throws ChrysalixException;
 
     /**
-     * @return the value (can be <code>null</code>)
+     * @return the value of the model object property or the scalar value set (can be <code>null</code>)
      * @throws ChrysalixException
      *         if there is an error
      */
     T get() throws ChrysalixException;
 
     /**
+     * @return the model object being wrapped by this domain object (never <code>null</code>)
+     */
+    ModelObject modelObect();
+
+    /**
+     * If the value had been the value of a model property it now becomes the value of this scalar value.
+     * 
      * @param newValue
      *        the new value (can be <code>null</code>)
      * @throws ChrysalixException
@@ -115,6 +124,6 @@ public interface Value< T > {
      *         if the value is not modifiable
      * @see ValueDescriptor#modifiable()
      */
-    void set( final T newValue ) throws ChrysalixException;
+    void set( final Object newValue ) throws ChrysalixException;
 
 }

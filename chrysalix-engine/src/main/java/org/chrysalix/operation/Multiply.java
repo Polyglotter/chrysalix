@@ -23,7 +23,6 @@
  */
 package org.chrysalix.operation;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -31,22 +30,29 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * Multiplies a collection of terms.
  */
 public final class Multiply extends AbstractOperation< Number > {
 
+    static final String DESCRIPTION = "Multiplies two or more numbers together";
+    private static final String INPUT_DESCRIPTION = "An input term being multiplied by other terms.";
+    private static final String INPUT_NAME = "Input";
+    static final String NAME = "Multiply";
+
     /**
      * The input term descriptor.
      */
     public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Multiply.class, "input" ),
-                                                     ChrysalixI18n.multiplyOperationInputDescription.text(),
-                                                     ChrysalixI18n.multiplyOperationInputName.text(),
+                                                     ChrysalixI18n.localize( INPUT_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( INPUT_NAME ),
                                                      Number.class,
                                                      true,
                                                      2,
@@ -62,37 +68,40 @@ public final class Multiply extends AbstractOperation< Number > {
      */
     public static final OperationDescriptor< Number > DESCRIPTOR =
         new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Multiply.class ),
-                                                   ChrysalixI18n.multiplyOperationDescription.text(),
-                                                   ChrysalixI18n.multiplyOperationName.text(),
+                                                   ChrysalixI18n.localize( DESCRIPTION ),
+                                                   ChrysalixI18n.localize( NAME ),
                                                    Number.class,
                                                    INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Number > newInstance( final Transformation transformation ) {
-                return new Multiply( transformation );
+            public Operation< Number > newInstance( final ModelObject operation,
+                                                    final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Multiply( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Multiply( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.ARITHMETIC );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    Multiply( final ModelObject operation,
+              final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
     }
 
     /**
@@ -103,7 +112,6 @@ public final class Multiply extends AbstractOperation< Number > {
     @Override
     protected Number calculate() throws ChrysalixException {
         assert !problems().isError();
-
         Number result = null;
         int i = 0;
 
@@ -140,23 +148,28 @@ public final class Multiply extends AbstractOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+
         // make sure there are terms
-        if ( inputs().isEmpty() ) {
+        if ( inputs().length == 0 ) {
             final ValidationProblem problem =
                 TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.multiplyOperationHasNoTerms.text( transformationId() ) );
+                                                   ChrysalixI18n.localize( AbstractOperation.HAS_NO_TERMS,
+                                                                           NAME,
+                                                                           transformationId() ) );
             problems().add( problem );
         } else {
-            if ( inputs().size() < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
+            if ( inputs().length < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
                 final ValidationProblem problem =
                     TransformationFactory.createError( transformationId(),
-                                                       ChrysalixI18n.invalidTermCount.text( name(),
-                                                                                              transformationId(),
-                                                                                              inputs().size() ) );
+                                                       ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_COUNT,
+                                                                               NAME,
+                                                                               transformationId(),
+                                                                               inputs().length ) );
                 problems().add( problem );
             }
 
@@ -170,20 +183,23 @@ public final class Multiply extends AbstractOperation< Number > {
                     if ( !( value instanceof Number ) ) {
                         final ValidationProblem problem =
                             TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.invalidTermType.text( name(),
-                                                                                                     transformationId() ) );
+                                                               ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_TYPE,
+                                                                                       NAME,
+                                                                                       transformationId() ) );
                         problems().add( problem );
                     }
                 } catch ( final ChrysalixException e ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                          transformationId() ) );
+                                                           ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                                   NAME,
+                                                                                   transformationId() ) );
                     problems().add( problem );
-                    Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
                 }
             }
         }
+
+        return super.problems();
     }
 
 }

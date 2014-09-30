@@ -29,44 +29,37 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
-import org.chrysalix.operation.Map;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.modelspace.Model;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelProperty;
 
+@Ignore
 @SuppressWarnings( { "javadoc" } )
 public final class MapTest {
 
-    private static final String SOURCE_ID = Map.SOURCE_MODEL_OBJECT_DESCRIPTOR.id();
-    private static final String SOURCE_PROP_ID = Map.SOURCE_PROP_DESCRIPTOR.id();
-    private static final String TARGET_ID = Map.TARGET_MODEL_OBJECT_DESCRIPTOR.id();
-    private static final String TARGET_PROP_ID = Map.TARGET_PROP_DESCRIPTOR.id();
+    private static final String SOURCE_PROP_ID = Map.SOURCE_PROP_DESCRIPTOR.name();
+    private static final String TARGET_PROP_ID = Map.TARGET_PROP_DESCRIPTOR.name();
 
+    private ModelObject modelObject;
     private Map operation;
 
     private void addValidInputs() throws Exception {
-        this.operation.addInput( SOURCE_ID, mock( Model.class ) );
-        this.operation.addInput( SOURCE_PROP_ID, "sourceProp" );
-        this.operation.addInput( TARGET_ID, mock( Model.class ) );
-        this.operation.addInput( TARGET_PROP_ID, "targetProp" );
+        this.operation.addInput( SOURCE_PROP_ID, mock( ModelProperty.class ) );
+        this.operation.addInput( TARGET_PROP_ID, mock( ModelProperty.class ) );
         assertThat( this.operation.problems().isEmpty(), is( true ) );
     }
 
     @Before
-    public void beforeEach() {
-        this.operation = new Map( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Map( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test( expected = ChrysalixException.class )
     public void shouldFailGettingResultAfterConstruction() throws Exception {
         this.operation.get();
-    }
-
-    @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ASSIGNMENT ), is( true ) );
     }
 
     @Test
@@ -76,28 +69,14 @@ public final class MapTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveProblemWhenMoreThanOneSourceModel() throws Exception {
-        addValidInputs();
-        this.operation.addInput( SOURCE_ID, mock( Model.class ) );
-        assertThat( this.operation.problems().size(), is( 1 ) );
     }
 
     @Test
     public void shouldHaveProblemWhenMoreThanOneSourceProperty() throws Exception {
         addValidInputs();
         this.operation.addInput( SOURCE_PROP_ID, "sourceProp2" );
-        assertThat( this.operation.problems().size(), is( 1 ) );
-    }
-
-    @Test
-    public void shouldHaveProblemWhenMoreThanOneTargetModel() throws Exception {
-        addValidInputs();
-        this.operation.addInput( TARGET_ID, mock( Model.class ) );
         assertThat( this.operation.problems().size(), is( 1 ) );
     }
 
@@ -109,23 +88,9 @@ public final class MapTest {
     }
 
     @Test
-    public void shouldHaveProblemWhenSourceModelHasWrongType() throws Exception {
-        addValidInputs();
-        this.operation.addInput( SOURCE_ID, "wrongType" );
-        assertThat( this.operation.problems().size(), is( 1 ) );
-    }
-
-    @Test
     public void shouldHaveProblemWhenSourcePropertyHasWrongType() throws Exception {
         addValidInputs();
         this.operation.addInput( SOURCE_PROP_ID, true );
-        assertThat( this.operation.problems().size(), is( 1 ) );
-    }
-
-    @Test
-    public void shouldHaveProblemWhenTargetModelHasWrongType() throws Exception {
-        addValidInputs();
-        this.operation.addInput( TARGET_ID, "wrongType" );
         assertThat( this.operation.problems().size(), is( 1 ) );
     }
 

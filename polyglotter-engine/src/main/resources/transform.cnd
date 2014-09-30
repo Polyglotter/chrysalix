@@ -1,0 +1,63 @@
+/*
+ * Polyglotter (http://polyglotter.org)
+ * See the COPYRIGHT.txt file distributed with this work for information
+ * regarding copyright ownership.  Some portions may be licensed
+ * to Red Hat, Inc. under one or more contributor license agreements.
+ * See the AUTHORS.txt file in the distribution for a full listing of 
+ * individual contributors.
+ *
+ * Polyglotter is free software. Unless otherwise indicated, all code in Polyglotter
+ * is licensed to you under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * Polyglotter is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+<tx = 'http://www.polyglotter.org/transform/1.0'>
+<mm = 'http://modeshape.org/modeshape-modeler/1.0'>
+
+/*
+ * An operation input. The node name is the descriptor ID that this input uses.
+ * 
+ * Properties:
+ *   path - 'true' if the 'value' property represents a node path
+ *   value - the input value (usually a path to a model object but can be a literal) 
+ */
+[tx:input]
+  - tx:path (boolean)
+  - tx:value (string)
+
+/*
+ * An operation included in a transformation. The node name is the operation output descriptor ID.
+ * 
+ * Properties:
+ *   text - the DSL representing the operation
+ * 
+ * Children: the operation inputs named by their descriptor ID
+ */
+[tx:operation] > tx:input
+  + * (tx:input) = tx:input copy sns
+  
+/*
+ * A transformation model.
+ * 
+ * Properties:
+ *   sources - a collection of source model paths
+ *   targets - a collection list of target model paths
+ * 
+ * Children: the operations named by their descriptor ID
+ */
+[tx:transformation] > mm:model mixin
+  - tx:sources (path) multiple
+  - tx:targets (path) multiple
+  + * (tx:operation) = tx:operation copy sns
+
+

@@ -24,30 +24,75 @@
 package org.chrysalix.transformation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
+import org.chrysalix.ChrysalixLexicon;
 import org.chrysalix.common.CheckArg;
+import org.chrysalix.common.Logger;
 import org.chrysalix.operation.BuiltInOperationDescriptorProvider;
 import org.chrysalix.operation.ValueDescriptorImpl;
-import org.chrysalix.operation.ValueImpl;
 import org.chrysalix.transformation.ValidationProblem.Severity;
 import org.modelspace.Model;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelProperty;
+import org.modelspace.Modelspace;
 import org.modelspace.ModelspaceException;
 
 /**
  * A factory for creating {@link Transformation transformation}-related objects.
  */
-public final class TransformationFactory {
+public class TransformationFactory {
 
-    private static final OperationDescriptorProvider OP_PROVIDER = new BuiltInOperationDescriptorProvider();
+    private static final String ERROR_ADDING_TRANSFORMATION_OPERATION =
+        "The operation '%s' could not be added to transformation '%s.'";
+    private static final String ERROR_ADDING_TRANSFORMATION_SOURCE_MODEL =
+        "A source model at path '%s' could not be added to transformation '%s.'";
+    private static final String ERROR_ADDING_TRANSFORMATION_SOURCE_MODELS =
+        "An error occurred adding source models to transformation '%s.'";
+    private static final String ERROR_ADDING_TRANSFORMATION_TARGET_MODEL =
+        "A target model at path '%s' could not be added to transformation '%s.'";
+    private static final String ERROR_ADDING_TRANSFORMATION_TARGET_MODELS =
+        "An error occurred adding target models to transformation '%s.'";
+    private static final String ERROR_DESCRIPTOR_TYPE = "Error descriptor '%s' was not an operation descriptor";
+    private static final String ERROR_FINDING_OPERATION_DESCRIPTOR = "Error trying to find operation descriptor with ID '%s'";
+    private static final String ERROR_FINDING_OPERATIONS = "Unable to obtain operations for transformation model '%s'";
+    private static final String ERROR_FINDING_SOURCE_MODELS = "Unable to obtain source models for transformation model '%s'";
+    private static final String ERROR_FINDING_TARGET_MODELS = "Unable to obtain targets models for transformation model '%s'";
+    private static final String ERROR_FINDING_TRANSFORMATION_MODEL_NAME =
+        "Unable to determine transformation's name when adding operation '%s'";
+    private static final String ERROR_REMOVING_TRANSFORMATION_OPERATION =
+        "The operation '%s' could not be removed from transformation '%s.'";
+    private static final String ERROR_REMOVING_TRANSFORMATION_SOURCE_MODELS =
+        "An error occurred removing source models from transformation '%s.'";
+    private static final String ERROR_REMOVING_TRANSFORMATION_TARGET_MODELS =
+        "An error occurred removing target models from transformation '%s.'";
+    private static final String ERROR_REMOVING_UNADDED_TRANSFORMATION_SOURCE_MODEL =
+        "The source model at path '%s' could not be removed from transformation '%s' as it has never been added.";
+    private static final String ERROR_REMOVING_UNADDED_TRANSFORMATION_TARGET_MODEL =
+        "The target model at path '%s' could not be removed from transformation '%s' as it has never been added.";
+    private static final String NEW_TRANSFORMATION_NAME = "New Transformation";
+    private static final String UNABLE_TO_FIND_TRANSFORMATION_ID = "Unble to find transformation path";
+    private static final String UNABLE_TO_FIND_TRANSFORMATION_ID_OR_NAME = "Unable to find transformation path or name";
+    private static final String UNKNOWN_NAME = "**Unknown**";
+
+    private static final OperationDescriptorProvider BUILT_IN_OP_PROVIDER = new BuiltInOperationDescriptorProvider();
+    static final Logger LOGGER = Logger.logger( TransformationFactory.class );
+
+    /**
+     * A descriptor registry
+     */
+    public static final Map< Modelspace, TransformationFactory > REGISTRY = new HashMap<>();
 
     /**
      * @param transformationId
@@ -130,104 +175,10 @@ public final class TransformationFactory {
     }
 
     /**
-     * @param id
-     *        the transformation identifier (cannot be <code>null</code> or empty)
-     * @return the transformation (never <code>null</code>)
-     */
-    public static Transformation createTransformation( final String id ) {
-        return new TransformationImpl( id );
-    }
-
-    /**
      * @return an empty validation problems collection (never <code>null</code>)
      */
     public static ValidationProblems createValidationProblems() {
         return new Problems();
-    }
-
-    /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @param initialValue
-     *        the initial value
-     * @return the new double value (never <code>null</code>)
-     * @throws ChrysalixException
-     *         if there is a problem setting the initial value
-     */
-    public static Value< Double > createValue( final ValueDescriptor< Double > descriptor,
-                                               final double initialValue ) throws ChrysalixException {
-        return new DoubleValue( descriptor, initialValue );
-    }
-
-    /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @param initialValue
-     *        the initial value
-     * @return the new double value (never <code>null</code>)
-     * @throws ChrysalixException
-     *         if there is a problem setting the initial value
-     */
-    public static Value< Float > createValue( final ValueDescriptor< Float > descriptor,
-                                              final float initialValue ) throws ChrysalixException {
-        return new FloatValue( descriptor, initialValue );
-    }
-
-    /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @param initialValue
-     *        the initial value
-     * @return the new double value (never <code>null</code>)
-     * @throws ChrysalixException
-     *         if there is a problem setting the initial value
-     */
-    public static Value< Integer > createValue( final ValueDescriptor< Integer > descriptor,
-                                                final int initialValue ) throws ChrysalixException {
-        return new IntegerValue( descriptor, initialValue );
-    }
-
-    /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @param initialValue
-     *        the initial value
-     * @return the new double value (never <code>null</code>)
-     * @throws ChrysalixException
-     *         if there is a problem setting the initial value
-     */
-    public static Value< Long > createValue( final ValueDescriptor< Long > descriptor,
-                                             final long initialValue ) throws ChrysalixException {
-        return new LongValue( descriptor, initialValue );
-    }
-
-    /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @return the new value (never <code>null</code>)
-     */
-    public static < T > Value< T > createValue( final ValueDescriptor< T > descriptor ) {
-        CheckArg.notNull( descriptor, "descriptor" );
-        return new ValueImpl<>( descriptor );
-    }
-
-    /**
-     * @param descriptor
-     *        the value descriptor (cannot be <code>null</code>)
-     * @param value
-     *        the initial value (can be <code>null</code>)
-     * @return the new value (never <code>null</code>)
-     * @throws ChrysalixException
-     *         if an error occurs
-     * @throws UnsupportedOperationException
-     *         if the descriptor is read-only
-     */
-    public static < T > Value< T > createValue( final ValueDescriptor< T > descriptor,
-                                                final T value ) throws ChrysalixException {
-        final Value< T > result = createValue( descriptor );
-        result.set( value );
-
-        return result;
     }
 
     /**
@@ -298,122 +249,105 @@ public final class TransformationFactory {
         return createValueDescriptor( valueId, valueDescription, valueName, valueType, true, 1, false );
     }
 
-    /**
-     * @return an unmodifiable list of descriptors sorted by operation name (never <code>null</code> or empty)
-     */
-    public static List< OperationDescriptor< ? > > descriptors() {
-        return OP_PROVIDER.descriptors();
-    }
+    private final Modelspace modeler;
+    private final Set< OperationDescriptorProvider > operationProviders;
+    private final Set< ValueDescriptor< ? >> descriptors;
 
     /**
-     * Don't allow construction outside this class.
+     * @param factoryModeler
+     *        the modelspace that this factory is working with (cannot be <code>null</code>)
      */
-    private TransformationFactory() {
-        // nothing to do
+    public TransformationFactory( final Modelspace factoryModeler ) {
+        CheckArg.notNull( factoryModeler, "factoryModeler" );
+        this.modeler = factoryModeler;
+        this.descriptors = new HashSet<>();
+
+        this.operationProviders = new HashSet<>( 5 );
+        addOperationProvider( BUILT_IN_OP_PROVIDER );
+
+        if ( !REGISTRY.containsKey( this.modeler ) ) {
+            REGISTRY.put( this.modeler, this );
+        }
     }
 
-    private static class DoubleValue extends ValueImpl< Double > {
+    /**
+     * @param provider
+     *        the provider being added (cannot be <code>null</code>)
+     */
+    public void addOperationProvider( final OperationDescriptorProvider provider ) {
+        CheckArg.notNull( provider, "provider" );
 
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         */
-        public DoubleValue( final ValueDescriptor< Double > descriptor ) {
-            super( descriptor );
+        if ( this.operationProviders.add( provider ) ) {
+            for ( final ValueDescriptor< ? > descriptor : provider.descriptors() ) {
+                this.descriptors.add( descriptor );
+            }
         }
-
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         * @param initialValue
-         *        the initial value (can be <code>null</code>)
-         * @throws ChrysalixException
-         *         if there is a problem setting the initial value
-         */
-        public DoubleValue( final ValueDescriptor< Double > descriptor,
-                            final double initialValue ) throws ChrysalixException {
-            this( descriptor );
-            set( initialValue );
-        }
-
     }
 
-    private static class FloatValue extends ValueImpl< Float > {
-
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         */
-        public FloatValue( final ValueDescriptor< Float > descriptor ) {
-            super( descriptor );
-        }
-
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         * @param initialValue
-         *        the initial value (can be <code>null</code>)
-         * @throws ChrysalixException
-         *         if there is a problem setting the initial value
-         */
-        public FloatValue( final ValueDescriptor< Float > descriptor,
-                           final float initialValue ) throws ChrysalixException {
-            this( descriptor );
-            set( initialValue );
-        }
-
+    /**
+     * Creates a new transformation or retrieves the existing one.
+     * 
+     * @param transformationModel
+     *        the transformation model whose domain object is being created (cannot be <code>null</code> or empty)
+     * @return the transformation model domain object (never <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error occurs
+     * @throws IllegalArgumentException
+     *         if model is <code>null</code> or if it is not a transformation model
+     */
+    public Transformation createTransformation( final Model transformationModel ) throws ModelspaceException {
+        CheckArg.notNull( transformationModel, "transformationModel" );
+        CheckArg.notNull( transformationModel.metamodel().id(), Transformation.METAMODEL_ID );
+        return new TransformationImpl( transformationModel );
     }
 
-    private static class IntegerValue extends ValueImpl< Integer > {
-
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         */
-        public IntegerValue( final ValueDescriptor< Integer > descriptor ) {
-            super( descriptor );
-        }
-
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         * @param initialValue
-         *        the initial value (can be <code>null</code>)
-         * @throws ChrysalixException
-         *         if there is a problem setting the initial value
-         */
-        public IntegerValue( final ValueDescriptor< Integer > descriptor,
-                             final int initialValue ) throws ChrysalixException {
-            this( descriptor );
-            set( initialValue );
-        }
-
+    /**
+     * Creates a new transformation or retrieves the existing one.
+     * 
+     * @param path
+     *        the path of the model, not including the name (cannot be <code>null</code> or empty)
+     * @return the transformation model (never <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error occurs
+     * @throws IllegalArgumentException
+     *         if path is <code>null</code> or empty
+     */
+    public Transformation createTransformation( final String path ) throws ModelspaceException {
+        return new TransformationImpl( this.modeler, path );
     }
 
-    private static class LongValue extends ValueImpl< Long > {
+    /**
+     * @param id
+     *        the identifier of the descriptor being requested (cannot be <code>null</code> or empty)
+     * @return the descriptor (never <code>null</code>)
+     * @throws ChrysalixException
+     *         if the descriptor cannot be found
+     * 
+     */
+    public ValueDescriptor< ? > descriptor( final String id ) throws ChrysalixException {
+        CheckArg.notEmpty( id, "id" );
 
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         */
-        public LongValue( final ValueDescriptor< Long > descriptor ) {
-            super( descriptor );
+        for ( final ValueDescriptor< ? > descriptor : descriptors() ) {
+            if ( id.equals( descriptor.id() ) ) {
+                return descriptor;
+            }
         }
 
-        /**
-         * @param descriptor
-         *        the value descriptor (cannot be <code>null</code>)
-         * @param initialValue
-         *        the initial value (can be <code>null</code>)
-         * @throws ChrysalixException
-         *         if there is a problem setting the initial value
-         */
-        public LongValue( final ValueDescriptor< Long > descriptor,
-                          final long initialValue ) throws ChrysalixException {
-            this( descriptor );
-            set( initialValue );
-        }
+        throw new ChrysalixException( ChrysalixI18n.localize( ERROR_FINDING_OPERATION_DESCRIPTOR, id ) );
+    }
 
+    /**
+     * @return an unmodifiable list of descriptors (never <code>null</code> or empty)
+     */
+    public Set< ValueDescriptor< ? > > descriptors() {
+        return Collections.unmodifiableSet( this.descriptors );
+    }
+
+    /**
+     * @return the modeler associated with this factory (never <code>null</code>)
+     */
+    protected Modelspace modelspace() {
+        return this.modeler;
     }
 
     private static final class Problem implements ValidationProblem {
@@ -739,68 +673,47 @@ public final class TransformationFactory {
 
     private static class TransformationImpl implements Transformation {
 
-        private final String id;
-        private final Map< Model, ModelType > models;
-        private final List< Operation< ? > > operations;
+        private final Model model;
 
         /**
-         * @param tranformationId
-         *        the transformation identifier (cannot be <code>null</code> or empty)
+         * Constructs an existing transformation model.
+         * 
+         * @param model
+         *        the transformation model (cannot be <code>null</code>)
          */
-        public TransformationImpl( final String tranformationId ) {
-            CheckArg.notEmpty( tranformationId, "tranformationId" );
-            this.id = tranformationId;
-            this.models = new HashMap<>();
-            this.operations = new ArrayList<>();
+        TransformationImpl( final Model model ) {
+            CheckArg.notNull( model, "model" );
+            this.model = model;
+        }
+
+        /**
+         * Creates a new transformation model.
+         * 
+         * @param modeler
+         *        the modeler used to create the transformation model (cannot be <code>null</code>)
+         * @param parentPath
+         *        the path of the container where the new transformation model will be created (cannot be <code>null</code> or
+         *        empty)
+         * @throws ModelspaceException
+         *         if an error occurs
+         */
+        TransformationImpl( final Modelspace modeler,
+                            final String parentPath ) throws ModelspaceException {
+            CheckArg.notNull( modeler, "modeler" );
+            CheckArg.notEmpty( parentPath, "parentPath" );
+            this.model = modeler.newModel( parentPath + "/" + ChrysalixI18n.localize( NEW_TRANSFORMATION_NAME ),
+                                           Transformation.METAMODEL_ID,
+                                           false );
         }
 
         /**
          * {@inheritDoc}
          * 
-         * @see org.chrysalix.transformation.Transformation#add(org.chrysalix.transformation.Transformation.ModelType,
-         *      org.modelspace.Model[])
+         * @see org.modelspace.ModelElement#absolutePath()
          */
         @Override
-        public void add( final ModelType modelType,
-                         final Model... modelsBeingAdded ) throws ChrysalixException {
-            CheckArg.notNull( modelType, "modelType" );
-            CheckArg.isNotEmpty( modelsBeingAdded, "modelsBeingAdded" );
-
-            for ( final Model model : modelsBeingAdded ) {
-                if ( model == null ) {
-                    throw new ChrysalixException( ChrysalixI18n.errorAddingOrRemovingNullTransformationModel,
-                                                    id() );
-                }
-
-                final ModelType currentType = this.models.get( model );
-
-                // if not found just add it
-                if ( currentType == null ) {
-                    this.models.put( model, modelType );
-                } else {
-                    // model has already been added with that type
-                    if ( ( currentType == ModelType.SOURCE_TARGET ) || ( currentType == modelType ) ) {
-                        String modelName = null;
-
-                        try {
-                            modelName = model.name();
-                        } catch ( final ModelspaceException e ) {
-                            throw new ChrysalixException( e,
-                                                            ChrysalixI18n.errorAddingTransformationModel,
-                                                            id(),
-                                                            modelType.name() );
-                        }
-
-                        throw new ChrysalixException( ChrysalixI18n.errorAddingTransformationModelWithName,
-                                                        modelName,
-                                                        id(),
-                                                        modelType.name() );
-                    }
-
-                    // added either source or target so now model can be used as both
-                    this.models.put( model, ModelType.SOURCE_TARGET );
-                }
-            }
+        public String absolutePath() throws ModelspaceException {
+            return this.model.modelRelativePath();
         }
 
         /**
@@ -813,16 +726,140 @@ public final class TransformationFactory {
             CheckArg.isNotEmpty( operationsToAdd, "operationsToAdd" );
 
             for ( final Operation< ? > operation : operationsToAdd ) {
-                if ( operation == null ) {
-                    throw new ChrysalixException( ChrysalixI18n.errorAddingOrRemovingNullTransformationOperation,
-                                                    id() );
+                CheckArg.notNull( operation, "operation" );
+                String opName = ChrysalixI18n.localize( UNKNOWN_NAME );
+
+                try {
+                    final ModelObject[] modelObjects = this.model.addChildOfType( ChrysalixLexicon.Operation.NODE_TYPE,
+                                                                                  operation.descriptorId() );
+                    final ModelObject operationModelObject = modelObjects[ 0 ];
+                    opName = operationModelObject.name();
+                    LOGGER.debug( "Added operation '%s' with descriptor '%s' to transformation '%s'",
+                                  opName,
+                                  operation.descriptorId(),
+                                  id() );
+                } catch ( final Exception e ) {
+                    try {
+                        throw new ChrysalixException( e,
+                                                      ChrysalixI18n.localize( ERROR_ADDING_TRANSFORMATION_OPERATION,
+                                                                              opName,
+                                                                              this.model.name() ) );
+                    } catch ( final ModelspaceException error ) {
+                        throw new ChrysalixException( error,
+                                                      ChrysalixI18n.localize( ERROR_FINDING_TRANSFORMATION_MODEL_NAME, opName ) );
+                    }
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.chrysalix.transformation.Transformation#addSource(org.modelspace.Model[])
+         */
+        @Override
+        public void addSource( final Model... sources ) throws ChrysalixException {
+            CheckArg.isNotEmpty( sources, "sources" );
+
+            try {
+                final String[] pathBeingAdded = new String[ sources.length ];
+
+                for ( int i = 0; i < sources.length; ++i ) {
+                    CheckArg.notNull( sources[ i ], "sources[" + i + ']' );
+                    pathBeingAdded[ i ] = sources[ i ].absolutePath();
                 }
 
-                if ( this.operations.contains( operation ) || !this.operations.add( operation ) ) {
-                    throw new ChrysalixException( ChrysalixI18n.errorAddingOrRemovingTransformationOperation,
-                                                    operation.descriptor().id(),
-                                                    id() );
+                String[] sourcePaths = new String[ 0 ]; // current sources go here
+                final ModelProperty property = this.model.property( ChrysalixLexicon.Transformation.SOURCES );
+
+                // make sure no duplicates
+                if ( property != null ) {
+                    sourcePaths = property.stringValues();
+
+                    for ( final Object path : pathBeingAdded ) {
+                        for ( final Object source : sourcePaths ) {
+                            if ( path.equals( source ) ) {
+                                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_TRANSFORMATION_SOURCE_MODEL,
+                                                                                      path,
+                                                                                      getName() ) );
+                            }
+                        }
+                    }
                 }
+
+                final String[] newSources = new String[ pathBeingAdded.length + sourcePaths.length ];
+                System.arraycopy( pathBeingAdded, 0, newSources, 0, pathBeingAdded.length );
+
+                if ( sourcePaths.length != 0 ) {
+                    System.arraycopy( sourcePaths, 0, newSources, pathBeingAdded.length, sourcePaths.length );
+                }
+
+                this.model.setProperty( ChrysalixLexicon.Transformation.SOURCES, ( Object[] ) newSources );
+            } catch ( final Exception e ) {
+                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_TRANSFORMATION_SOURCE_MODELS,
+                                                                      getName() ) );
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.chrysalix.transformation.Transformation#addTarget(org.modelspace.Model[])
+         */
+        @Override
+        public void addTarget( final Model... targets ) throws ChrysalixException {
+            CheckArg.isNotEmpty( targets, "targets" );
+
+            try {
+                final String[] pathsBeingAdded = new String[ targets.length ];
+
+                for ( int i = 0; i < targets.length; ++i ) {
+                    CheckArg.notNull( targets[ i ], "targets[" + i + ']' );
+                    pathsBeingAdded[ i ] = targets[ i ].absolutePath();
+                }
+
+                String[] targetPaths = new String[ 0 ]; // current targets go here
+                final ModelProperty property = this.model.property( ChrysalixLexicon.Transformation.TARGETS );
+
+                // make sure no duplicates
+                if ( property != null ) {
+                    targetPaths = property.stringValues();
+
+                    for ( final Object path : pathsBeingAdded ) {
+                        for ( final Object target : targetPaths ) {
+                            if ( path.equals( target ) ) {
+                                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_TRANSFORMATION_TARGET_MODEL,
+                                                                                      path,
+                                                                                      getName() ) );
+                            }
+                        }
+                    }
+                }
+
+                final String[] newTargets = new String[ pathsBeingAdded.length + targetPaths.length ];
+                System.arraycopy( pathsBeingAdded, 0, newTargets, 0, pathsBeingAdded.length );
+
+                if ( targetPaths.length != 0 ) {
+                    System.arraycopy( targetPaths, 0, newTargets, pathsBeingAdded.length, targetPaths.length );
+                }
+
+                this.model.setProperty( ChrysalixLexicon.Transformation.TARGETS, ( Object ) newTargets );
+            } catch ( final Exception e ) {
+                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_TRANSFORMATION_TARGET_MODELS,
+                                                                      getName() ) );
+            }
+        }
+
+        private TransformationFactory factory() {
+            return REGISTRY.get( this.model.modelspace() );
+        }
+
+        private String getName() {
+            try {
+                final String name = this.model.name();
+                return name;
+            } catch ( final ModelspaceException e ) {
+                return ChrysalixI18n.localize( UNKNOWN_NAME );
             }
         }
 
@@ -832,8 +869,19 @@ public final class TransformationFactory {
          * @see org.chrysalix.transformation.Transformation#id()
          */
         @Override
-        public String id() {
-            return this.id;
+        public String id() throws ChrysalixException {
+            try {
+                return model().absolutePath();
+            } catch ( final ModelspaceException e ) {
+                try {
+                    throw new ChrysalixException( e, ChrysalixI18n.localize( UNABLE_TO_FIND_TRANSFORMATION_ID, name() ) );
+                } catch ( final ModelspaceException error ) {
+                    final ChrysalixException pe =
+                        new ChrysalixException( ChrysalixI18n.localize( UNABLE_TO_FIND_TRANSFORMATION_ID_OR_NAME ) );
+                    pe.addSuppressed( error );
+                    throw pe;
+                }
+            }
         }
 
         /**
@@ -843,8 +891,37 @@ public final class TransformationFactory {
          */
         @Override
         public Iterator< Operation< ? >> iterator() {
-            final List< Operation< ? >> copy = Collections.unmodifiableList( this.operations );
-            return copy.iterator();
+            try {
+                final List< Operation< ? >> copy = Arrays.asList( operations() );
+                return copy.iterator();
+            } catch ( final Exception e ) {
+                throw new RuntimeException( e );
+            }
+        }
+
+        @Override
+        public Model model() {
+            return this.model;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.modelspace.ModelElement#modelRelativePath()
+         */
+        @Override
+        public String modelRelativePath() throws ModelspaceException {
+            return this.model.modelRelativePath();
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.modelspace.ModelElement#name()
+         */
+        @Override
+        public String name() throws ModelspaceException {
+            return this.model.name();
         }
 
         /**
@@ -853,112 +930,25 @@ public final class TransformationFactory {
          * @see org.chrysalix.transformation.Transformation#operations()
          */
         @Override
-        public Operation< ? >[] operations() {
-            return this.operations.toArray( new Operation< ? >[ this.operations.size() ] );
-        }
+        public Operation< ? >[] operations() throws ChrysalixException {
+            final List< Operation< ? > > operations = new ArrayList<>();
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.chrysalix.transformation.Transformation#remove(org.modelspace.Model[])
-         */
-        @Override
-        public void remove( final Model... modelsBeingRemoved ) throws ChrysalixException {
-            CheckArg.isNotEmpty( modelsBeingRemoved, "modelsBeingRemoved" );
+            try {
+                for ( final ModelObject kid : this.model.childrenOfType( ChrysalixLexicon.Operation.NODE_TYPE ) ) {
+                    final ValueDescriptor< ? > descriptor = factory().descriptor( kid.name() );
 
-            for ( final Model model : modelsBeingRemoved ) {
-                if ( model == null ) {
-                    throw new ChrysalixException( ChrysalixI18n.errorAddingOrRemovingNullTransformationModel,
-                                                    id() );
-                }
-
-                final ModelType currentType = this.models.get( model );
-
-                // model was not added
-                if ( currentType == null ) {
-                    String modelName = null;
-
-                    try {
-                        modelName = model.name();
-                    } catch ( final ModelspaceException e ) {
-                        throw new ChrysalixException( e,
-                                                        ChrysalixI18n.errorRemovingUnaddedTransformationModel,
-                                                        id() );
-                    }
-
-                    throw new ChrysalixException( ChrysalixI18n.errorRemovingUnaddedTransformationModelWithName,
-                                                    modelName,
-                                                    id() );
-                }
-
-                this.models.remove( model );
-            }
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.chrysalix.transformation.Transformation#remove(org.chrysalix.transformation.Transformation.ModelType,
-         *      org.modelspace.Model[])
-         */
-        @Override
-        public void remove( final ModelType modelType,
-                            final Model... modelsBeingRemoved ) throws ChrysalixException {
-            CheckArg.notNull( modelType, "modelType" );
-            CheckArg.isNotEmpty( modelsBeingRemoved, "modelsBeingRemoved" );
-
-            for ( final Model model : modelsBeingRemoved ) {
-                if ( model == null ) {
-                    throw new ChrysalixException( ChrysalixI18n.errorAddingOrRemovingNullTransformationModel,
-                                                    id() );
-                }
-
-                final ModelType currentType = this.models.get( model );
-
-                // model was not added
-                if ( currentType == null ) {
-                    String modelName = null;
-
-                    try {
-                        modelName = model.name();
-                    } catch ( final ModelspaceException e ) {
-                        throw new ChrysalixException( e,
-                                                        ChrysalixI18n.errorRemovingUnaddedTransformationModel,
-                                                        id() );
-                    }
-
-                    throw new ChrysalixException( ChrysalixI18n.errorRemovingUnaddedTransformationModelWithName,
-                                                    modelName,
-                                                    id() );
-                }
-
-                // model had been previously added so can be removed
-                if ( currentType == modelType ) {
-                    this.models.remove( model );
-                } else if ( currentType == ModelType.SOURCE_TARGET ) {
-                    if ( modelType == ModelType.SOURCE ) {
-                        this.models.put( model, ModelType.TARGET );
+                    if ( descriptor instanceof OperationDescriptor ) {
+                        final Operation< ? > operation = ( ( OperationDescriptor< ? > ) descriptor ).newInstance( kid, this );
+                        operations.add( operation );
                     } else {
-                        this.models.put( model, ModelType.SOURCE );
+                        throw new ChrysalixException( ChrysalixI18n.localize( ERROR_DESCRIPTOR_TYPE, descriptor.id() ) );
                     }
-                } else {
-                    String modelName = null;
-
-                    try {
-                        modelName = model.name();
-                    } catch ( final ModelspaceException e ) {
-                        throw new ChrysalixException( e,
-                                                        ChrysalixI18n.errorRemovingTransformationModel,
-                                                        id(),
-                                                        modelType.name() );
-                    }
-
-                    throw new ChrysalixException( ChrysalixI18n.errorRemovingTransformationModelWithName,
-                                                    modelName,
-                                                    id(),
-                                                    modelType.name() );
                 }
+            } catch ( final ModelspaceException e ) {
+                throw new ChrysalixException( e, ChrysalixI18n.localize( ERROR_FINDING_OPERATIONS, getName() ) );
             }
+
+            return operations.toArray( new Operation< ? >[ operations.size() ] );
         }
 
         /**
@@ -971,16 +961,99 @@ public final class TransformationFactory {
             CheckArg.isNotEmpty( operationsToRemove, "operationsToRemove" );
 
             for ( final Operation< ? > operation : operationsToRemove ) {
-                if ( operation == null ) {
-                    throw new ChrysalixException( ChrysalixI18n.errorAddingOrRemovingNullTransformationOperation,
-                                                    id() );
+                CheckArg.notNull( operation, "operation" );
+
+                try {
+                    this.model.removeChild( operation.descriptorId() );
+                } catch ( final Exception e ) {
+                    throw new ChrysalixException( e,
+                                                  ChrysalixI18n.localize( ERROR_REMOVING_TRANSFORMATION_OPERATION,
+                                                                          operation.descriptorId(),
+                                                                          getName() ) );
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @see org.chrysalix.transformation.Transformation#removeSource(org.modelspace.Model[])
+         */
+        @Override
+        public void removeSource( final Model... sources ) throws ChrysalixException {
+            CheckArg.isNotEmpty( sources, "sources" );
+
+            try {
+                final Object[] pathsBeingRemoved = new Object[ sources.length ];
+
+                for ( int i = 0; i < sources.length; ++i ) {
+                    CheckArg.notNull( sources[ i ], "targets[" + i + ']' );
+                    pathsBeingRemoved[ i ] = sources[ i ].absolutePath();
                 }
 
-                if ( !this.operations.remove( operation ) ) {
-                    throw new ChrysalixException( ChrysalixI18n.errorAddingOrRemovingTransformationOperation,
-                                                    operation.descriptor().id(),
-                                                    id() );
+                if ( !this.model.hasProperty( ChrysalixLexicon.Transformation.SOURCES ) ) {
+                    throw new ChrysalixException( ChrysalixI18n.localize( ERROR_REMOVING_TRANSFORMATION_SOURCE_MODELS,
+                                                                          getName() ) );
                 }
+
+                final ModelProperty property = this.model.property( ChrysalixLexicon.Transformation.SOURCES );
+
+                // remove paths from current paths
+                final List< Object > newSourcePaths = new ArrayList<>( Arrays.asList( property.values() ) );
+
+                for ( final Object path : pathsBeingRemoved ) {
+                    if ( !newSourcePaths.remove( path ) ) {
+                        // not found to remove
+                        throw new ChrysalixException( ChrysalixI18n.localize( ERROR_REMOVING_UNADDED_TRANSFORMATION_SOURCE_MODEL,
+                                                                              path,
+                                                                              getName() ) );
+                    }
+                }
+
+                final Object[] newValue = ( newSourcePaths.isEmpty() ? null : newSourcePaths.toArray() );
+                this.model.setProperty( ChrysalixLexicon.Transformation.SOURCES, newValue );
+            } catch ( final Exception e ) {
+                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_REMOVING_TRANSFORMATION_SOURCE_MODELS,
+                                                                      getName() ) );
+            }
+        }
+
+        @Override
+        public void removeTarget( final Model... targets ) throws ChrysalixException {
+            CheckArg.isNotEmpty( targets, "targets" );
+
+            try {
+                final Object[] pathsBeingRemoved = new Object[ targets.length ];
+
+                for ( int i = 0; i < targets.length; ++i ) {
+                    CheckArg.notNull( targets[ i ], "targets[" + i + ']' );
+                    pathsBeingRemoved[ i ] = targets[ i ].absolutePath();
+                }
+
+                if ( !this.model.hasProperty( ChrysalixLexicon.Transformation.TARGETS ) ) {
+                    throw new ChrysalixException( ChrysalixI18n.localize( ERROR_REMOVING_TRANSFORMATION_TARGET_MODELS,
+                                                                          getName() ) );
+                }
+
+                final ModelProperty property = this.model.property( ChrysalixLexicon.Transformation.TARGETS );
+
+                // remove paths from current paths
+                final List< Object > newTargetPaths = new ArrayList<>( Arrays.asList( property.values() ) );
+
+                for ( final Object path : pathsBeingRemoved ) {
+                    if ( !newTargetPaths.remove( path ) ) {
+                        // not found to remove
+                        throw new ChrysalixException( ChrysalixI18n.localize( ERROR_REMOVING_UNADDED_TRANSFORMATION_TARGET_MODEL,
+                                                                              path,
+                                                                              getName() ) );
+                    }
+                }
+
+                final Object[] newValue = ( newTargetPaths.isEmpty() ? null : newTargetPaths.toArray() );
+                this.model.setProperty( ChrysalixLexicon.Transformation.TARGETS, newValue );
+            } catch ( final Exception e ) {
+                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_REMOVING_TRANSFORMATION_TARGET_MODELS,
+                                                                      getName() ) );
             }
         }
 
@@ -990,22 +1063,32 @@ public final class TransformationFactory {
          * @see org.chrysalix.transformation.Transformation#sources()
          */
         @Override
-        public Model[] sources() {
-            if ( this.models.isEmpty() ) {
-                return Model.NO_MODELS;
-            }
+        public Model[] sources() throws ChrysalixException {
+            try {
+                if ( this.model.hasProperty( ChrysalixLexicon.Transformation.SOURCES ) ) {
+                    final String[] sourceModelPaths =
+                        this.model.property( ChrysalixLexicon.Transformation.SOURCES ).stringValues();
+                    final Set< Model > sources = new HashSet<>( sourceModelPaths.length );
+                    final Modelspace modeler = this.model.modelspace();
 
-            final List< Model > sources = new ArrayList<>();
+                    for ( final String path : sourceModelPaths ) {
+                        final Model source = modeler.model( path );
 
-            for ( final Map.Entry< Model, ModelType > entry : this.models.entrySet() ) {
-                final ModelType modelType = entry.getValue();
+                        if ( source != null ) {
+                            sources.add( source );
+                        } else {
+                            // TODO maybe create a proxy model or missing model???
+                            LOGGER.debug( "Source model at path '%s' was not found", path );
+                        }
+                    }
 
-                if ( ModelType.isSource( modelType ) ) {
-                    sources.add( entry.getKey() );
+                    return sources.toArray( new Model[ sources.size() ] );
                 }
-            }
 
-            return sources.toArray( new Model[ sources.size() ] );
+                return Model.NO_MODELS;
+            } catch ( final ModelspaceException e ) {
+                throw new ChrysalixException( e, ChrysalixI18n.localize( ERROR_FINDING_SOURCE_MODELS, getName() ) );
+            }
         }
 
         /**
@@ -1014,22 +1097,32 @@ public final class TransformationFactory {
          * @see org.chrysalix.transformation.Transformation#targets()
          */
         @Override
-        public Model[] targets() {
-            if ( this.models.isEmpty() ) {
-                return Model.NO_MODELS;
-            }
+        public Model[] targets() throws ChrysalixException {
+            try {
+                if ( this.model.hasProperty( ChrysalixLexicon.Transformation.TARGETS ) ) {
+                    final String[] targetModelPaths =
+                        this.model.property( ChrysalixLexicon.Transformation.TARGETS ).stringValues();
+                    final Set< Model > targets = new HashSet<>( targetModelPaths.length );
+                    final Modelspace modeler = this.model.modelspace();
 
-            final List< Model > targets = new ArrayList<>();
+                    for ( final String path : targetModelPaths ) {
+                        final Model target = modeler.model( path );
 
-            for ( final Map.Entry< Model, ModelType > entry : this.models.entrySet() ) {
-                final ModelType modelType = entry.getValue();
+                        if ( target != null ) {
+                            targets.add( target );
+                        } else {
+                            // TODO maybe create a proxy model or missing model???
+                            LOGGER.debug( "Target model at path '%s' was not found", path );
+                        }
+                    }
 
-                if ( ModelType.isTarget( modelType ) ) {
-                    targets.add( entry.getKey() );
+                    return targets.toArray( new Model[ targets.size() ] );
                 }
-            }
 
-            return targets.toArray( new Model[ targets.size() ] );
+                return Model.NO_MODELS;
+            } catch ( final ModelspaceException e ) {
+                throw new ChrysalixException( e, ChrysalixI18n.localize( ERROR_FINDING_TARGET_MODELS, getName() ) );
+            }
         }
 
     }

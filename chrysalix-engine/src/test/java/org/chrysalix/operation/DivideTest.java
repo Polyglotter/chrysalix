@@ -26,36 +26,44 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Divide;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class DivideTest {
 
-    private static final String ID = Divide.TERM_DESCRIPTOR.id();
+    private static final String ID = Divide.TERM_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Number > DOUBLE_TERM;
     private static Value< Number > INT_TERM;
     private static Value< Number > INT2_TERM;
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        DOUBLE_TERM = TransformationFactory.createValue( Divide.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
-        INT_TERM = TransformationFactory.createValue( Divide.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        INT2_TERM = TransformationFactory.createValue( Divide.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        FACTORY = new TransformationTestFactory();
+        DOUBLE_TERM = FACTORY.createNumberValue( "/my/path/double", Divide.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        INT_TERM = FACTORY.createNumberValue( "/my/path/int", Divide.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = FACTORY.createNumberValue( "/my/path/int2", Divide.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private Divide operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Divide( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Divide( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
@@ -66,8 +74,8 @@ public final class DivideTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Divide.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Divide.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Divide.class ) ) );
     }
 
@@ -81,13 +89,13 @@ public final class DivideTest {
     @Test
     public void shouldDivideMultipleinputs() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM, INT2_TERM, DOUBLE_TERM );
-        assertThat( this.operation.inputs().size(), is( 3 ) );
+        assertThat( this.operation.inputs().length, is( 3 ) );
         assertThat( this.operation.get(),
                     is( ( Number ) ( INT_TERM.get().intValue() / INT2_TERM.get().intValue() / DOUBLE_TERM.get().doubleValue() ) ) );
     }
 
     @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -100,7 +108,7 @@ public final class DivideTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
@@ -115,11 +123,6 @@ public final class DivideTest {
         this.operation.get();
     }
 
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( INT_TERM );
-    }
-
     @Test
     public void shouldNotHaveProblemsWithTwoTermsOfCorrectType() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM, INT2_TERM );
@@ -128,25 +131,25 @@ public final class DivideTest {
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
     public void shouldObtainTerm() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
+        assertThat( this.operation.inputs().length, is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs()[ 0 ], is( INT_TERM ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.divideOperationDescription.text() ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Divide.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.divideOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Divide.NAME ) ) );
     }
 
 }

@@ -23,7 +23,6 @@
  */
 package org.chrysalix.operation;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -31,9 +30,11 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * Calculates Euler's number raised to a power.
@@ -42,13 +43,18 @@ import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
  */
 public final class PowerOfE extends AbstractOperation< Double > {
 
+    static final String DESCRIPTION = "Calculates Euler's number raised to a power";
+    private static final String INPUT_DESCRIPTION = "The input term whose value is the power to raise Euler's number to";
+    private static final String INPUT_NAME = "Input";
+    static final String NAME = "Power Of E";
+
     /**
      * The input term descriptor.
      */
     public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
         TransformationFactory.createWritableBoundedOneValueDescriptor( TransformationFactory.createId( PowerOfE.class, "input" ),
-                                                                       ChrysalixI18n.powerOfEOperationInputDescription.text(),
-                                                                       ChrysalixI18n.powerOfEOperationInputName.text(),
+                                                                       ChrysalixI18n.localize( INPUT_DESCRIPTION ),
+                                                                       ChrysalixI18n.localize( INPUT_NAME ),
                                                                        Number.class );
 
     /**
@@ -61,37 +67,40 @@ public final class PowerOfE extends AbstractOperation< Double > {
      */
     public static final OperationDescriptor< Double > DESCRIPTOR =
         new AbstractOperationDescriptor< Double >( TransformationFactory.createId( PowerOfE.class ),
-                                                   ChrysalixI18n.powerOfEOperationDescription.text(),
-                                                   ChrysalixI18n.powerOfEOperationName.text(),
+                                                   ChrysalixI18n.localize( DESCRIPTION ),
+                                                   ChrysalixI18n.localize( NAME ),
                                                    Double.class,
                                                    INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Double > newInstance( final Transformation transformation ) {
-                return new PowerOfE( transformation );
+            public Operation< Double > newInstance( final ModelObject operation,
+                                                    final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new PowerOfE( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    PowerOfE( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.ARITHMETIC );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    PowerOfE( final ModelObject operation,
+              final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
     }
 
     /**
@@ -102,27 +111,30 @@ public final class PowerOfE extends AbstractOperation< Double > {
     @Override
     protected Double calculate() throws ChrysalixException {
         assert !problems().isError();
-        final Number value = ( Number ) inputs().get( 0 ).get();
-
+        final Number value = ( Number ) inputs()[ 0 ].get();
         return Math.exp( value.doubleValue() );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+
         // make sure there are terms
-        if ( inputs().size() != 1 ) {
+        if ( inputs().length != 1 ) {
             final ValidationProblem problem =
                 TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.powerOfEOperationMustHaveOneTerm.text( transformationId() ) );
+                                                   ChrysalixI18n.localize( AbstractOperation.MUST_HAVE_ONE_TERM,
+                                                                           NAME,
+                                                                           transformationId() ) );
             problems().add( problem );
         } else {
             // make sure term is a number
-            final Value< ? > term = inputs().get( 0 );
+            final Value< ? > term = inputs()[ 0 ];
             Object value;
 
             try {
@@ -131,18 +143,22 @@ public final class PowerOfE extends AbstractOperation< Double > {
                 if ( !( value instanceof Number ) ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.powerOfEOperationInvalidTermType.text( transformationId() ) );
+                                                           ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_TYPE,
+                                                                                   NAME,
+                                                                                   transformationId() ) );
                     problems().add( problem );
                 }
             } catch ( final ChrysalixException e ) {
                 final ValidationProblem problem =
                     TransformationFactory.createError( transformationId(),
-                                                       ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                      transformationId() ) );
+                                                       ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                               NAME,
+                                                                               transformationId() ) );
                 problems().add( problem );
-                Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
             }
         }
+
+        return super.problems();
     }
 
 }

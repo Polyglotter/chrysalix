@@ -23,9 +23,6 @@ AbstractOperation * Chrysalix
  */
 package org.chrysalix.operation;
 
-import java.util.List;
-
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -33,22 +30,31 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * Computes the average value of a collection of number terms.
  */
 public final class Average extends AbstractOperation< Number > {
 
+    private static String ADD_OPERATION_NOT_FOUND = "Add operation child of the average operation was not found";
+    static final String DESCRIPTION = "Computes the average value of a collection of numeric terms";
+    private static String DIVIDE_OPERATION_NOT_FOUND = "Divide operation child of the average operation was not found";
+    private static final String INPUT_DESCRIPTION = "An input term being averaged";
+    private static final String INPUT_NAME = "Input";
+    static final String NAME = "Average";
+
     /**
      * The input term descriptor.
      */
     public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Average.class, "input" ),
-                                                     ChrysalixI18n.averageOperationInputDescription.text(),
-                                                     ChrysalixI18n.averageOperationInputName.text(),
+                                                     ChrysalixI18n.localize( INPUT_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( INPUT_NAME ),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -64,36 +70,84 @@ public final class Average extends AbstractOperation< Number > {
      */
     public static final OperationDescriptor< Number > DESCRIPTOR =
         new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Average.class ),
-                                                   ChrysalixI18n.averageOperationDescription.text(),
-                                                   ChrysalixI18n.averageOperationName.text(),
+                                                   ChrysalixI18n.localize( DESCRIPTION ),
+                                                   ChrysalixI18n.localize( NAME ),
                                                    Number.class,
                                                    INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Number > newInstance( final Transformation transformation ) {
-                return new Average( transformation );
+            public Operation< Number > newInstance( final ModelObject operation,
+                                                    final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Average( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Average( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
+    Average( final ModelObject operation,
+             final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.chrysalix.operation.AbstractOperation#addInput(java.lang.String, java.lang.Object[])
+     */
+    @Override
+    public void addInput( final String descriptorId,
+                          final Object... valuesBeingAdded ) throws ChrysalixException {
+        if ( !isValidInputDescriptorId( descriptorId ) ) {
+            try {
+                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_OR_REMOVING_OPERATION_INPUT,
+                                                                      name(),
+                                                                      transformationId(),
+                                                                      descriptorId ) );
+            } catch ( final ModelspaceException e ) {
+                final ChrysalixException pe =
+                    new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_OR_REMOVING_OPERATION_INPUT_UNKNOWN_NAME,
+                                                                    transformationId(),
+                                                                    descriptorId ) );
+                pe.addSuppressed( e );
+                throw pe;
+            }
+        }
+
+        final Add add = addOperation();
+        add.addInput( Add.TERM_DESCRIPTOR.id(), valuesBeingAdded );
+        divideOperation().setInput( Divide.TERM_DESCRIPTOR.id(), add, valuesBeingAdded.length );
+    }
+
+    private Add addOperation() throws ChrysalixException {
+        ModelObject modelObject = null;
 
         try {
-            addCategory( BuiltInCategory.ARITHMETIC );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
+            modelObject = modelObect().child( Add.TERM_DESCRIPTOR.id() );
+
+            if ( modelObject == null ) {
+                throw new ChrysalixException( ChrysalixI18n.localize( ADD_OPERATION_NOT_FOUND ) );
+            }
+
+            return ( Add ) Add.DESCRIPTOR.newInstance( modelObject, transformation() );
+        } catch ( final ModelspaceException e ) {
+            throw new ChrysalixException( e, ChrysalixI18n.localize( ADD_OPERATION_NOT_FOUND ) );
         }
     }
 
@@ -105,58 +159,56 @@ public final class Average extends AbstractOperation< Number > {
     @Override
     protected Number calculate() throws ChrysalixException {
         assert !problems().isError();
+        return divideOperation().get();
+    }
 
-        final List< Value< ? >> terms = inputs();
-
-        if ( terms.size() == 1 ) {
-            return ( Number ) terms.get( 0 ).get();
-        }
+    private Divide divideOperation() throws ChrysalixException {
+        ModelObject modelObject = null;
 
         try {
-            final Add addOp = new Add( transformation() );
-            addOp.addInput( Add.TERM_DESCRIPTOR.id(), ( Object[] ) terms.toArray( new Value< ? >[ terms.size() ] ) );
-            final Number total = addOp.get();
+            modelObject = modelObect().child( Divide.TERM_DESCRIPTOR.id() );
 
-            final Divide divideOp = new Divide( transformation() );
-            divideOp.addInput( Divide.TERM_DESCRIPTOR.id(), total, terms.size() );
+            if ( modelObject == null ) {
+                throw new ChrysalixException( ChrysalixI18n.localize( DIVIDE_OPERATION_NOT_FOUND ) );
+            }
 
-            return divideOp.get();
-        } catch ( final ChrysalixException e ) {
-            final ValidationProblem problem =
-                TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.averageOperationError.text( transformationId() ) );
-            problems().add( problem );
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.averageOperationError, transformationId() );
-
-            return null;
+            return ( Divide ) Divide.DESCRIPTOR.newInstance( modelObject, transformation() );
+        } catch ( final ModelspaceException e ) {
+            throw new ChrysalixException( e, ChrysalixI18n.localize( DIVIDE_OPERATION_NOT_FOUND ) );
         }
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+        final Value< ? >[] inputs = addOperation().inputs();
+
         // make sure there are terms
-        if ( inputs().isEmpty() ) {
+        if ( inputs.length == 0 ) {
             final ValidationProblem problem =
                 TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.averageOperationHasNoTerms.text( transformationId() ) );
+                                                   ChrysalixI18n.localize( AbstractOperation.HAS_NO_TERMS,
+                                                                           NAME,
+                                                                           transformationId() ) );
             problems().add( problem );
         } else {
-            if ( inputs().size() < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
+            if ( inputs.length < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
                 final ValidationProblem problem =
                     TransformationFactory.createError( transformationId(),
-                                                       ChrysalixI18n.invalidTermCount.text( name(),
-                                                                                              transformationId(),
-                                                                                              inputs().size() ) );
+                                                       ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_COUNT,
+                                                                               NAME,
+                                                                               transformationId(),
+                                                                               inputs.length ) );
                 problems().add( problem );
             }
 
             // make sure all the terms have types of Number
-            for ( final Value< ? > term : inputs() ) {
+            for ( final Value< ? > term : inputs ) {
                 Object value;
 
                 try {
@@ -165,20 +217,81 @@ public final class Average extends AbstractOperation< Number > {
                     if ( !( value instanceof Number ) ) {
                         final ValidationProblem problem =
                             TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.invalidTermType.text( name(),
-                                                                                                     transformationId() ) );
+                                                               ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_TYPE,
+                                                                                       NAME,
+                                                                                       transformationId() ) );
                         problems().add( problem );
                     }
                 } catch ( final ChrysalixException e ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                          transformationId() ) );
+                                                           ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                                   NAME,
+                                                                                   transformationId() ) );
                     problems().add( problem );
-                    Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
                 }
             }
         }
+
+        return super.problems();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.chrysalix.operation.AbstractOperation#removeInput(java.lang.String, java.lang.Object[])
+     */
+    @Override
+    public void removeInput( final String descriptorId,
+                             final Object... valuesBeingRemoved ) throws ChrysalixException {
+        if ( !isValidInputDescriptorId( descriptorId ) ) {
+            try {
+                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_OR_REMOVING_OPERATION_INPUT,
+                                                                      name(),
+                                                                      transformationId(),
+                                                                      descriptorId ) );
+            } catch ( final ModelspaceException e ) {
+                final ChrysalixException pe =
+                    new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_OR_REMOVING_OPERATION_INPUT_UNKNOWN_NAME,
+                                                                    transformationId(),
+                                                                    descriptorId ) );
+                pe.addSuppressed( e );
+                throw pe;
+            }
+        }
+
+        final Add add = addOperation();
+        add.removeInput( Add.TERM_DESCRIPTOR.id(), valuesBeingRemoved );
+        divideOperation().setInput( Divide.TERM_DESCRIPTOR.id(), add, add.inputs().length );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.chrysalix.operation.AbstractOperation#setInput(java.lang.String, java.lang.Object[])
+     */
+    @Override
+    public void setInput( final String descriptorId,
+                          final Object... valuesBeingSet ) throws ChrysalixException {
+        if ( !isValidInputDescriptorId( descriptorId ) ) {
+            try {
+                throw new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_OR_REMOVING_OPERATION_INPUT,
+                                                                      name(),
+                                                                      transformationId(),
+                                                                      descriptorId ) );
+            } catch ( final ModelspaceException e ) {
+                final ChrysalixException pe =
+                    new ChrysalixException( ChrysalixI18n.localize( ERROR_ADDING_OR_REMOVING_OPERATION_INPUT_UNKNOWN_NAME,
+                                                                    transformationId(),
+                                                                    descriptorId ) );
+                pe.addSuppressed( e );
+                throw pe;
+            }
+        }
+
+        final Add add = addOperation();
+        add.setInput( Add.TERM_DESCRIPTOR.id(), valuesBeingSet );
+        divideOperation().setInput( Divide.TERM_DESCRIPTOR.id(), add, valuesBeingSet.length );
     }
 
 }

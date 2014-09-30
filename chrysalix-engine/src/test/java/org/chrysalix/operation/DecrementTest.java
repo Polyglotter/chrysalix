@@ -26,47 +26,54 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Decrement;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class DecrementTest {
 
-    private static final String ID = Decrement.TERM_DESCRIPTOR.id();
+    private static final String ID = Decrement.TERM_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Integer > INT_TERM;
     private static Value< Integer > INT2_TERM;
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        INT_TERM = TransformationFactory.createValue( Decrement.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        INT2_TERM = TransformationFactory.createValue( Decrement.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        FACTORY = new TransformationTestFactory();
+        INT_TERM = FACTORY.createValue( "/my/path/int", Decrement.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = FACTORY.createValue( "/my/path/int2", Decrement.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private Decrement operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Decrement( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Decrement( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Value< Integer > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
+        assertThat( this.operation.inputs().length, is( 1 ) );
+        assertThat( ( Value< Integer > ) this.operation.inputs()[ 0 ], is( INT_TERM ) );
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Decrement.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Decrement.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Decrement.class ) ) );
     }
 
@@ -77,13 +84,7 @@ public final class DecrementTest {
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -103,7 +104,7 @@ public final class DecrementTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
@@ -112,24 +113,19 @@ public final class DecrementTest {
         this.operation.get();
     }
 
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( INT_TERM );
+    @Test
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Decrement.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.decrementOperationDescription.text() ) );
-    }
-
-    @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.decrementOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Decrement.NAME ) ) );
     }
 
 }

@@ -24,21 +24,19 @@
 package org.modelspace.internal;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
+import javax.jcr.Node;
 import javax.jcr.Property;
-import javax.jcr.PropertyType;
 import javax.jcr.Session;
 import javax.jcr.Value;
-import javax.jcr.ValueFactory;
 
+import org.modelspace.Model;
+import org.modelspace.ModelObject;
 import org.modelspace.ModelProperty;
 import org.modelspace.ModelspaceException;
 import org.modelspace.ModelspaceI18n;
+import org.modelspace.ModelspaceLexicon;
 import org.modelspace.PropertyDescriptor;
 import org.modelspace.internal.task.TaskWithResult;
 import org.modelspace.internal.task.WriteTask;
@@ -49,141 +47,7 @@ import org.modeshape.common.util.CheckArg;
  */
 public class ModelPropertyImpl implements ModelProperty {
 
-    private static final Value[] NO_VALUES = new Value[ 0 ];
     private static final String UNABLE_TO_CONSTRUCT_PROPERTY = "Unable to construct model property for parent '%s'";
-    private static final String UNABLE_TO_CONVERT_VALUE = "Unable to convert JCR value to type '%d'";
-
-    /**
-     * @param value
-     *        the JCR value holder (cannot be <code>null</code>)
-     * @param propertyType
-     *        the required type of the property
-     * @return the <code>Object</code> representation of the JCR value (never <code>null</code>)
-     * @throws ModelspaceException
-     *         if an error occurs
-     */
-    static Object convert( final Value value,
-                           final int propertyType ) throws ModelspaceException {
-        try {
-            switch ( propertyType ) {
-                case PropertyType.BOOLEAN:
-                    return value.getBoolean();
-                case PropertyType.LONG:
-                    return value.getLong();
-                case PropertyType.DOUBLE:
-                    return value.getDouble();
-                case PropertyType.DATE:
-                    return value.getDate();
-                case PropertyType.DECIMAL:
-                    return value.getDecimal();
-                default:
-                    return value.toString();
-            }
-        } catch ( final Exception e ) {
-            throw new ModelspaceException( e, ModelspaceI18n.localize( UNABLE_TO_CONVERT_VALUE, propertyType ) );
-        }
-    }
-
-    /**
-     * @param factory
-     *        the factory used to perform the conversion (cannot be <code>null</code>)
-     * @param value
-     *        the value being converted to a JCR value holder (cannot be <code>null</code>)
-     * @return the JCR value holder (never <code>null</code>)
-     */
-    static Value createValue( final ValueFactory factory,
-                              final Object value ) {
-        CheckArg.isNotNull( factory, "factory" );
-        CheckArg.isNotNull( value, "value" );
-
-        if ( value instanceof Value ) return ( Value ) value;
-        if ( value instanceof Boolean ) return factory.createValue( Boolean.class.cast( value ) );
-        if ( value instanceof Long ) return factory.createValue( Long.class.cast( value ) );
-        if ( value instanceof Double ) return factory.createValue( Double.class.cast( value ) );
-        if ( value instanceof Calendar ) return factory.createValue( Calendar.class.cast( value ) );
-        if ( value instanceof BigDecimal ) return factory.createValue( BigDecimal.class.cast( value ) );
-        return factory.createValue( value.toString() );
-    }
-
-    /**
-     * @param factory
-     *        the factory used to perform the conversion (cannot be <code>null</code>)
-     * @param value
-     *        the value being converted to a JCR value holder (cannot be <code>null</code>)
-     * @param jcrPropType
-     *        the JCR {@link PropertyType property type}
-     * @return the JCR value holder (never <code>null</code>)
-     * @throws Exception
-     *         if an error occurs
-     */
-    static Value createValue( final ValueFactory factory,
-                              final Object value,
-                              final int jcrPropType ) throws Exception {
-        CheckArg.isNotNull( factory, "factory" );
-        CheckArg.isNotNull( value, "value" );
-
-        if ( PropertyType.BOOLEAN == jcrPropType ) {
-            if ( value instanceof Boolean ) {
-                return factory.createValue( ( Boolean ) value );
-            }
-
-            return factory.createValue( Boolean.parseBoolean( value.toString() ) );
-        }
-
-        if ( PropertyType.LONG == jcrPropType ) {
-            if ( value instanceof Long ) {
-                return factory.createValue( ( Long ) value );
-            }
-
-            return factory.createValue( Long.parseLong( value.toString() ) );
-        }
-
-        if ( PropertyType.DOUBLE == jcrPropType ) {
-            if ( value instanceof Double ) {
-                return factory.createValue( ( Double ) value );
-            }
-
-            return factory.createValue( Double.parseDouble( value.toString() ) );
-        }
-
-        if ( PropertyType.DATE == jcrPropType ) {
-            if ( value instanceof Calendar ) {
-                return factory.createValue( ( Calendar ) value );
-            }
-
-            final Calendar calendar = Calendar.getInstance();
-            final Date date = DateFormat.getDateInstance().parse( value.toString() );
-            calendar.setTime( date );
-
-            return factory.createValue( calendar );
-        }
-
-        if ( PropertyType.DECIMAL == jcrPropType ) {
-            if ( value instanceof BigDecimal ) {
-                return factory.createValue( ( BigDecimal ) value );
-            }
-
-            return factory.createValue( new BigDecimal( value.toString() ) );
-        }
-
-        return factory.createValue( value.toString() );
-    }
-
-    static Value[] createValues( final ValueFactory factory,
-                                 final Object[] values,
-                                 final int jcrPropType ) throws Exception {
-        final List< Value > result = new ArrayList<>();
-
-        if ( ( values == null ) || ( values.length == 0 ) ) {
-            return NO_VALUES;
-        }
-
-        for ( final Object value : values ) {
-            result.add( createValue( factory, value, jcrPropType ) );
-        }
-
-        return result.toArray( new Value[ result.size() ] );
-    }
 
     final ModelObjectImpl parent;
     final String path;
@@ -208,6 +72,16 @@ public class ModelPropertyImpl implements ModelProperty {
         } catch ( final Exception e ) {
             throw new ModelspaceException( e, ModelspaceI18n.localize( UNABLE_TO_CONSTRUCT_PROPERTY, this.parent.name() ) );
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modelspace.ModelElement#absolutePath()
+     */
+    @Override
+    public String absolutePath() {
+        return this.path;
     }
 
     /**
@@ -478,8 +352,6 @@ public class ModelPropertyImpl implements ModelProperty {
     }
 
     /**
-     * {@inheritDoc}
-     * 
      * @see org.modelspace.ModelProperty#longValues()
      */
     @Override
@@ -512,8 +384,92 @@ public class ModelPropertyImpl implements ModelProperty {
         } );
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modelspace.ModelElement#model()
+     */
+    @Override
+    public Model model() throws ModelspaceException {
+        return modelspace().model( this.path );
+    }
+
+    Node modelNode( final Session session ) throws Exception {
+        Node node = session.getNode( path );
+
+        while ( !node.isNodeType( ModelspaceLexicon.Model.MODEL_MIXIN ) ) {
+            node = node.getParent();
+        }
+
+        return node;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modelspace.ModelElement#modelRelativePath()
+     */
+    @Override
+    public String modelRelativePath() throws ModelspaceException {
+        return modelspace().run( new TaskWithResult< String >() {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modelspace.internal.task.TaskWithResult#run(javax.jcr.Session)
+             */
+            @Override
+            public String run( final Session session ) throws Exception {
+                return path.substring( modelNode( session ).getPath().length() + 1 );
+            }
+        } );
+    }
+
     ModelspaceImpl modelspace() {
         return this.parent.modelspace;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modelspace.ModelElement#name()
+     */
+    @Override
+    public String name() throws ModelspaceException {
+        return modelspace().run( new TaskWithResult< String >() {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modelspace.internal.task.TaskWithResult#run(javax.jcr.Session)
+             */
+            @Override
+            public String run( final Session session ) throws Exception {
+                return session.getNode( path ).getName();
+            }
+        } );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modelspace.ModelProperty#parent()
+     */
+    @Override
+    public ModelObject parent() throws ModelspaceException {
+        return modelspace().run( new TaskWithResult< ModelObject >() {
+
+            /**
+             * {@inheritDoc}
+             * 
+             * @see org.modelspace.internal.task.TaskWithResult#run(javax.jcr.Session)
+             */
+            @Override
+            public ModelObject run( final Session session ) throws Exception {
+                final Node node = session.getProperty( path ).getParent();
+                return new ModelObjectImpl( modelspace(), node.getPath(), node.getIndex() );
+            }
+        } );
     }
 
     /**
@@ -548,23 +504,23 @@ public class ModelPropertyImpl implements ModelProperty {
                         } else {
                             // single-valued property
                             throw new ModelspaceException( ModelspaceI18n.localize( ModelObjectImpl.UNABLE_TO_REMOVE_SINGLE_VALUE_PROPERTY_WITH_EMPTY_ARRAY,
-                                                                              path,
-                                                                              parent.name() ) );
+                                                                                    path,
+                                                                                    parent.name() ) );
                         }
                     } else if ( count > 1 ) {
                         if ( multiple ) {
-                            property.setValue( createValues( session.getValueFactory(), values, type ) );
+                            property.setValue( Util.createValues( session.getValueFactory(), values, type ) );
                         } else {
                             throw new ModelspaceException( ModelspaceI18n.localize( ModelObjectImpl.UNABLE_TO_SET_SINGLE_VALUE_PROPERTY_WITH_MULTIPLE_VALUES,
-                                                                              property.getName(),
-                                                                              parent.name() ) );
+                                                                                    property.getName(),
+                                                                                    parent.name() ) );
                         }
                     } else {
                         // only one value so set property
                         if ( multiple ) {
-                            property.setValue( createValues( session.getValueFactory(), values, type ) );
+                            property.setValue( Util.createValues( session.getValueFactory(), values, type ) );
                         } else {
-                            property.setValue( createValue( session.getValueFactory(), values[ 0 ] ) );
+                            property.setValue( Util.createValue( session.getValueFactory(), values[ 0 ] ) );
                         }
                     }
                 }
@@ -658,7 +614,7 @@ public class ModelPropertyImpl implements ModelProperty {
                 final Value value = property.getValue();
                 final int propType = property.getType();
 
-                return convert( value, propType );
+                return Util.convert( value, propType );
             }
         } );
     }
@@ -688,13 +644,13 @@ public class ModelPropertyImpl implements ModelProperty {
                     int i = 0;
 
                     for ( final Value value : values ) {
-                        objectValues[ i++ ] = convert( value, propType );
+                        objectValues[ i++ ] = Util.convert( value, propType );
                     }
 
                     return objectValues;
                 }
 
-                return new Object[] { convert( property.getValue(), propType ) };
+                return new Object[] { Util.convert( property.getValue(), propType ) };
             }
         } );
     }

@@ -26,21 +26,24 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Concat;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
-//import org.chrysalix.TestConstants;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc" } )
 public final class ConcatTest {
 
-    private static final String ID = Concat.TERM_DESCRIPTOR.id();
+    private static final String ID = Concat.TERM_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Object > EMPTY_STRING_TERM;
     private static Value< Object > INT_TERM;
     private static Value< Object > NULL_STRING_TERM;
@@ -50,19 +53,26 @@ public final class ConcatTest {
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        EMPTY_STRING_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.EMPTY_STRING_VALUE );
-        INT_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        NULL_STRING_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.NULL_STRING_VALUE );
-        STRING_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_1_VALUE );
-        STRING2_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_2_VALUE );
-        STRING3_TERM = TransformationFactory.createValue( Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_3_VALUE );
+        FACTORY = new TransformationTestFactory();
+        EMPTY_STRING_TERM =
+            FACTORY.createObjectValue( "/my/path/empty", Concat.TERM_DESCRIPTOR, OperationTestConstants.EMPTY_STRING_VALUE );
+        INT_TERM = FACTORY.createObjectValue( "/my/path/int", Concat.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        NULL_STRING_TERM =
+            FACTORY.createObjectValue( "/my/path/null", Concat.TERM_DESCRIPTOR, OperationTestConstants.NULL_STRING_VALUE );
+        STRING_TERM = FACTORY.createObjectValue( "/my/path/string", Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_1_VALUE );
+        STRING2_TERM =
+            FACTORY.createObjectValue( "/my/path/string2", Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_2_VALUE );
+        STRING3_TERM =
+            FACTORY.createObjectValue( "/my/path/string3", Concat.TERM_DESCRIPTOR, OperationTestConstants.STRING_3_VALUE );
     }
 
+    private ModelObject modelObject;
     private Concat operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Concat( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Concat( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
@@ -94,25 +104,19 @@ public final class ConcatTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Concat.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Concat.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Concat.class ) ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.STRING ), is( true ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Concat.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.concatOperationDescription.text() ) );
-    }
-
-    @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.concatOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Concat.NAME ) ) );
     }
 
 }

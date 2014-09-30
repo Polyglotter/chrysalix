@@ -28,24 +28,22 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.chrysalix.operation.OperationTestConstants;
-import org.chrysalix.transformation.TransformationFactory;
-import org.chrysalix.transformation.ValidationProblem;
-import org.chrysalix.transformation.ValidationProblems;
-import org.chrysalix.transformation.Value;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.Model;
 
+@Ignore
 @SuppressWarnings( "javadoc" )
 public final class TransformationFactoryTest {
 
     private static final String MSG = "MSG";
 
-    @Test
-    public void shouldCreateDoubleValue() throws Exception {
-        final double value = 5;
-        final Value< Double > term = TransformationFactory.createValue( OperationTestConstants.DOUBLE_DESCRIPTOR, value );
-        assertThat( term, is( notNullValue() ) );
-        assertThat( term.get(), is( value ) );
-        assertThat( term.descriptor(), is( OperationTestConstants.DOUBLE_DESCRIPTOR ) );
+    private TransformationTestFactory factory;
+
+    @Before
+    public void constructFactory() {
+        this.factory = new TransformationTestFactory();
     }
 
     @Test
@@ -62,15 +60,6 @@ public final class TransformationFactoryTest {
     }
 
     @Test
-    public void shouldCreateFloatValue() throws Exception {
-        final float value = 5;
-        final Value< Float > term = TransformationFactory.createValue( OperationTestConstants.FLOAT_DESCRIPTOR, value );
-        assertThat( term, is( notNullValue() ) );
-        assertThat( term.get(), is( value ) );
-        assertThat( term.descriptor(), is( OperationTestConstants.FLOAT_DESCRIPTOR ) );
-    }
-
-    @Test
     public void shouldCreateInfoValidationInfo() {
         final ValidationProblem problem = TransformationFactory.createInfo( OperationTestConstants.TRANSFORM_ID, MSG );
         assertThat( problem, is( notNullValue() ) );
@@ -81,24 +70,6 @@ public final class TransformationFactoryTest {
         assertThat( problem.isOk(), is( false ) );
         assertThat( problem.sourceId(), is( OperationTestConstants.TRANSFORM_ID ) );
         assertThat( problem.message(), is( MSG ) );
-    }
-
-    @Test
-    public void shouldCreateIntegerValue() throws Exception {
-        final int value = 5;
-        final Value< Integer > term = TransformationFactory.createValue( OperationTestConstants.INT_DESCRIPTOR, value );
-        assertThat( term, is( notNullValue() ) );
-        assertThat( term.get(), is( value ) );
-        assertThat( term.descriptor(), is( OperationTestConstants.INT_DESCRIPTOR ) );
-    }
-
-    @Test
-    public void shouldCreateLongValue() throws Exception {
-        final long value = 5;
-        final Value< Long > term = TransformationFactory.createValue( OperationTestConstants.LONG_DESCRIPTOR, value );
-        assertThat( term, is( notNullValue() ) );
-        assertThat( term.get(), is( value ) );
-        assertThat( term.descriptor(), is( OperationTestConstants.LONG_DESCRIPTOR ) );
     }
 
     @Test
@@ -135,18 +106,18 @@ public final class TransformationFactoryTest {
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToCreatTransformationIfIdIsEmpty() {
-        TransformationFactory.createTransformation( "" );
+    public void shouldFailToCreatTransformationIfParentPathIsEmpty() throws Exception {
+        this.factory.createTransformation( "" );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailToCreatTransformationIfIdIsNull() {
-        TransformationFactory.createTransformation( null );
+    public void shouldFailToCreatTransformationIfParentPathIsNull() throws Exception {
+        this.factory.createTransformation( ( Model ) null );
     }
 
     @Test
     public void shouldGetAllBuiltInOperationDescriptors() {
-        assertThat( TransformationFactory.descriptors(), is( notNullValue() ) );
+        assertThat( this.factory.descriptors(), is( notNullValue() ) );
     }
 
 }

@@ -91,7 +91,7 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modelspace.ModelObject#absolutePath()
+     * @see org.modelspace.ModelElement#absolutePath()
      */
     @Override
     public String absolutePath() {
@@ -473,7 +473,7 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modelspace.ModelObject#model()
+     * @see org.modelspace.ModelElement#model()
      */
     @Override
     public Model model() throws ModelspaceException {
@@ -486,10 +486,6 @@ class ModelObjectImpl implements ModelObject {
         } );
     }
 
-    Modelspace modelspace() {
-        return this.modelspace;
-    }
-
     Node modelNode( final Session session ) throws Exception {
         Node node = session.getNode( path );
         while ( !node.isNodeType( ModelspaceLexicon.Model.MODEL_MIXIN ) )
@@ -500,7 +496,7 @@ class ModelObjectImpl implements ModelObject {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modelspace.ModelObject#modelRelativePath()
+     * @see org.modelspace.ModelElement#modelRelativePath()
      */
     @Override
     public String modelRelativePath() throws ModelspaceException {
@@ -513,10 +509,14 @@ class ModelObjectImpl implements ModelObject {
         } );
     }
 
+    Modelspace modelspace() {
+        return this.modelspace;
+    }
+
     /**
      * {@inheritDoc}
      * 
-     * @see org.modelspace.ModelObject#name()
+     * @see org.modelspace.ModelElement#name()
      */
     @Override
     public String name() throws ModelspaceException {
@@ -728,7 +728,7 @@ class ModelObjectImpl implements ModelObject {
         int ndx = 0;
 
         for ( final Object val : propValues ) {
-            values[ ndx++ ] = ModelPropertyImpl.createValue( factory, val, propertyType );
+            values[ ndx++ ] = ModelProperty.Util.createValue( factory, val, propertyType );
         }
 
         node.setProperty( name, values );
@@ -806,8 +806,8 @@ class ModelObjectImpl implements ModelObject {
                     node.getProperty( name ).remove();
                 } else {
                     throw new ModelspaceException( ModelspaceI18n.localize( UNABLE_TO_REMOVE_PROPERTY_THAT_DOES_NOT_EXIST,
-                                                                      name,
-                                                                      node.getName() ) );
+                                                                            name,
+                                                                            node.getName() ) );
                 }
             } else {
                 // must be an array at this point
@@ -823,37 +823,37 @@ class ModelObjectImpl implements ModelObject {
                             property.remove();
                         } else {
                             throw new ModelspaceException( ModelspaceI18n.localize( UNABLE_TO_REMOVE_SINGLE_VALUE_PROPERTY_WITH_EMPTY_ARRAY,
-                                                                              name,
-                                                                              node.getName() ) );
+                                                                                    name,
+                                                                                    node.getName() ) );
                         }
                     } else if ( count > 1 ) {
                         if ( multiple ) {
                             setMultiValuedProperty( session, node, factory, name, values, type );
                         } else {
                             throw new ModelspaceException( ModelspaceI18n.localize( UNABLE_TO_SET_SINGLE_VALUE_PROPERTY_WITH_MULTIPLE_VALUES,
-                                                                              name,
-                                                                              node.getName() ) );
+                                                                                    name,
+                                                                                    node.getName() ) );
                         }
                     } else {
                         // only one value so set property
                         if ( multiple ) {
                             setMultiValuedProperty( session, node, factory, name, values, type );
                         } else {
-                            node.setProperty( name, ModelPropertyImpl.createValue( factory, values[ 0 ] ) );
+                            node.setProperty( name, ModelProperty.Util.createValue( factory, values[ 0 ] ) );
                         }
                     }
                 } else {
                     // property does not exist and no values being set
                     if ( count == 0 ) {
                         throw new ModelspaceException( ModelspaceI18n.localize( UNABLE_TO_REMOVE_PROPERTY_THAT_DOES_NOT_EXIST,
-                                                                          name,
-                                                                          node.getName() ) );
+                                                                                name,
+                                                                                node.getName() ) );
                     }
 
                     if ( count > 1 ) {
                         setMultiValuedProperty( session, node, factory, name, values, PropertyType.UNDEFINED );
                     } else {
-                        node.setProperty( name, ModelPropertyImpl.createValue( factory, values[ 0 ] ) );
+                        node.setProperty( name, ModelProperty.Util.createValue( factory, values[ 0 ] ) );
                     }
                 }
             }

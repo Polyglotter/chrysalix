@@ -25,7 +25,6 @@ package org.chrysalix.operation;
 
 import java.util.List;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -33,49 +32,48 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
-import org.modelspace.Model;
+import org.modelspace.ModelElement;
 import org.modelspace.ModelObject;
+import org.modelspace.ModelProperty;
+import org.modelspace.ModelspaceException;
 
 /**
  * Maps one {@link ModelObject model object's} property to another model object's property.
  */
 public final class Map extends AbstractOperation< Void > {
 
-    /**
-     * The source {@link ModelObject model object} descriptor.
-     */
-    public static final ValueDescriptor< ModelObject > SOURCE_MODEL_OBJECT_DESCRIPTOR =
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "source" ),
-                                                     ChrysalixI18n.mapOperationSourceDescription.text(),
-                                                     ChrysalixI18n.mapOperationSourceName.text(),
-                                                     ModelObject.class,
-                                                     true,
-                                                     1,
-                                                     false );
+    static final String DESCRIPTION = "Maps one model object's property to another model object's property";
+    private static final String ERROR_READING_MODEL_PROP =
+        "Map operation could not read a model property descriptor in transformation '%s'";
+    private static final String ERROR_SETTING_TARGET =
+        "Map operation could not set target property in transformation '%s'";
+    private static final String INVALID_VALUES_COUNT =
+        "A map operation in transformation '%s' source model and target model property are not both single-valued or both multi-valued.";
+    private static final String INVALID_SOURCE_PROP_COUNT =
+        "A map operation in transformation '%s' does not have exactly one source model property";
+    private static final String INVALID_SOURCE_PROP_TYPE =
+        "The source property of a map operation in transformation '%s' is not a model object property or operation";
+    private static final String INVALID_TARGET_PROP_COUNT =
+        "A map operation in transformation '%s' does not have exactly one target model property name";
+    private static final String INVALID_TARGET_PROP_TYPE =
+        "The target property of a map operation in transformation '%s' is not a model object property";
+    static final String NAME = "Map";
+    private static final String SOURCE_PROP_DESCRIPTION = "The name of the source model's property being mapped";
+    private static final String SOURCE_PROP_NAME = "Source Property";
+    private static final String TARGET_PROP_DESCRIPTION = "The name of the target model's property being mapped";
+    private static final String TARGET_PROP_NAME = "Target Property";
 
     /**
      * The descriptor for the name of the source {@link ModelObject model object} property used in the mapping.
      */
-    public static final ValueDescriptor< String > SOURCE_PROP_DESCRIPTOR =
+    public static final ValueDescriptor< ModelProperty > SOURCE_PROP_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "sourceProperty" ),
-                                                     ChrysalixI18n.mapOperationSourcePropDescription.text(),
-                                                     ChrysalixI18n.mapOperationSourcePropName.text(),
-                                                     String.class,
-                                                     true,
-                                                     1,
-                                                     false );
-
-    /**
-     * The target {@link ModelObject model object} descriptor.
-     */
-    public static final ValueDescriptor< ModelObject > TARGET_MODEL_OBJECT_DESCRIPTOR =
-        TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "target" ),
-                                                     ChrysalixI18n.mapOperationTargetDescription.text(),
-                                                     ChrysalixI18n.mapOperationTargetName.text(),
-                                                     ModelObject.class,
+                                                     ChrysalixI18n.localize( SOURCE_PROP_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( SOURCE_PROP_NAME ),
+                                                     ModelProperty.class,
                                                      true,
                                                      1,
                                                      false );
@@ -83,11 +81,11 @@ public final class Map extends AbstractOperation< Void > {
     /**
      * The descriptor for the name of the target {@link ModelObject model object} property used in the mapping.
      */
-    public static final ValueDescriptor< String > TARGET_PROP_DESCRIPTOR =
+    public static final ValueDescriptor< ModelProperty > TARGET_PROP_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Map.class, "targetProperty" ),
-                                                     ChrysalixI18n.mapOperationTargetPropDescription.text(),
-                                                     ChrysalixI18n.mapOperationTargetPropName.text(),
-                                                     String.class,
+                                                     ChrysalixI18n.localize( TARGET_PROP_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( TARGET_PROP_NAME ),
+                                                     ModelProperty.class,
                                                      true,
                                                      1,
                                                      false );
@@ -96,9 +94,7 @@ public final class Map extends AbstractOperation< Void > {
      * The input descriptors.
      */
     private static final ValueDescriptor< ? >[] INPUT_DESCRIPTORS = {
-                    SOURCE_MODEL_OBJECT_DESCRIPTOR,
                     SOURCE_PROP_DESCRIPTOR,
-                    TARGET_MODEL_OBJECT_DESCRIPTOR,
                     TARGET_PROP_DESCRIPTOR };
 
     /**
@@ -106,37 +102,40 @@ public final class Map extends AbstractOperation< Void > {
      */
     public static final OperationDescriptor< Void > DESCRIPTOR =
         new AbstractOperationDescriptor< Void >( TransformationFactory.createId( Map.class ),
-                                                 ChrysalixI18n.mapOperationDescription.text(),
-                                                 ChrysalixI18n.mapOperationName.text(),
+                                                 ChrysalixI18n.localize( DESCRIPTION ),
+                                                 ChrysalixI18n.localize( NAME ),
                                                  Void.class,
                                                  INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Void > newInstance( final Transformation transformation ) {
-                return new Map( transformation );
+            public Operation< Void > newInstance( final ModelObject operation,
+                                                  final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Map( operation, transformation );
             }
 
         };
 
     /**
+     * @param opModelOperation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Map( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.ASSIGNMENT );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    Map( final ModelObject opModelOperation,
+         final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( opModelOperation, transformation );
     }
 
     /**
@@ -147,165 +146,153 @@ public final class Map extends AbstractOperation< Void > {
     @Override
     protected Void calculate() throws ChrysalixException {
         assert !problems().isError();
-        /*
-                final ModelObject sourceModel = ( ModelObject ) inputs( SOURCE_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
-                final String sourceProp = ( String ) inputs( SOURCE_PROP_DESCRIPTOR.id() ).get( 0 ).get();
+        final ModelElement source = inputs( SOURCE_PROP_DESCRIPTOR.name() ).get( 0 );
+        final ModelProperty targetProp = ( ModelProperty ) inputs( TARGET_PROP_DESCRIPTOR.name() ).get( 0 );
 
-                final ModelObject targetModel = ( ModelObject ) inputs( TARGET_MODEL_OBJECT_DESCRIPTOR.id() ).get( 0 ).get();
-                final String targetProp = ( String ) inputs( TARGET_PROP_DESCRIPTOR.id() ).get( 0 ).get();
+        try {
+            if ( source instanceof ModelProperty ) {
+                final ModelProperty sourceProp = ( ModelProperty ) source;
 
-                try {
-                    final Object value = sourceModel.value( sourceProp );
-                    targetModel.setProperty( targetProp, value );
-                } catch ( final ModelspaceException e ) {
-                    throw new ChrysalixException( e, "Unable to calculate operation result" );
+                if ( sourceProp.descriptor().multiple() ) {
+                    final Object[] values = sourceProp.values();
+                    targetProp.set( values );
+                } else {
+                    final Object value = sourceProp.value();
+                    targetProp.set( value );
                 }
-        */
-        return null;
+            } else if ( source instanceof Operation ) {
+                final Object value = ( ( Operation< ? > ) source ).get();
+                targetProp.set( value );
+            }
+
+            return null;
+        } catch ( final ModelspaceException e ) {
+            throw new ChrysalixException( e, ChrysalixI18n.localize( ERROR_SETTING_TARGET, this.transformationId() ) );
+        }
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+
         // make sure all terms have been added
-        if ( inputs().size() != 4 ) {
+        if ( inputs().length != 2 ) {
             final ValidationProblem problem =
                 TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.mapOperationInvalidTermCount.text( transformationId() ) );
+                                                   ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_COUNT,
+                                                                           NAME,
+                                                                           transformationId(),
+                                                                           inputs().length ) );
             problems().add( problem );
         } else {
-            { // source model
-                final List< Value< ? >> sourceModels = inputs( SOURCE_MODEL_OBJECT_DESCRIPTOR.id() );
+            boolean sourcePropIsMultiValued = false;
+            boolean targetPropIsMultiValued = false;
 
-                if ( sourceModels.size() != 1 ) {
+            { // source model property
+                final List< Value< ? >> sourceProps = inputs( SOURCE_PROP_DESCRIPTOR.id() );
+
+                if ( sourceProps.size() != 1 ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.mapOperationInvalidSourceModelCount.text( transformationId() ) );
+                                                           ChrysalixI18n.localize( INVALID_SOURCE_PROP_COUNT,
+                                                                                   transformationId() ) );
                     problems().add( problem );
                 } else {
-                    final Value< ? > term = sourceModels.get( 0 );
-                    Object model;
+                    final Value< ? > term = sourceProps.get( 0 );
+                    Object prop;
 
                     try {
-                        model = term.get();
+                        prop = term.get();
 
-                        if ( !( model instanceof ModelObject ) && !( model instanceof Model ) ) {
+                        if ( !( prop instanceof ModelProperty ) || !( prop instanceof Operation ) ) {
                             final ValidationProblem problem =
                                 TransformationFactory.createError( transformationId(),
-                                                                   ChrysalixI18n.mapOperationInvalidSourceModelObjectType.text( transformationId() ) );
+                                                                   ChrysalixI18n.localize( INVALID_SOURCE_PROP_TYPE,
+                                                                                           transformationId() ) );
                             problems().add( problem );
+                        } else {
+                            if ( prop instanceof ModelProperty ) {
+                                try {
+                                    sourcePropIsMultiValued = ( ( ModelProperty ) prop ).descriptor().multiple();
+                                } catch ( final ModelspaceException e ) {
+                                    final ValidationProblem problem =
+                                        TransformationFactory.createError( transformationId(),
+                                                                           ChrysalixI18n.localize( ERROR_READING_MODEL_PROP,
+                                                                                                   NAME ) );
+                                    problems().add( problem );
+                                }
+                            }
                         }
                     } catch ( final ChrysalixException e ) {
                         final ValidationProblem problem =
                             TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                              transformationId() ) );
+                                                               ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                                       NAME,
+                                                                                       transformationId() ) );
                         problems().add( problem );
-                        Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
                     }
                 }
             }
 
-            { // source model's property name
-                final List< Value< ? >> propNames = inputs( SOURCE_PROP_DESCRIPTOR.id() );
+            { // target model property
+                final List< Value< ? >> props = inputs( TARGET_PROP_DESCRIPTOR.id() );
 
-                if ( propNames.size() != 1 ) {
+                if ( props.size() != 1 ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.mapOperationInvalidSourcePropCount.text( transformationId() ) );
+                                                           ChrysalixI18n.localize( INVALID_TARGET_PROP_COUNT,
+                                                                                   transformationId() ) );
                     problems().add( problem );
                 } else {
-                    final Value< ? > term = propNames.get( 0 );
-                    Object name;
+                    final Value< ? > term = props.get( 0 );
+                    Object prop;
 
                     try {
-                        name = term.get();
+                        prop = term.get();
 
-                        if ( !( name instanceof String ) ) {
+                        if ( !( prop instanceof ModelProperty ) ) {
                             final ValidationProblem problem =
                                 TransformationFactory.createError( transformationId(),
-                                                                   ChrysalixI18n.mapOperationInvalidSourcePropType.text( transformationId() ) );
+                                                                   ChrysalixI18n.localize( INVALID_TARGET_PROP_TYPE,
+                                                                                           transformationId() ) );
                             problems().add( problem );
+                        } else {
+                            try {
+                                targetPropIsMultiValued = ( ( ModelProperty ) prop ).descriptor().multiple();
+                            } catch ( final ModelspaceException e ) {
+                                final ValidationProblem problem =
+                                    TransformationFactory.createError( transformationId(),
+                                                                       ChrysalixI18n.localize( ERROR_READING_MODEL_PROP,
+                                                                                               NAME ) );
+                                problems().add( problem );
+                            }
                         }
                     } catch ( final ChrysalixException e ) {
                         final ValidationProblem problem =
                             TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                              transformationId() ) );
+                                                               ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                                       NAME,
+                                                                                       transformationId() ) );
                         problems().add( problem );
-                        Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
                     }
                 }
             }
 
-            { // target model
-                final List< Value< ? >> targetModels = inputs( TARGET_MODEL_OBJECT_DESCRIPTOR.id() );
-
-                if ( targetModels.size() != 1 ) {
-                    final ValidationProblem problem =
-                        TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.mapOperationInvalidTargetModelCount.text( transformationId() ) );
-                    problems().add( problem );
-                } else {
-                    final Value< ? > term = targetModels.get( 0 );
-                    Object model;
-
-                    try {
-                        model = term.get();
-
-                        if ( !( model instanceof ModelObject ) && !( model instanceof Model ) ) {
-                            final ValidationProblem problem =
-                                TransformationFactory.createError( transformationId(),
-                                                                   ChrysalixI18n.mapOperationInvalidTargetModelObjectType.text( transformationId() ) );
-                            problems().add( problem );
-                        }
-                    } catch ( final ChrysalixException e ) {
-                        final ValidationProblem problem =
-                            TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                              transformationId() ) );
-                        problems().add( problem );
-                        Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
-                    }
-                }
-            }
-
-            { // target model's property name
-                final List< Value< ? >> propNames = inputs( TARGET_PROP_DESCRIPTOR.id() );
-
-                if ( propNames.size() != 1 ) {
-                    final ValidationProblem problem =
-                        TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.mapOperationInvalidTargetPropCount.text( transformationId() ) );
-                    problems().add( problem );
-                } else {
-                    final Value< ? > term = propNames.get( 0 );
-                    Object name;
-
-                    try {
-                        name = term.get();
-
-                        if ( !( name instanceof String ) ) {
-                            final ValidationProblem problem =
-                                TransformationFactory.createError( transformationId(),
-                                                                   ChrysalixI18n.mapOperationInvalidTargetPropType.text( transformationId() ) );
-                            problems().add( problem );
-                        }
-                    } catch ( final ChrysalixException e ) {
-                        final ValidationProblem problem =
-                            TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                              transformationId() ) );
-                        problems().add( problem );
-                        Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
-                    }
-                }
+            if ( sourcePropIsMultiValued != targetPropIsMultiValued ) {
+                final ValidationProblem problem =
+                    TransformationFactory.createError( transformationId(),
+                                                       ChrysalixI18n.localize( INVALID_VALUES_COUNT,
+                                                                               transformationId() ) );
+                problems().add( problem );
             }
         }
+
+        return super.problems();
     }
 
 }

@@ -26,21 +26,25 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Median;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class MedianTest {
 
-    private static final String ID = Median.TERM_DESCRIPTOR.id();
+    private static final String ID = Median.TERM_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Number > DOUBLE_TERM;
     private static Value< Number > DOUBLE2_TERM;
     private static Value< Number > INT_TERM;
@@ -48,24 +52,28 @@ public final class MedianTest {
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        DOUBLE_TERM = TransformationFactory.createValue( Median.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
-        DOUBLE2_TERM = TransformationFactory.createValue( Median.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
-        INT_TERM = TransformationFactory.createValue( Median.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        INT2_TERM = TransformationFactory.createValue( Median.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        FACTORY = new TransformationTestFactory();
+        DOUBLE_TERM = FACTORY.createNumberValue( "/my/path/double", Median.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        DOUBLE2_TERM =
+            FACTORY.createNumberValue( "/my/path/double2", Median.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
+        INT_TERM = FACTORY.createNumberValue( "/my/path/int", Median.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = FACTORY.createNumberValue( "/my/path/int2", Median.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private Median operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Median( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Median( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
+        assertThat( this.operation.inputs().length, is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs()[ 0 ], is( INT_TERM ) );
     }
 
     @Test
@@ -92,19 +100,13 @@ public final class MedianTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Median.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Median.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Median.class ) ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -117,7 +119,7 @@ public final class MedianTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
@@ -126,24 +128,19 @@ public final class MedianTest {
         this.operation.get();
     }
 
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( INT_TERM );
+    @Test
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Median.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.medianOperationDescription.text() ) );
-    }
-
-    @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.medianOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Median.NAME ) ) );
     }
 
 }

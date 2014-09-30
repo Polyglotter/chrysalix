@@ -35,31 +35,33 @@ import java.util.List;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.operation.OperationTestConstants;
-import org.chrysalix.transformation.Operation;
-import org.chrysalix.transformation.Transformation;
-import org.chrysalix.transformation.TransformationFactory;
-import org.chrysalix.transformation.Transformation.ModelType;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.modelspace.Model;
+import org.modelspace.ModelObject;
+import org.modelspace.Modelspace;
 
 /**
  * Test class for the transformation class created by the factory.
  */
+@Ignore
 @SuppressWarnings( "javadoc" )
 public final class TransformationImplTest {
 
+    private static final TransformationFactory FACTORY = new TransformationFactory( mock( Modelspace.class ) );
     private Transformation transformation;
 
     @Before
-    public void beforeEach() {
-        this.transformation = TransformationFactory.createTransformation( OperationTestConstants.TRANSFORM_ID );
+    public void beforeEach() throws Exception {
+        this.transformation = FACTORY.createTransformation( OperationTestConstants.TRANSFORM_ID );
     }
 
     @Test
     public void shouldAddModelAsBothSourceAndTarget() throws Exception {
         final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE_TARGET, model );
+        this.transformation.addSource( model );
+        this.transformation.addTarget( model );
         assertThat( this.transformation.sources().length, is( 1 ) );
         assertThat( this.transformation.sources()[ 0 ], is( model ) );
         assertThat( this.transformation.targets().length, is( 1 ) );
@@ -70,7 +72,7 @@ public final class TransformationImplTest {
     public void shouldAddMultipeSourceModels() throws Exception {
         final Model model_1 = mock( Model.class );
         final Model model_2 = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE, model_1, model_2 );
+        this.transformation.addSource( model_1, model_2 );
         assertThat( this.transformation.sources().length, is( 2 ) );
         assertThat( Arrays.asList( this.transformation.sources() ), hasItems( model_1, model_2 ) );
         assertThat( this.transformation.targets().length, is( 0 ) );
@@ -80,7 +82,8 @@ public final class TransformationImplTest {
     public void shouldAddMultipeSourceTargetModels() throws Exception {
         final Model model_1 = mock( Model.class );
         final Model model_2 = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE_TARGET, model_1, model_2 );
+        this.transformation.addSource( model_1, model_2 );
+        this.transformation.addTarget( model_1, model_2 );
         assertThat( this.transformation.sources().length, is( 2 ) );
         assertThat( Arrays.asList( this.transformation.sources() ), hasItems( model_1, model_2 ) );
         assertThat( this.transformation.targets().length, is( 2 ) );
@@ -91,7 +94,7 @@ public final class TransformationImplTest {
     public void shouldAddMultipeTargetModels() throws Exception {
         final Model model_1 = mock( Model.class );
         final Model model_2 = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.TARGET, model_1, model_2 );
+        this.transformation.addTarget( model_1, model_2 );
         assertThat( this.transformation.targets().length, is( 2 ) );
         assertThat( Arrays.asList( this.transformation.targets() ), hasItems( model_1, model_2 ) );
         assertThat( this.transformation.sources().length, is( 0 ) );
@@ -120,87 +123,29 @@ public final class TransformationImplTest {
     @Test
     public void shouldAddSourceModel() throws Exception {
         final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE, model );
+        this.transformation.addSource( model );
         assertThat( this.transformation.sources().length, is( 1 ) );
         assertThat( this.transformation.sources()[ 0 ], is( model ) );
         assertThat( this.transformation.targets().length, is( 0 ) );
     }
 
     @Test
-    public void shouldAddSourceToTargetModel() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.TARGET, model );
-        this.transformation.add( Transformation.ModelType.SOURCE, model );
-        assertThat( this.transformation.sources().length, is( 1 ) );
-        assertThat( this.transformation.sources()[ 0 ], is( model ) );
-        assertThat( this.transformation.targets().length, is( 1 ) );
-        assertThat( this.transformation.targets()[ 0 ], is( model ) );
-    }
-
-    @Test
     public void shouldAddTargetModel() throws Exception {
         final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.TARGET, model );
+        this.transformation.addTarget( model );
         assertThat( this.transformation.targets().length, is( 1 ) );
         assertThat( this.transformation.targets()[ 0 ], is( model ) );
         assertThat( this.transformation.sources().length, is( 0 ) );
     }
 
-    @Test
-    public void shouldAddTargetToSourceModel() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE, model );
-        this.transformation.add( Transformation.ModelType.TARGET, model );
-        assertThat( this.transformation.sources().length, is( 1 ) );
-        assertThat( this.transformation.sources()[ 0 ], is( model ) );
-        assertThat( this.transformation.targets().length, is( 1 ) );
-        assertThat( this.transformation.targets()[ 0 ], is( model ) );
-    }
-
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingEmptyModels() throws Exception {
-        this.transformation.add( ModelType.SOURCE, new Model[ 0 ] );
+        this.transformation.addSource( new Model[ 0 ] );
     }
 
     @Test( expected = IllegalArgumentException.class )
     public void shouldFailAddingEmptyOperations() throws Exception {
         this.transformation.add( new Operation< ? >[ 0 ] );
-    }
-
-    @Test( expected = ChrysalixException.class )
-    public void shouldFailAddingModelAgainWithSameModelType() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE, model );
-        this.transformation.add( Transformation.ModelType.SOURCE, model );
-    }
-
-    @Test( expected = ChrysalixException.class )
-    public void shouldFailAddingModelAgainWithSameModelType2() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.TARGET, model );
-        this.transformation.add( Transformation.ModelType.TARGET, model );
-    }
-
-    @Test( expected = ChrysalixException.class )
-    public void shouldFailAddingModelAgainWithSameModelType3() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE_TARGET, model );
-        this.transformation.add( Transformation.ModelType.SOURCE_TARGET, model );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailAddingModelAndNullModelType() throws Exception {
-        this.transformation.add( null, mock( Model.class ) );
-    }
-
-    @Test( expected = ChrysalixException.class )
-    public void shouldFailAddingNullModel() throws Exception {
-        this.transformation.add( Transformation.ModelType.SOURCE, mock( Model.class ), null, mock( Model.class ) );
-    }
-
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailAddingNullModels() throws Exception {
-        this.transformation.add( Transformation.ModelType.TARGET, ( Model[] ) null );
     }
 
     @Test( expected = ChrysalixException.class )
@@ -214,38 +159,88 @@ public final class TransformationImplTest {
     }
 
     @Test( expected = ChrysalixException.class )
+    public void shouldFailAddingNullSourceModel() throws Exception {
+        this.transformation.addSource( mock( Model.class ), null, mock( Model.class ) );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailAddingNullSourceModels() throws Exception {
+        this.transformation.addSource( ( Model[] ) null );
+    }
+
+    @Test( expected = ChrysalixException.class )
+    public void shouldFailAddingNullTargetModel() throws Exception {
+        this.transformation.addTarget( mock( Model.class ), null, mock( Model.class ) );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailAddingNullTargetModels() throws Exception {
+        this.transformation.addTarget( ( Model[] ) null );
+    }
+
+    @Test( expected = ChrysalixException.class )
     public void shouldFailAddingOperationMultipleTimes() throws Exception {
-        final Operation< ? > op = OperationTestConstants.TEST_OPERATION_DESCRIPTOR.newInstance( this.transformation );
+        final Operation< ? > op = OperationTestConstants.DESCRIPTOR.newInstance( mock( ModelObject.class ),
+                                                                                 this.transformation );
         this.transformation.add( op, mock( Operation.class ), op );
     }
 
-    @Test( expected = IllegalArgumentException.class )
-    public void shouldFailRemovingEmptyModels() throws Exception {
-        this.transformation.remove( new Model[ 0 ] );
-    }
-
     @Test( expected = ChrysalixException.class )
-    public void shouldFailRemovingModelThatWasNeverAdded() throws Exception {
-        this.transformation.remove( mock( Model.class ) );
-    }
-
-    @Test( expected = ChrysalixException.class )
-    public void shouldFailRemovingModelTypeThatWasNeverAdded() throws Exception {
+    public void shouldFailAddingSameModelAsSourceTwice() throws Exception {
         final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE, model );
-        this.transformation.remove( Transformation.ModelType.TARGET, model );
+        this.transformation.addSource( model );
+        this.transformation.addSource( model );
     }
 
     @Test( expected = ChrysalixException.class )
-    public void shouldFailRemovingNullModel() throws Exception {
+    public void shouldFailAddingSameModelAsTargetTwice() throws Exception {
         final Model model = mock( Model.class );
-        this.transformation.add( Transformation.ModelType.SOURCE, model );
-        this.transformation.remove( Transformation.ModelType.TARGET, model, null );
+        this.transformation.addTarget( model );
+        this.transformation.addTarget( model );
     }
 
     @Test( expected = IllegalArgumentException.class )
-    public void shouldFailRemovingNullModels() throws Exception {
-        this.transformation.remove( Transformation.ModelType.TARGET, ( Model[] ) null );
+    public void shouldFailRemovingEmptySourceModels() throws Exception {
+        this.transformation.removeSource( new Model[ 0 ] );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailRemovingEmptyTargetModels() throws Exception {
+        this.transformation.removeTarget( new Model[ 0 ] );
+    }
+
+    @Test( expected = ChrysalixException.class )
+    public void shouldFailRemovingNullSourceModel() throws Exception {
+        final Model model = mock( Model.class );
+        this.transformation.addSource( model );
+        this.transformation.removeSource( model, null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailRemovingNullSourceModels() throws Exception {
+        this.transformation.removeSource( ( Model[] ) null );
+    }
+
+    @Test( expected = ChrysalixException.class )
+    public void shouldFailRemovingNullTargetModel() throws Exception {
+        final Model model = mock( Model.class );
+        this.transformation.addTarget( model );
+        this.transformation.removeTarget( model, null );
+    }
+
+    @Test( expected = IllegalArgumentException.class )
+    public void shouldFailRemovingNullTargetModels() throws Exception {
+        this.transformation.removeTarget( ( Model[] ) null );
+    }
+
+    @Test( expected = ChrysalixException.class )
+    public void shouldFailRemovingSourceModelThatWasNeverAdded() throws Exception {
+        this.transformation.removeSource( mock( Model.class ) );
+    }
+
+    @Test( expected = ChrysalixException.class )
+    public void shouldFailRemovingTargetModelThatWasNeverAdded() throws Exception {
+        this.transformation.removeTarget( mock( Model.class ) );
     }
 
     @SuppressWarnings( "unchecked" )
@@ -255,7 +250,9 @@ public final class TransformationImplTest {
         final List< Operation< Integer >> operations = new ArrayList<>( count );
 
         for ( int i = 0; i < count; ++i ) {
-            final Operation< Integer > op = OperationTestConstants.TEST_OPERATION_DESCRIPTOR.newInstance( this.transformation );
+            final Operation< Integer > op =
+                OperationTestConstants.DESCRIPTOR.newInstance( mock( ModelObject.class ),
+                                                               this.transformation );
             this.transformation.add( op );
             operations.add( op );
         }
@@ -269,18 +266,18 @@ public final class TransformationImplTest {
     }
 
     @Test
-    public void shouldNotInitiallyHaveOperations() {
+    public void shouldNotInitiallyHaveOperations() throws Exception {
         assertThat( this.transformation.operations().length, is( 0 ) );
         assertThat( this.transformation.iterator().hasNext(), is( false ) );
     }
 
     @Test
-    public void shouldNotInitiallyHaveSources() {
+    public void shouldNotInitiallyHaveSources() throws Exception {
         assertThat( this.transformation.sources().length, is( 0 ) );
     }
 
     @Test
-    public void shouldNotInitiallyHaveTargets() {
+    public void shouldNotInitiallyHaveTargets() throws Exception {
         assertThat( this.transformation.targets().length, is( 0 ) );
     }
 
@@ -293,52 +290,8 @@ public final class TransformationImplTest {
     }
 
     @Test
-    public void shouldObtainId() {
-        assertThat( this.transformation.id(), is( OperationTestConstants.TRANSFORM_ID ) );
-    }
-
-    @Test
-    public void shouldRemoveModel() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( ModelType.SOURCE, model );
-        this.transformation.remove( model );
-        assertThat( this.transformation.sources().length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldRemoveModel2() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( ModelType.TARGET, model );
-        this.transformation.remove( model );
-        assertThat( this.transformation.sources().length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldRemoveModel3() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( ModelType.SOURCE_TARGET, model );
-        this.transformation.remove( model );
-        assertThat( this.transformation.sources().length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldRemoveModelWhenLastModelTypeIsRemoved() throws Exception {
-        final Model model = mock( Model.class );
-        this.transformation.add( ModelType.SOURCE_TARGET, model );
-        this.transformation.remove( ModelType.SOURCE, model );
-        this.transformation.remove( ModelType.TARGET, model );
-        assertThat( this.transformation.sources().length, is( 0 ) );
-    }
-
-    @Test
-    public void shouldRemoveMultipleModels() throws Exception {
-        final Model source = mock( Model.class );
-        final Model target = mock( Model.class );
-        this.transformation.add( ModelType.SOURCE, source );
-        this.transformation.add( ModelType.TARGET, target );
-        this.transformation.remove( source, target );
-        assertThat( this.transformation.sources().length, is( 0 ) );
-        assertThat( this.transformation.targets().length, is( 0 ) );
+    public void shouldObtainId() throws Exception {
+        assertThat( this.transformation.name(), is( OperationTestConstants.TRANSFORM_ID ) );
     }
 
     @Test
@@ -354,9 +307,9 @@ public final class TransformationImplTest {
     public void shouldRemoveMultipleSourceModels() throws Exception {
         final Model model_1 = mock( Model.class );
         final Model model_2 = mock( Model.class );
-        this.transformation.add( ModelType.SOURCE, model_1, model_2 );
-        this.transformation.add( ModelType.TARGET, mock( Model.class ) );
-        this.transformation.remove( ModelType.SOURCE, model_1, model_2 );
+        this.transformation.addSource( model_1, model_2 );
+        this.transformation.addTarget( model_1 );
+        this.transformation.removeSource( model_1, model_2 );
         assertThat( this.transformation.sources().length, is( 0 ) );
         assertThat( this.transformation.targets().length, is( 1 ) );
     }
@@ -365,9 +318,9 @@ public final class TransformationImplTest {
     public void shouldRemoveMultipleTargetModels() throws Exception {
         final Model model_1 = mock( Model.class );
         final Model model_2 = mock( Model.class );
-        this.transformation.add( ModelType.TARGET, model_1, model_2 );
-        this.transformation.add( ModelType.SOURCE, mock( Model.class ) );
-        this.transformation.remove( ModelType.TARGET, model_1, model_2 );
+        this.transformation.addTarget( model_1, model_2 );
+        this.transformation.addSource( model_1 );
+        this.transformation.removeTarget( model_1, model_2 );
         assertThat( this.transformation.targets().length, is( 0 ) );
         assertThat( this.transformation.sources().length, is( 1 ) );
     }
@@ -383,17 +336,17 @@ public final class TransformationImplTest {
     @Test
     public void shouldRemoveSourceModel() throws Exception {
         final Model model = mock( Model.class );
-        this.transformation.add( ModelType.SOURCE, model );
-        this.transformation.remove( ModelType.SOURCE, model );
+        this.transformation.addSource( model );
+        this.transformation.removeSource( model );
         assertThat( this.transformation.sources().length, is( 0 ) );
     }
 
     @Test
     public void shouldRemoveTargetModel() throws Exception {
         final Model model = mock( Model.class );
-        this.transformation.add( ModelType.TARGET, model );
-        this.transformation.remove( ModelType.TARGET, model );
-        assertThat( this.transformation.sources().length, is( 0 ) );
+        this.transformation.addTarget( model );
+        this.transformation.removeTarget( model );
+        assertThat( this.transformation.targets().length, is( 0 ) );
     }
 
 }

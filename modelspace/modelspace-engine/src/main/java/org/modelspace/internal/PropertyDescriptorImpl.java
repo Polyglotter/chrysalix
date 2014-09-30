@@ -108,7 +108,7 @@ public class PropertyDescriptorImpl implements PropertyDescriptor {
             int i = 0;
 
             for ( final Value value : values ) {
-                this.defaultValues[ i++ ] = ModelPropertyImpl.convert( value, type );
+                this.defaultValues[ i++ ] = ModelProperty.Util.convert( value, type );
             }
         }
     }

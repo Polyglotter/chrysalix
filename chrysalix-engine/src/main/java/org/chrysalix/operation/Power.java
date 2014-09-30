@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -35,9 +34,11 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * Calculates the value of the first term raised to the power of the second term.
@@ -46,13 +47,26 @@ import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
  */
 public final class Power extends AbstractOperation< Number > {
 
+    private static final String BASE_DESCRIPTION = "The input term whose value is being raised to a power";
+    private static final String BASE_NAME = "Base";
+    static final String DESCRIPTION = "Calculates the value of the first term raised to the power of the second term";
+    private static final String EXPONENT_DESCRIPTION = "The input term whose value is the power a number is raised to";
+    private static final String EXPONENT_NAME = "Exponent";
+    private static final String INVALID_BASE_TERM_TYPE = "The base term of power operation in transformation '%s' must be a number";
+    private static final String INVALID_EXPONENT_TERM_TYPE =
+        "The exponent term of power operation in transformation '%s' must be a number";
+    private static final String INVALID_BASE_COUNT = "Power operation in transformation '%s' must have exactly one base term";
+    private static final String INVALID_EXPONENT_COUNT =
+        "Power operation in transformation '%s' must have exactly one exponent term";
+    static final String NAME = "Power";
+
     /**
      * The base descriptor.
      */
     public static final ValueDescriptor< Number > BASE_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Power.class, "base" ),
-                                                     ChrysalixI18n.powerOperationBaseDescription.text(),
-                                                     ChrysalixI18n.powerOperationBaseName.text(),
+                                                     ChrysalixI18n.localize( BASE_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( BASE_NAME ),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -63,8 +77,8 @@ public final class Power extends AbstractOperation< Number > {
      */
     public static final ValueDescriptor< Number > EXPONENT_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Power.class, "exponent" ),
-                                                     ChrysalixI18n.powerOperationExponentDescription.text(),
-                                                     ChrysalixI18n.powerOperationExponentName.text(),
+                                                     ChrysalixI18n.localize( EXPONENT_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( EXPONENT_NAME ),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -80,37 +94,40 @@ public final class Power extends AbstractOperation< Number > {
      */
     public static final OperationDescriptor< Number > DESCRIPTOR =
         new AbstractOperationDescriptor< Number >( TransformationFactory.createId( Power.class ),
-                                                   ChrysalixI18n.powerOperationDescription.text(),
-                                                   ChrysalixI18n.powerOperationName.text(),
+                                                   ChrysalixI18n.localize( DESCRIPTION ),
+                                                   ChrysalixI18n.localize( NAME ),
                                                    Number.class,
                                                    INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Number > newInstance( final Transformation transformation ) {
-                return new Power( transformation );
+            public Operation< Number > newInstance( final ModelObject operation,
+                                                    final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Power( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Power( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.ARITHMETIC );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    Power( final ModelObject operation,
+           final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
     }
 
     /**
@@ -121,9 +138,8 @@ public final class Power extends AbstractOperation< Number > {
     @Override
     protected Number calculate() throws ChrysalixException {
         assert !problems().isError();
-
-        final Number base = ( Number ) inputs( BASE_DESCRIPTOR.id() ).get( 0 ).get();
-        final Number exponent = ( Number ) inputs( EXPONENT_DESCRIPTOR.id() ).get( 0 ).get();
+        final Number base = ( Number ) inputs( BASE_DESCRIPTOR.name() ).get( 0 ).get();
+        final Number exponent = ( Number ) inputs( EXPONENT_DESCRIPTOR.name() ).get( 0 ).get();
 
         if ( base instanceof BigInteger ) return ( ( BigInteger ) base ).pow( exponent.intValue() );
         if ( base instanceof BigDecimal ) return ( ( BigDecimal ) base ).pow( exponent.intValue() );
@@ -134,23 +150,29 @@ public final class Power extends AbstractOperation< Number > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+
         // make sure there are terms
-        if ( inputs().size() != 2 ) {
+        if ( inputs().length != 2 ) {
             final ValidationProblem problem =
-                TransformationFactory.createError( transformationId(), ChrysalixI18n.powerOperationInvalidTermCount.text( transformationId() ) );
+                TransformationFactory.createError( transformationId(), ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_COUNT,
+                                                                                               NAME,
+                                                                                               transformationId(),
+                                                                                               inputs().length ) );
             problems().add( problem );
         } else {
             { // base
-                final List< Value< ? >> baseValues = inputs( BASE_DESCRIPTOR.id() );
+                final List< Value< ? >> baseValues = inputs( BASE_DESCRIPTOR.name() );
 
                 if ( baseValues.size() != 1 ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.powerOperationInvalidBaseCount.text( transformationId() ) );
+                                                           ChrysalixI18n.localize( INVALID_BASE_COUNT,
+                                                                                   transformationId() ) );
                     problems().add( problem );
                 } else {
                     final Value< ? > term = baseValues.get( 0 );
@@ -162,27 +184,29 @@ public final class Power extends AbstractOperation< Number > {
                         if ( !( x instanceof Number ) ) {
                             final ValidationProblem problem =
                                 TransformationFactory.createError( transformationId(),
-                                                                   ChrysalixI18n.powerOperationInvalidBaseTermType.text( transformationId() ) );
+                                                                   ChrysalixI18n.localize( INVALID_BASE_TERM_TYPE,
+                                                                                           transformationId() ) );
                             problems().add( problem );
                         }
                     } catch ( final ChrysalixException e ) {
                         final ValidationProblem problem =
                             TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                              transformationId() ) );
+                                                               ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                                       NAME,
+                                                                                       transformationId() ) );
                         problems().add( problem );
-                        Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
                     }
                 }
             }
 
             { // exponent
-                final List< Value< ? >> exponentValues = inputs( EXPONENT_DESCRIPTOR.id() );
+                final List< Value< ? >> exponentValues = inputs( EXPONENT_DESCRIPTOR.name() );
 
                 if ( exponentValues.size() != 1 ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.powerOperationInvalidExponentCount.text( transformationId() ) );
+                                                           ChrysalixI18n.localize( INVALID_EXPONENT_COUNT,
+                                                                                   transformationId() ) );
                     problems().add( problem );
                 } else {
                     final Value< ? > term = exponentValues.get( 0 );
@@ -194,20 +218,23 @@ public final class Power extends AbstractOperation< Number > {
                         if ( !( y instanceof Number ) ) {
                             final ValidationProblem problem =
                                 TransformationFactory.createError( transformationId(),
-                                                                   ChrysalixI18n.powerOperationInvalidExponentTermType.text( transformationId() ) );
+                                                                   ChrysalixI18n.localize( INVALID_EXPONENT_TERM_TYPE,
+                                                                                           transformationId() ) );
                             problems().add( problem );
                         }
                     } catch ( final ChrysalixException e ) {
                         final ValidationProblem problem =
                             TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                              transformationId() ) );
+                                                               ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                                       NAME,
+                                                                                       transformationId() ) );
                         problems().add( problem );
-                        Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
                     }
                 }
             }
         }
+
+        return super.problems();
     }
 
 }

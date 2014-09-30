@@ -23,7 +23,6 @@
  */
 package org.chrysalix.operation;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -31,20 +30,26 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * Counts the number of terms.
  */
 public final class Count extends AbstractOperation< Integer > {
 
+    static final String DESCRIPTION = "Counts the number of terms";
+    private static final String INPUT_DESCRIPTION = "An input being counted toward the total";
+    private static final String INPUT_NAME = "Input";
+    static final String NAME = "Count";
+
     /**
      * The input term descriptor.
      */
     public static final ValueDescriptor< Object > TERM_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Count.class, "input" ),
-                                                     ChrysalixI18n.countOperationInputDescription.text(),
-                                                     ChrysalixI18n.countOperationInputName.text(),
+                                                     ChrysalixI18n.localize( INPUT_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( INPUT_NAME ),
                                                      Object.class,
                                                      true,
                                                      0,
@@ -60,37 +65,40 @@ public final class Count extends AbstractOperation< Integer > {
      */
     public static final OperationDescriptor< Integer > DESCRIPTOR =
         new AbstractOperationDescriptor< Integer >( TransformationFactory.createId( Count.class ),
-                                                    ChrysalixI18n.countOperationDescription.text(),
-                                                    ChrysalixI18n.countOperationName.text(),
+                                                    ChrysalixI18n.localize( DESCRIPTION ),
+                                                    ChrysalixI18n.localize( NAME ),
                                                     Integer.class,
                                                     INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Integer > newInstance( final Transformation transformation ) {
-                return new Count( transformation );
+            public Operation< Integer > newInstance( final ModelObject operation,
+                                                     final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Count( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Count( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.ARITHMETIC );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    Count( final ModelObject operation,
+           final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
     }
 
     /**
@@ -99,30 +107,9 @@ public final class Count extends AbstractOperation< Integer > {
      * @see org.chrysalix.operation.AbstractOperation#calculate()
      */
     @Override
-    protected Integer calculate() {
+    protected Integer calculate() throws ChrysalixException {
         assert !problems().isError();
-        return inputs().size();
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.chrysalix.operation.AbstractOperation#get()
-     */
-    @Override
-    public Integer get() throws ChrysalixException {
-        final Integer result = super.get();
-        return ( ( result == null ) ? 0 : result );
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
-     */
-    @Override
-    protected void validate() {
-        // nothing to do
+        return inputs().length;
     }
 
 }
