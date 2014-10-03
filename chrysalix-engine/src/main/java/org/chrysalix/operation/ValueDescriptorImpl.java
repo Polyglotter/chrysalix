@@ -48,7 +48,7 @@ public class ValueDescriptorImpl< T > implements ValueDescriptor< T > {
      * @param valueDescription
      *        the value description (cannot be <code>null</code> or empty)
      * @param valueName
-     *        the value name (cannot be <code>null</code> or empty)
+     *        the value name (can be <code>null</code> or empty)
      * @param valueType
      *        the value type (cannot be <code>null</code>)
      * @param isModifiable
@@ -67,13 +67,12 @@ public class ValueDescriptorImpl< T > implements ValueDescriptor< T > {
                                 final boolean isUnbounded ) {
         CheckArg.notEmpty( valueId, "valueId" );
         CheckArg.notEmpty( valueDescription, "valueDescription" );
-        CheckArg.notEmpty( valueName, "valueName" );
         CheckArg.notNull( valueType, "valueType" );
         CheckArg.isNonNegative( requiredValueCount, "requiredValueCount" );
 
         this.id = valueId;
         this.description = valueDescription;
-        this.name = valueName;
+        this.name = ( ( ( valueName == null ) || valueName.isEmpty() ) ? this.id : valueName );
         this.type = valueType;
         this.modifiable = isModifiable;
         this.numRequiredValues = requiredValueCount;
@@ -128,6 +127,26 @@ public class ValueDescriptorImpl< T > implements ValueDescriptor< T > {
     @Override
     public int requiredValueCount() {
         return this.numRequiredValues;
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.chrysalix.transformation.ValueDescriptor#type()
+     */
+    @Override
+    public String signature() {
+        return ( name() + ':' + this.type.getSimpleName() );
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return signature();
     }
 
     /**

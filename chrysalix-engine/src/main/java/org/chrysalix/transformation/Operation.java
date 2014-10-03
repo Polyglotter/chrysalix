@@ -23,11 +23,6 @@
  */
 package org.chrysalix.transformation;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
 import org.chrysalix.ChrysalixException;
 
 /**
@@ -39,37 +34,9 @@ import org.chrysalix.ChrysalixException;
 public interface Operation< T > extends Value< T >, Iterable< Value< ? > > {
 
     /**
-     * Sorts operations by their name.
+     * An empty array of operations.
      */
-    Comparator< Operation< ? > > NAME_SORTER = new Comparator< Operation< ? >>() {
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-         */
-        @Override
-        public int compare( final Operation< ? > thisOp,
-                            final Operation< ? > thatOp ) {
-            return ValueDescriptor.NAME_SORTER.compare( thisOp.descriptor(), thatOp.descriptor() );
-        }
-
-    };
-
-    /**
-     * An empty list of operations.
-     */
-    final List< Operation< ? > > NO_OPERATIONS = Collections.emptyList();
-
-    /**
-     * @param categoriesBeingAdded
-     *        the categories being added (cannot be <code>null</code>)
-     * @throws IllegalArgumentException
-     *         if the categories being added is <code>null</code>, empty, or any value in the array is <code>null</code>
-     * @throws ChrysalixException
-     *         if any of the categories cannot be added
-     */
-    void addCategory( final OperationCategory... categoriesBeingAdded ) throws ChrysalixException;
+    final Operation< ? >[] NO_OPERATIONS = new Operation< ? >[ 0 ];
 
     /**
      * @param descriptorId
@@ -86,30 +53,18 @@ public interface Operation< T > extends Value< T >, Iterable< Value< ? > > {
                    final Object... valuesBeingAdded ) throws ChrysalixException;
 
     /**
-     * @return a collection of {@link OperationCategory categories} this operation belongs to (never <code>null</code> but can be
-     *         empty)
-     */
-    Set< OperationCategory > categories();
-
-    /**
      * @return all inputs whose value is non-<code>null</code> (never <code>null</code> but can be empty)
+     * @throws ChrysalixException
+     *         if an error occurs
      */
-    List< Value< ? >> inputs();
+    Value< ? >[] inputs() throws ChrysalixException;
 
     /**
      * @return the validation problems (never <code>null</code> but can be empty)
-     */
-    ValidationProblems problems();
-
-    /**
-     * @param categoriesBeingRemoved
-     *        the {@link OperationCategory categories} being removed (cannot be <code>null</code> or empty)
-     * @throws IllegalArgumentException
-     *         if the categories being removed is <code>null</code>, empty, or any value in the array is <code>null</code>
      * @throws ChrysalixException
-     *         if any of the categories cannot be found or cannot be removed
+     *         if an error occurs
      */
-    void removeCategory( final OperationCategory... categoriesBeingRemoved ) throws ChrysalixException;
+    ValidationProblems problems() throws ChrysalixException;
 
     /**
      * @param descriptorId

@@ -32,8 +32,8 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.chrysalix.transformation.Operation;
-import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.OperationDescriptorProvider;
+import org.chrysalix.transformation.ValueDescriptor;
 
 /**
  * A provider for the built-in {@link Operation operation} descriptors.
@@ -44,7 +44,7 @@ public final class BuiltInOperationDescriptorProvider implements OperationDescri
     private static final String PKG_NAME = BuiltInOperationDescriptorProvider.class.getPackage().getName();
     private static final String PATH = PKG_NAME.replace( '.', '/' );
 
-    private final List< OperationDescriptor< ? > > descriptors = new ArrayList<>();
+    private List< ValueDescriptor< ? > > descriptors;
 
     private String className( final File file ) {
         if ( file.getName().endsWith( CLASS_EXT ) ) {
@@ -60,7 +60,7 @@ public final class BuiltInOperationDescriptorProvider implements OperationDescri
      * @see org.chrysalix.transformation.OperationDescriptorProvider#descriptors()
      */
     @Override
-    public List< OperationDescriptor< ? >> descriptors() {
+    public List< ValueDescriptor< ? >> descriptors() {
         if ( this.descriptors == null ) {
             discoverDescriptors();
         }
@@ -68,25 +68,35 @@ public final class BuiltInOperationDescriptorProvider implements OperationDescri
         return this.descriptors;
     }
 
+    /**
+     * Discover and add descriptors.
+     */
     private void discoverDescriptors() {
+        descriptors = new ArrayList<>();
+
         try {
             final Enumeration< URL > urls = getClass().getClassLoader().getResources( PATH );
+            final List< File > files = new ArrayList<>();
 
             while ( urls.hasMoreElements() ) {
                 final URL url = urls.nextElement();
-                final File dir = new File( url.getFile() );
+                final File file = new File( url.getFile() );
+                findFiles( file, files );
+            }
 
-                for ( final File file : dir.listFiles() ) {
-                    final String className = className( file );
+            for ( final File file : files ) {
+                final String className = className( file );
 
-                    if ( className != null ) {
-                        final Class< ? > clazz = Class.forName( className );
+                if ( className != null ) {
+                    final Class< ? > clazz = Class.forName( className );
 
-                        if ( isOperation( clazz ) ) {
-                            final Field descriptor = clazz.getField( OperationDescriptor.DESCRIPTOR_NAME );
-
-                            if ( Modifier.isStatic( descriptor.getModifiers() ) ) {
-                                this.descriptors.add( ( OperationDescriptor< ? > ) descriptor.get( null ) );
+                    if ( isOperation( clazz ) ) {
+                        // find all static fields that are descriptors
+                        for ( final Field field : clazz.getFields() ) {
+                            if ( Modifier.isStatic( field.getModifiers() )
+                                 && !Modifier.isAbstract( field.getModifiers() )
+                                 && ValueDescriptor.class.isAssignableFrom( field.getType() ) ) {
+                                this.descriptors.add( ( ValueDescriptor< ? > ) field.get( null ) );
                             }
                         }
                     }
@@ -94,6 +104,19 @@ public final class BuiltInOperationDescriptorProvider implements OperationDescri
             }
         } catch ( final Exception e ) {
             e.printStackTrace();
+        }
+    }
+
+    private void findFiles( final File file,
+                            final List< File > files ) {
+        if ( file.isDirectory() ) {
+            final File dir = file;
+
+            for ( final File dirFile : dir.listFiles() ) {
+                findFiles( dirFile, files );
+            }
+        } else {
+            files.add( file );
         }
     }
 

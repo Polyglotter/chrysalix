@@ -23,7 +23,6 @@
  */
 package org.chrysalix.operation;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -31,8 +30,10 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * Provides a random number with a positive sign, greater than or equal to {@code 0.0} and less than {@code 1.0}. There is an
@@ -40,42 +41,50 @@ import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
  */
 public final class Random extends AbstractOperation< Double > {
 
+    static final String DESCRIPTION =
+        "Provides a random number with a positive sign, greater than or equal to 0.0 and less than 1.0.";
+    private static final String INVALID_NUMBER_OF_TERMS = "Random operation in transformation '%s' cannot have any terms";
+    static final String NAME = "Random";
+
     /**
      * The output descriptor.
      */
     public static final OperationDescriptor< Double > DESCRIPTOR =
         new AbstractOperationDescriptor< Double >( TransformationFactory.createId( Random.class ),
-                                                   ChrysalixI18n.randomOperationDescription.text(),
-                                                   ChrysalixI18n.randomOperationName.text(),
+                                                   ChrysalixI18n.localize( DESCRIPTION ),
+                                                   ChrysalixI18n.localize( NAME ),
                                                    Double.class,
                                                    ValueDescriptor.NO_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Double > newInstance( final Transformation transformation ) {
-                return new Random( transformation );
+            public Operation< Double > newInstance( final ModelObject operation,
+                                                    final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Random( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Random( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.ARITHMETIC );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    Random( final ModelObject operation,
+            final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
     }
 
     /**
@@ -84,7 +93,7 @@ public final class Random extends AbstractOperation< Double > {
      * @see org.chrysalix.operation.AbstractOperation#calculate()
      */
     @Override
-    protected Double calculate() {
+    protected Double calculate() throws ChrysalixException {
         assert !problems().isError();
         return Math.random();
     }
@@ -92,17 +101,21 @@ public final class Random extends AbstractOperation< Double > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+
         // make sure there is at most one term
-        if ( !inputs().isEmpty() ) {
+        if ( inputs().length != 0 ) {
             final ValidationProblem problem =
                 TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.randomOperationInvalidNumberOfTerms.text( transformationId() ) );
+                                                   ChrysalixI18n.localize( INVALID_NUMBER_OF_TERMS, transformationId() ) );
             problems().add( problem );
         }
+
+        return super.problems();
     }
 
 }

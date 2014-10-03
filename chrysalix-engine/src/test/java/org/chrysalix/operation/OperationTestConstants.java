@@ -23,15 +23,18 @@
  */
 package org.chrysalix.operation;
 
+import static org.mockito.Mockito.mock;
+
 import org.chrysalix.ChrysalixException;
-import org.chrysalix.operation.AbstractOperation;
-import org.chrysalix.operation.AbstractOperationDescriptor;
 import org.chrysalix.transformation.Operation;
 import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 @SuppressWarnings( "javadoc" )
 public class OperationTestConstants {
@@ -81,15 +84,15 @@ public class OperationTestConstants {
                                                      0,
                                                      true );
 
-    static final ValueDescriptor< ? >[] TEST_INPUT_DESCRIPTORS = new ValueDescriptor< ? >[] {
+    public static final ValueDescriptor< ? >[] TEST_INPUT_DESCRIPTORS = new ValueDescriptor< ? >[] {
                     DOUBLE_DESCRIPTOR,
                     FLOAT_DESCRIPTOR,
                     INT_DESCRIPTOR,
                     LONG_DESCRIPTOR,
-                    STRING_DESCRIPTOR,
+                    STRING_DESCRIPTOR
     };
 
-    public static OperationDescriptor< Integer > TEST_OPERATION_DESCRIPTOR =
+    public static final OperationDescriptor< Integer > DESCRIPTOR =
         new AbstractOperationDescriptor< Integer >( "outputDescriptorId",
                                                     "operationDescription",
                                                     "org.chrysalix.TestConstants$TestOperation",
@@ -97,8 +100,9 @@ public class OperationTestConstants {
                                                     TEST_INPUT_DESCRIPTORS ) {
 
             @Override
-            public Operation< Integer > newInstance( final Transformation transformation ) {
-                return new TestOperation( transformation );
+            public Operation< Integer > newInstance( final ModelObject operation,
+                                                     final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new TestOperation( mock( ModelObject.class ), transformation );
             }
 
         };
@@ -163,29 +167,32 @@ public class OperationTestConstants {
     public static final String TRANSFORM_ID = "Transform_1";
     public static final String TRANSFORM_2_ID = "Transform_2";
 
-    public static final Transformation TEST_TRANSFORMATION = TransformationFactory.createTransformation( TRANSFORM_ID );
+    private static TransformationTestFactory FACTORY;
+    public static final Transformation TEST_TRANSFORMATION;
 
     static {
         try {
-            EMPTY_STRING_TERM = TransformationFactory.createValue( STRING_DESCRIPTOR, EMPTY_STRING_VALUE );
-            INT_ZERO_TERM = TransformationFactory.createValue( INT_DESCRIPTOR, INT_ZERO_VALUE );
-            INT_1_TERM = TransformationFactory.createValue( INT_DESCRIPTOR, INT_1_VALUE );
-            INT_2_TERM = TransformationFactory.createValue( INT_DESCRIPTOR, INT_2_VALUE );
-            INT_3_TERM = TransformationFactory.createValue( INT_DESCRIPTOR, INT_3_VALUE );
-            INT_4_TERM = TransformationFactory.createValue( INT_DESCRIPTOR, INT_4_VALUE );
-            DOUBLE_ZERO_TERM = TransformationFactory.createValue( DOUBLE_DESCRIPTOR, DOUBLE_ZERO_VALUE );
-            DOUBLE_1_TERM = TransformationFactory.createValue( DOUBLE_DESCRIPTOR, DOUBLE_1_VALUE );
-            DOUBLE_2_TERM = TransformationFactory.createValue( DOUBLE_DESCRIPTOR, DOUBLE_2_VALUE );
-            DOUBLE_3_TERM = TransformationFactory.createValue( DOUBLE_DESCRIPTOR, DOUBLE_1_VALUE );
-            DOUBLE_4_TERM = TransformationFactory.createValue( DOUBLE_DESCRIPTOR, DOUBLE_4_VALUE );
-            FLOAT_1_TERM = TransformationFactory.createValue( FLOAT_DESCRIPTOR, FLOAT_1_VALUE );
-            FLOAT_2_TERM = TransformationFactory.createValue( FLOAT_DESCRIPTOR, FLOAT_2_VALUE );
-            LONG_1_TERM = TransformationFactory.createValue( LONG_DESCRIPTOR, LONG_1_VALUE );
-            LONG_2_TERM = TransformationFactory.createValue( LONG_DESCRIPTOR, LONG_2_VALUE );
-            NULL_STRING_TERM = TransformationFactory.createValue( STRING_DESCRIPTOR, NULL_STRING_VALUE );
-            STRING_1_TERM = TransformationFactory.createValue( STRING_DESCRIPTOR, STRING_1_VALUE );
-            STRING_2_TERM = TransformationFactory.createValue( STRING_DESCRIPTOR, STRING_2_VALUE );
-            STRING_3_TERM = TransformationFactory.createValue( STRING_DESCRIPTOR, STRING_3_VALUE );
+            FACTORY = new TransformationTestFactory();
+            TEST_TRANSFORMATION = FACTORY.createTransformation( TRANSFORM_ID );
+            EMPTY_STRING_TERM = FACTORY.createValue( "/my/path/empty", STRING_DESCRIPTOR, EMPTY_STRING_VALUE );
+            INT_ZERO_TERM = FACTORY.createValue( "/my/path/int_zero", INT_DESCRIPTOR, INT_ZERO_VALUE );
+            INT_1_TERM = FACTORY.createValue( "/my/path/int1", INT_DESCRIPTOR, INT_1_VALUE );
+            INT_2_TERM = FACTORY.createValue( "/my/path/int2", INT_DESCRIPTOR, INT_2_VALUE );
+            INT_3_TERM = FACTORY.createValue( "/my/path/int3", INT_DESCRIPTOR, INT_3_VALUE );
+            INT_4_TERM = FACTORY.createValue( "/my/path/int4", INT_DESCRIPTOR, INT_4_VALUE );
+            DOUBLE_ZERO_TERM = FACTORY.createValue( "/my/path/double_zero", DOUBLE_DESCRIPTOR, DOUBLE_ZERO_VALUE );
+            DOUBLE_1_TERM = FACTORY.createValue( "/my/path/double1", DOUBLE_DESCRIPTOR, DOUBLE_1_VALUE );
+            DOUBLE_2_TERM = FACTORY.createValue( "/my/path/double2", DOUBLE_DESCRIPTOR, DOUBLE_2_VALUE );
+            DOUBLE_3_TERM = FACTORY.createValue( "/my/path/double3", DOUBLE_DESCRIPTOR, DOUBLE_1_VALUE );
+            DOUBLE_4_TERM = FACTORY.createValue( "/my/path/double4", DOUBLE_DESCRIPTOR, DOUBLE_4_VALUE );
+            FLOAT_1_TERM = FACTORY.createValue( "/my/path/float1", FLOAT_DESCRIPTOR, FLOAT_1_VALUE );
+            FLOAT_2_TERM = FACTORY.createValue( "/my/path/float3", FLOAT_DESCRIPTOR, FLOAT_2_VALUE );
+            LONG_1_TERM = FACTORY.createValue( "/my/path/long1", LONG_DESCRIPTOR, LONG_1_VALUE );
+            LONG_2_TERM = FACTORY.createValue( "/my/path/long2", LONG_DESCRIPTOR, LONG_2_VALUE );
+            NULL_STRING_TERM = FACTORY.createValue( "/my/path/null", STRING_DESCRIPTOR, NULL_STRING_VALUE );
+            STRING_1_TERM = FACTORY.createValue( "/my/path/string1", STRING_DESCRIPTOR, STRING_1_VALUE );
+            STRING_2_TERM = FACTORY.createValue( "/my/path/string2", STRING_DESCRIPTOR, STRING_2_VALUE );
+            STRING_3_TERM = FACTORY.createValue( "/my/path/string3", STRING_DESCRIPTOR, STRING_3_VALUE );
         } catch ( final Exception e ) {
             throw new RuntimeException( e );
         }
@@ -198,20 +205,16 @@ public class OperationTestConstants {
      */
     public static class TestOperation extends AbstractOperation< Integer > {
 
-        public TestOperation( final Transformation operationTransformation ) {
-            super( TEST_OPERATION_DESCRIPTOR, operationTransformation );
+        public TestOperation( final ModelObject modelObject,
+                              final Transformation operationTransformation ) throws ModelspaceException, ChrysalixException {
+            super( modelObject, operationTransformation );
         }
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.chrysalix.operation.AbstractOperation#calculate()
-         */
         @Override
-        protected Integer calculate() {
+        protected Integer calculate() throws ChrysalixException {
             int result = 0;
 
-            for ( final Value< ? > integerValue : inputs( INT_DESCRIPTOR.id() ) ) {
+            for ( final Value< ? > integerValue : inputs( INT_DESCRIPTOR.name() ) ) {
                 try {
                     result += ( Integer ) integerValue.get();
                 } catch ( final ChrysalixException e ) {
@@ -220,16 +223,6 @@ public class OperationTestConstants {
             }
 
             return result;
-        }
-
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.chrysalix.operation.AbstractOperation#validate()
-         */
-        @Override
-        protected void validate() {
-            // nothing to do
         }
 
     }

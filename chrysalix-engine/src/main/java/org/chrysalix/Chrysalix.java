@@ -335,4 +335,5 @@ public final class Chrysalix implements Modelspace {
     public String repositoryStoreParentPath() {
         return modelspace.repositoryStoreParentPath();
     }
+
 }

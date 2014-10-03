@@ -26,22 +26,26 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Power;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class PowerTest {
 
-    private static final String BASE_ID = Power.BASE_DESCRIPTOR.id();
-    private static final String EXP_ID = Power.EXPONENT_DESCRIPTOR.id();
+    private static final String BASE_ID = Power.BASE_DESCRIPTOR.name();
+    private static final String EXP_ID = Power.EXPONENT_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Number > BASE_DOUBLE_TERM;
     private static Value< Number > BASE_FLOAT_TERM;
     private static Value< Number > BASE_INT_TERM;
@@ -51,26 +55,34 @@ public final class PowerTest {
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        BASE_DOUBLE_TERM = TransformationFactory.createValue( Power.BASE_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
-        BASE_FLOAT_TERM = TransformationFactory.createValue( Power.BASE_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
-        BASE_INT_TERM = TransformationFactory.createValue( Power.BASE_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        EXP_DOUBLE_TERM = TransformationFactory.createValue( Power.EXPONENT_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
-        EXP_FLOAT_TERM = TransformationFactory.createValue( Power.EXPONENT_DESCRIPTOR, OperationTestConstants.FLOAT_2_VALUE );
-        EXP_INT_TERM = TransformationFactory.createValue( Power.EXPONENT_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        FACTORY = new TransformationTestFactory();
+        BASE_DOUBLE_TERM =
+            FACTORY.createNumberValue( "/my/path/base/double", Power.BASE_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        BASE_FLOAT_TERM =
+            FACTORY.createNumberValue( "/my/path/base/float", Power.BASE_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        BASE_INT_TERM = FACTORY.createNumberValue( "/my/path/base/int", Power.BASE_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        EXP_DOUBLE_TERM =
+            FACTORY.createNumberValue( "/my/path/exp/double", Power.EXPONENT_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
+        EXP_FLOAT_TERM =
+            FACTORY.createNumberValue( "/my/path/exp/float", Power.EXPONENT_DESCRIPTOR, OperationTestConstants.FLOAT_2_VALUE );
+        EXP_INT_TERM =
+            FACTORY.createNumberValue( "/my/path/exp/int", Power.EXPONENT_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private Power operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Power( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Power( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddTwoinputs() throws ChrysalixException {
         this.operation.addInput( BASE_ID, BASE_INT_TERM );
         this.operation.addInput( EXP_ID, EXP_INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 2 ) );
+        assertThat( this.operation.inputs().length, is( 2 ) );
         assertThat( this.operation.inputs( BASE_ID ).size(), is( 1 ) );
         assertThat( ( Value< Number > ) this.operation.inputs( BASE_ID ).get( 0 ), is( BASE_INT_TERM ) );
         assertThat( this.operation.inputs( EXP_ID ).size(), is( 1 ) );
@@ -94,19 +106,13 @@ public final class PowerTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Power.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Power.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Power.class ) ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -145,7 +151,7 @@ public final class PowerTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
@@ -154,24 +160,19 @@ public final class PowerTest {
         this.operation.get();
     }
 
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( BASE_DOUBLE_TERM );
+    @Test
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Power.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.powerOperationDescription.text() ) );
-    }
-
-    @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.powerOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Power.NAME ) ) );
     }
 
 }

@@ -33,6 +33,6 @@ public interface OperationDescriptorProvider {
     /**
      * @return a collection of {@link Operation operation} {@link OperationDescriptor descriptors}
      */
-    List< OperationDescriptor< ? > > descriptors();
+    List< ValueDescriptor< ? > > descriptors();
 
 }

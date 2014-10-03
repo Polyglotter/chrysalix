@@ -26,21 +26,25 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.ToRadians;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class ToRadiansTest {
 
-    private static final String ID = ToRadians.TERM_DESCRIPTOR.id();
+    private static final String ID = ToRadians.TERM_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Number > DOUBLE_TERM;
     private static Value< Number > FLOAT_TERM;
     private static Value< Number > INT_TERM;
@@ -48,24 +52,28 @@ public final class ToRadiansTest {
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        DOUBLE_TERM = TransformationFactory.createValue( ToRadians.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
-        FLOAT_TERM = TransformationFactory.createValue( ToRadians.TERM_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
-        INT_TERM = TransformationFactory.createValue( ToRadians.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        INT2_TERM = TransformationFactory.createValue( ToRadians.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+        FACTORY = new TransformationTestFactory();
+        DOUBLE_TERM =
+            FACTORY.createNumberValue( "/my/path/double", ToRadians.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        FLOAT_TERM = FACTORY.createNumberValue( "/my/path/float", ToRadians.TERM_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        INT_TERM = FACTORY.createNumberValue( "/my/path/int", ToRadians.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT2_TERM = FACTORY.createNumberValue( "/my/path/int2", ToRadians.TERM_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private ToRadians operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new ToRadians( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new ToRadians( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
+        assertThat( this.operation.inputs().length, is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs()[ 0 ], is( INT_TERM ) );
     }
 
     @Test
@@ -87,19 +95,13 @@ public final class ToRadiansTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( ToRadians.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( ToRadians.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( ToRadians.class ) ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -119,7 +121,7 @@ public final class ToRadiansTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
@@ -128,24 +130,19 @@ public final class ToRadiansTest {
         this.operation.get();
     }
 
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( INT_TERM );
+    @Test
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( ToRadians.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.toRadiansOperationDescription.text() ) );
-    }
-
-    @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.toRadiansOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( ToRadians.NAME ) ) );
     }
 
 }

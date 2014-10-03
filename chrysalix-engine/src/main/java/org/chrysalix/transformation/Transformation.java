@@ -24,130 +24,124 @@
 package org.chrysalix.transformation;
 
 import org.chrysalix.ChrysalixException;
-import org.chrysalix.common.CheckArg;
 import org.modelspace.Model;
+import org.modelspace.ModelElement;
 
 /**
  * A class representing a transformation. A transformation uses an ordered set of {@link Operation operations} to calculate a result
  * consisting of one or more {@link Value values}.
  */
-public interface Transformation extends Iterable< Operation< ? > > {
+public interface Transformation extends Iterable< Operation< ? > >, ModelElement {
 
     /**
-     * Adds models to a transformation or adds a {@link ModelType model type} to an existing model.
-     * 
-     * @param modelType
-     *        the model type (cannot be <code>null</code>)
-     * @param models
-     *        the models being added to the transformation (cannot be <code>null</code> or empty)
-     * @throws IllegalArgumentException
-     *         if the model type is <code>null</code> or if the models being added is <code>null</code> or empty
-     * @throws ChrysalixException
-     *         if a model is <code>null</code>, if a model being added has already been added and already has the specified model
-     *         type, or if a model cannot be added
+     * The unique identifier for the transformation model type. Value is {@value} .
      */
-    void add( final ModelType modelType,
-              final Model... models ) throws ChrysalixException;
+    String METAMODEL_ID = "org.polyglotter.transformation.Transformation";
+
+    /**
+     * An empty array of transformations
+     */
+    Transformation[] NO_TRANSFORMATIONS = new Transformation[ 0 ];
 
     /**
      * @param operations
      *        the operations being added (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the operations being added are <code>null</code> or empty
+     *         if the operations collection being added is <code>null</code>, empty, or contains a <code>null</code> item
      * @throws ChrysalixException
-     *         if any of the operations have already been added, if an operation is <code>null</code>, or if an operation cannot be
-     *         added
+     *         if any of the operations have already been added or if an error occurs
      */
     void add( final Operation< ? >... operations ) throws ChrysalixException;
 
     /**
-     * @return a unique identifier (never <code>null</code> or empty)
+     * Adds source models to the transformation.
+     * 
+     * @param models
+     *        the models being added as sources (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the models collection being added is <code>null</code>, empty, or contains a <code>null</code> item
+     * @throws ChrysalixException
+     *         if a model being added has already been added as a source or if an error occurs
      */
-    String id();
+    void addSource( final Model... models ) throws ChrysalixException;
+
+    /**
+     * Adds target models to the transformation.
+     * 
+     * @param models
+     *        the models being added as targets (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the models colleciton being added is <code>null</code>, empty, or contains a <code>null</code> item
+     * @throws ChrysalixException
+     *         if a model being added has already been added as a target or if an error occurs
+     */
+    void addTarget( final Model... models ) throws ChrysalixException;
+
+    /**
+     * @return the transformation identifier (workspace path)
+     * @throws ChrysalixException
+     *         if an error occurs
+     */
+    String id() throws ChrysalixException;
 
     /**
      * @return a collection of the {@link Operation operations} performed by this transformation (never <code>null</code> but can be
      *         empty)
+     * @throws ChrysalixException
+     *         if there is a problem obtaining the transformation's operations
      * @see Operation#NO_OPERATIONS
      */
-    Operation< ? >[] operations();
+    Operation< ? >[] operations() throws ChrysalixException;
 
     /**
-     * @param models
-     *        the models being removed from the transformation (cannot be <code>null</code> or empty)
-     * @throws IllegalArgumentException
-     *         if the models being removed is <code>null</code> or empty
-     * @throws ChrysalixException
-     *         if a model is <code>null</code> or if it cannot be removed
-     */
-    void remove( final Model... models ) throws ChrysalixException;
-
-    /**
-     * Removes a model type from an added model or removes the model completely if there are no more model types associcated with
-     * the model.
+     * Operations are added to transformations using the operation's descriptor ID. When using this method, the first occurrence of
+     * an operation named with that descriptor ID is removed.
      * 
-     * @param modelType
-     *        the model type (cannot be <code>null</code>)
-     * @param models
-     *        the models whose model type is being removed (cannot be <code>null</code> or empty)
-     * @throws IllegalArgumentException
-     *         if the model type is <code>null</code> or if the models being removed is <code>null</code> or empty
-     * @throws ChrysalixException
-     *         if a model is <code>null</code>, if a model does not have that model type, or if a model cannot be removed
-     */
-    void remove( final ModelType modelType,
-                 final Model... models ) throws ChrysalixException;
-
-    /**
      * @param operations
      *        the operations being removed (cannot be <code>null</code> or empty)
      * @throws IllegalArgumentException
-     *         if the operation being removed is <code>null</code>, empty, or any value in the array is <code>null</code>
+     *         if the operations collection being removed is <code>null</code>, empty, or contains a <code>null</code> item
      * @throws ChrysalixException
      *         if any of the operations cannot be found or cannot be removed
      */
     void remove( final Operation< ? >... operations ) throws ChrysalixException;
 
     /**
-     * @return all source models (never <code>null</code> but can be empty)
+     * Removes source models from the transformation.
+     * 
+     * @param models
+     *        the source models being removed (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the models collection being removed is <code>null</code>, empty, or contains a <code>null</code> item
+     * @throws ChrysalixException
+     *         if a model was not previously added as a source or if an error occurs
      */
-    Model[] sources();
+    void removeSource( final Model... models ) throws ChrysalixException;
+
+    /**
+     * Removes a target model from the transformation.
+     * 
+     * @param models
+     *        the target models being removed (cannot be <code>null</code> or empty)
+     * @throws IllegalArgumentException
+     *         if the models collection being removed is <code>null</code>, empty, or contains a <code>null</code> item
+     * @throws ChrysalixException
+     *         if a model was not previously added as a target or if an error occurs
+     */
+    void removeTarget( final Model... models ) throws ChrysalixException;
+
+    /**
+     * @return all source models (never <code>null</code> but can be empty)
+     * @throws ChrysalixException
+     *         if there is a problem obtaining the transformation's source models
+     */
+    Model[] sources() throws ChrysalixException;
 
     /**
      * @return all target models (never <code>null</code> but can be empty)
+     * @throws ChrysalixException
+     *         if there is a problem obtaining the transformation's target models
      */
-    Model[] targets();
-
-    /**
-     * Indicates if a {@link Model model} is being used as a source, target, or both
-     */
-    enum ModelType {
-
-        /**
-         * The model is being used as only a source.
-         */
-        SOURCE,
-
-        /**
-         * The model is being used as both a source and a target.
-         */
-        SOURCE_TARGET,
-
-        /**
-         * The model is being used as only a target.
-         */
-        TARGET;
-
-        public static boolean isSource( final ModelType modelType ) {
-            CheckArg.notNull( modelType, "modelType" );
-            return ( ( modelType == SOURCE ) || ( modelType == SOURCE_TARGET ) );
-        }
-
-        public static boolean isTarget( final ModelType modelType ) {
-            CheckArg.notNull( modelType, "modelType" );
-            return ( ( modelType == TARGET ) || ( modelType == SOURCE_TARGET ) );
-        }
-
-    }
+    Model[] targets() throws ChrysalixException;
 
 }

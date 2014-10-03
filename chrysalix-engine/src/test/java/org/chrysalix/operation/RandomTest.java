@@ -26,22 +26,26 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Random;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc" } )
 public final class RandomTest {
 
+    private ModelObject modelObject;
     private Random operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Random( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Random( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
@@ -50,45 +54,34 @@ public final class RandomTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Random.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Random.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Random.class ) ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( OperationTestConstants.INT_1_TERM );
-    }
-
-    @Test
-    public void shouldNotHaveErrorsAfterConstruction() {
+    public void shouldNotHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( false ) );
     }
 
     @Test
-    public void shouldNotHaveProblemsAfterConstruction() {
+    public void shouldNotHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( true ) );
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.randomOperationDescription.text() ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Random.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.randomOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Random.NAME ) ) );
     }
 
 }

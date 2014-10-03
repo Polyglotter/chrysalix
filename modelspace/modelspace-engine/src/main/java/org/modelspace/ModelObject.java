@@ -28,12 +28,7 @@ import java.util.Map;
 /**
  * Represents a model object.
  */
-public interface ModelObject {
-
-    /**
-     * @return this model object's absolute workspace path
-     */
-    String absolutePath();
+public interface ModelObject extends ModelElement {
 
     /**
      * @param name
@@ -193,10 +188,13 @@ public interface ModelObject {
     Descriptor[] mixinTypes() throws ModelspaceException;
 
     /**
+     * <<<<<<< HEAD:modelspace/modelspace-engine/src/main/java/org/modelspace/ModelObject.java
+     * 
      * @return this model object's enclosing model
      * @throws ModelspaceException
      *         if any error occurs
      */
+    @Override
     Model model() throws ModelspaceException;
 
     /**
@@ -204,6 +202,7 @@ public interface ModelObject {
      * @throws ModelspaceException
      *         if any error occurs
      */
+    @Override
     String modelRelativePath() throws ModelspaceException;
 
     /**
@@ -211,9 +210,13 @@ public interface ModelObject {
      * @throws ModelspaceException
      *         if any error occurs
      */
+    @Override
     String name() throws ModelspaceException;
 
     /**
+     * ======= >>>>>>> Issue 170 Change transformation framework to use ModeShape structure via
+     * CND:modeshape-modeler/modeshape-modeler-engine/src/main/java/org/modeshape/modeler/ModelObject.java
+     * 
      * @return this model object's primary type descriptor (never <code>null</code>)
      * @throws ModelspaceException
      *         if any error occurs
@@ -320,4 +323,5 @@ public interface ModelObject {
      */
     void setProperty( final String propertyName,
                       final Object... values ) throws ModelspaceException;
+
 }

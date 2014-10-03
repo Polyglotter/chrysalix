@@ -82,6 +82,11 @@ public interface ValueDescriptor< T > {
     int requiredValueCount();
 
     /**
+     * @return a string representation of this value (never <code>null</code>)
+     */
+    String signature();
+
+    /**
      * @return the type of the input or output (never <code>null</code>)
      */
     Class< T > type();

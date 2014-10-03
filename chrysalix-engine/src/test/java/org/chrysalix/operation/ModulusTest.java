@@ -26,22 +26,26 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.Modulus;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class ModulusTest {
 
-    private static final String DIVIDEND_ID = Modulus.DIVIDEND_DESCRIPTOR.id();
-    private static final String DIVISOR_ID = Modulus.DIVISOR_DESCRIPTOR.id();
+    private static final String DIVIDEND_ID = Modulus.DIVIDEND_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
+    private static final String DIVISOR_ID = Modulus.DIVISOR_DESCRIPTOR.name();
     private static Value< Number > DIVIDEND_DOUBLE_TERM;
     private static Value< Number > DIVIDEND_FLOAT_TERM;
     private static Value< Number > DIVIDEND_INT_TERM;
@@ -51,27 +55,35 @@ public final class ModulusTest {
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
+        FACTORY = new TransformationTestFactory();
         DIVIDEND_DOUBLE_TERM =
-            TransformationFactory.createValue( Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
-        DIVIDEND_FLOAT_TERM = TransformationFactory.createValue( Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
-        DIVIDEND_INT_TERM = TransformationFactory.createValue( Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        DIVISOR_DOUBLE_TERM = TransformationFactory.createValue( Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
-        DIVISOR_FLOAT_TERM = TransformationFactory.createValue( Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.FLOAT_2_VALUE );
-        DIVISOR_INT_TERM = TransformationFactory.createValue( Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
+            FACTORY.createNumberValue( "/my/path/dividend/double", Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        DIVIDEND_FLOAT_TERM =
+            FACTORY.createNumberValue( "/my/path/dividend/float", Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        DIVIDEND_INT_TERM =
+            FACTORY.createNumberValue( "/my/path/dividend/int", Modulus.DIVIDEND_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        DIVISOR_DOUBLE_TERM =
+            FACTORY.createNumberValue( "/my/path/divisor/double", Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.DOUBLE_2_VALUE );
+        DIVISOR_FLOAT_TERM =
+            FACTORY.createNumberValue( "/my/path/divisor/float", Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.FLOAT_2_VALUE );
+        DIVISOR_INT_TERM =
+            FACTORY.createNumberValue( "/my/path/divisor/int", Modulus.DIVISOR_DESCRIPTOR, OperationTestConstants.INT_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private Modulus operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new Modulus( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new Modulus( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddTwoinputs() throws ChrysalixException {
         this.operation.addInput( DIVIDEND_ID, DIVIDEND_INT_TERM );
         this.operation.addInput( DIVISOR_ID, DIVISOR_INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 2 ) );
+        assertThat( this.operation.inputs().length, is( 2 ) );
         assertThat( this.operation.inputs( DIVIDEND_ID ).size(), is( 1 ) );
         assertThat( ( Value< Number > ) this.operation.inputs( DIVIDEND_ID ).get( 0 ), is( DIVIDEND_INT_TERM ) );
         assertThat( this.operation.inputs( DIVISOR_ID ).size(), is( 1 ) );
@@ -110,19 +122,13 @@ public final class ModulusTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( Modulus.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( Modulus.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( Modulus.class ) ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().size(), is( 1 ) );
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -161,7 +167,7 @@ public final class ModulusTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
@@ -170,24 +176,19 @@ public final class ModulusTest {
         this.operation.get();
     }
 
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( DIVIDEND_INT_TERM );
+    @Test
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( ChrysalixI18n.localize( Modulus.DESCRIPTION ) ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.modulusOperationDescription.text() ) );
-    }
-
-    @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.modulusOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.name(), is( ChrysalixI18n.localize( Modulus.NAME ) ) );
     }
 
 }

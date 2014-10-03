@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -36,22 +35,29 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * Calculates the mode, or most common term, of a collection of terms.
  */
 public final class Mode extends AbstractOperation< Number[] > {
 
+    static final String DESCRIPTION = "Finds the mode of two or more numbers";
+    private static final String INPUT_DESCRIPTION = "An input term used to determine the mode value of a set of terms.";
+    private static final String INPUT_NAME = "Input";
+    static final String NAME = "Mode";
+
     /**
      * The input term descriptor.
      */
     public static final ValueDescriptor< Number > TERM_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Mode.class, "input" ),
-                                                     ChrysalixI18n.modeOperationInputDescription.text(),
-                                                     ChrysalixI18n.modeOperationInputName.text(),
+                                                     ChrysalixI18n.localize( INPUT_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( INPUT_NAME ),
                                                      Number.class,
                                                      true,
                                                      1,
@@ -67,50 +73,50 @@ public final class Mode extends AbstractOperation< Number[] > {
      */
     public static final OperationDescriptor< Number[] > DESCRIPTOR =
         new AbstractOperationDescriptor< Number[] >( TransformationFactory.createId( Mode.class ),
-                                                     ChrysalixI18n.modeOperationDescription.text(),
-                                                     ChrysalixI18n.modeOperationName.text(),
+                                                     ChrysalixI18n.localize( DESCRIPTION ),
+                                                     ChrysalixI18n.localize( NAME ),
                                                      Number[].class,
                                                      INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< Number[] > newInstance( final Transformation transformation ) {
-                return new Mode( transformation );
+            public Operation< Number[] > newInstance( final ModelObject operation,
+                                                      final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Mode( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Mode( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.ARITHMETIC );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    Mode( final ModelObject operation,
+          final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * When there is no mode an empty array will be returned.
      * 
      * @see org.chrysalix.operation.AbstractOperation#calculate()
      */
     @Override
     protected Number[] calculate() throws ChrysalixException {
         assert !problems().isError();
-
         final Map< Number, Integer > result = new HashMap<>();
         int max = 0;
         final List< Number > maxElems = new ArrayList<>();
@@ -133,30 +139,33 @@ public final class Mode extends AbstractOperation< Number[] > {
             }
         }
 
-        if ( maxElems.size() == inputs().size() ) return new Number[ 0 ];
+        if ( maxElems.size() == inputs().length ) return new Number[ 0 ];
         return maxElems.toArray( new Number[ maxElems.size() ] );
     }
 
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+
         // make sure there are terms
-        if ( inputs().isEmpty() ) {
+        if ( inputs().length == 0 ) {
             final ValidationProblem problem =
                 TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.modeOperationHasNoTerms.text( transformationId() ) );
+                                                   ChrysalixI18n.localize( AbstractOperation.HAS_NO_TERMS, transformationId() ) );
             problems().add( problem );
         } else {
-            if ( inputs().size() < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
+            if ( inputs().length < INPUT_DESCRIPTORS[ 0 ].requiredValueCount() ) {
                 final ValidationProblem problem =
                     TransformationFactory.createError( transformationId(),
-                                                       ChrysalixI18n.invalidTermCount.text( name(),
-                                                                                              transformationId(),
-                                                                                              inputs().size() ) );
+                                                       ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_COUNT,
+                                                                               NAME,
+                                                                               transformationId(),
+                                                                               inputs().length ) );
                 problems().add( problem );
             }
 
@@ -170,20 +179,23 @@ public final class Mode extends AbstractOperation< Number[] > {
                     if ( !( value instanceof Number ) ) {
                         final ValidationProblem problem =
                             TransformationFactory.createError( transformationId(),
-                                                               ChrysalixI18n.invalidTermType.text( name(),
-                                                                                                     transformationId() ) );
+                                                               ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_TYPE,
+                                                                                       NAME,
+                                                                                       transformationId() ) );
                         problems().add( problem );
                     }
                 } catch ( final ChrysalixException e ) {
                     final ValidationProblem problem =
                         TransformationFactory.createError( transformationId(),
-                                                           ChrysalixI18n.operationValidationError.text( name(),
-                                                                                                          transformationId() ) );
+                                                           ChrysalixI18n.localize( AbstractOperation.OPERATION_VALIDATION_ERROR,
+                                                                                   NAME,
+                                                                                   transformationId() ) );
                     problems().add( problem );
-                    Chrysalix.LOGGER.error( e, ChrysalixI18n.message, problem.message() );
                 }
             }
         }
+
+        return super.problems();
     }
 
 }

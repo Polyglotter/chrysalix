@@ -24,12 +24,32 @@
 package org.modelspace;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.jcr.PropertyType;
+import javax.jcr.Value;
+import javax.jcr.ValueFactory;
+
+import org.modeshape.common.util.CheckArg;
 
 /**
  * Represents a {@link ModelObject model object} property.
  */
-public interface ModelProperty {
+public interface ModelProperty extends ModelElement {
+
+    /**
+     * An empty array of values.
+     */
+    final Value[] NO_VALUES = new Value[ 0 ];
+
+    /**
+     * Message indicating the JCR value could not be converted.
+     */
+    String UNABLE_TO_CONVERT_VALUE = "Unable to convert JCR value to type '%d'";
 
     /**
      * An empty array of model properties.
@@ -114,6 +134,13 @@ public interface ModelProperty {
     long[] longValues() throws ModelspaceException;
 
     /**
+     * @return the model object this property belongs to (never <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error occurs
+     */
+    ModelObject parent() throws ModelspaceException;
+
+    /**
      * Passing in <code>null</code> will remove the existing property from its node.
      * 
      * @param values
@@ -150,5 +177,154 @@ public interface ModelProperty {
      *         if not a multi-value property or if an error occurs
      */
     Object[] values() throws ModelspaceException;
+
+    /**
+     * Utilities for converting model properties from one form to another.
+     */
+    public class Util {
+
+        /**
+         * @param value
+         *        the JCR value holder (cannot be <code>null</code>)
+         * @param propertyType
+         *        the required type of the property
+         * @return the <code>Object</code> representation of the JCR value (never <code>null</code>)
+         * @throws ModelspaceException
+         *         if an error occurs
+         */
+        public static Object convert( final Value value,
+                                      final int propertyType ) throws ModelspaceException {
+            try {
+                switch ( propertyType ) {
+                    case PropertyType.BOOLEAN:
+                        return value.getBoolean();
+                    case PropertyType.LONG:
+                        return value.getLong();
+                    case PropertyType.DOUBLE:
+                        return value.getDouble();
+                    case PropertyType.DATE:
+                        return value.getDate();
+                    case PropertyType.DECIMAL:
+                        return value.getDecimal();
+                    default:
+                        return value.toString();
+                }
+            } catch ( final Exception e ) {
+                throw new ModelspaceException( e, ModelspaceI18n.localize( UNABLE_TO_CONVERT_VALUE, propertyType ) );
+            }
+        }
+
+        /**
+         * @param factory
+         *        the factory used to perform the conversion (cannot be <code>null</code>)
+         * @param value
+         *        the value being converted to a JCR value holder (cannot be <code>null</code>)
+         * @return the JCR value holder (never <code>null</code>)
+         */
+        public static Value createValue( final ValueFactory factory,
+                                         final Object value ) {
+            CheckArg.isNotNull( factory, "factory" );
+            CheckArg.isNotNull( value, "value" );
+
+            if ( value instanceof Value ) return ( Value ) value;
+            if ( value instanceof Boolean ) return factory.createValue( Boolean.class.cast( value ) );
+            if ( value instanceof Long ) return factory.createValue( Long.class.cast( value ) );
+            if ( value instanceof Double ) return factory.createValue( Double.class.cast( value ) );
+            if ( value instanceof Calendar ) return factory.createValue( Calendar.class.cast( value ) );
+            if ( value instanceof BigDecimal ) return factory.createValue( BigDecimal.class.cast( value ) );
+            return factory.createValue( value.toString() );
+        }
+
+        /**
+         * @param factory
+         *        the factory used to perform the conversion (cannot be <code>null</code>)
+         * @param value
+         *        the value being converted to a JCR value holder (cannot be <code>null</code>)
+         * @param jcrPropType
+         *        the JCR {@link PropertyType property type}
+         * @return the JCR value holder (never <code>null</code>)
+         * @throws Exception
+         *         if an error occurs
+         */
+        public static Value createValue( final ValueFactory factory,
+                                         final Object value,
+                                         final int jcrPropType ) throws Exception {
+            CheckArg.isNotNull( factory, "factory" );
+            CheckArg.isNotNull( value, "value" );
+
+            if ( PropertyType.BOOLEAN == jcrPropType ) {
+                if ( value instanceof Boolean ) {
+                    return factory.createValue( ( Boolean ) value );
+                }
+
+                return factory.createValue( Boolean.parseBoolean( value.toString() ) );
+            }
+
+            if ( PropertyType.LONG == jcrPropType ) {
+                if ( value instanceof Long ) {
+                    return factory.createValue( ( Long ) value );
+                }
+
+                return factory.createValue( Long.parseLong( value.toString() ) );
+            }
+
+            if ( PropertyType.DOUBLE == jcrPropType ) {
+                if ( value instanceof Double ) {
+                    return factory.createValue( ( Double ) value );
+                }
+
+                return factory.createValue( Double.parseDouble( value.toString() ) );
+            }
+
+            if ( PropertyType.DATE == jcrPropType ) {
+                if ( value instanceof Calendar ) {
+                    return factory.createValue( ( Calendar ) value );
+                }
+
+                final Calendar calendar = Calendar.getInstance();
+                final Date date = DateFormat.getDateInstance().parse( value.toString() );
+                calendar.setTime( date );
+
+                return factory.createValue( calendar );
+            }
+
+            if ( PropertyType.DECIMAL == jcrPropType ) {
+                if ( value instanceof BigDecimal ) {
+                    return factory.createValue( ( BigDecimal ) value );
+                }
+
+                return factory.createValue( new BigDecimal( value.toString() ) );
+            }
+
+            return factory.createValue( value.toString() );
+        }
+
+        /**
+         * @param factory
+         *        the factory used to perform the conversion (cannot be <code>null</code>)
+         * @param values
+         *        the values being converted to a JCR value holders (cannot be <code>null</code>)
+         * @param jcrPropType
+         *        the JCR {@link PropertyType property type}
+         * @return the JCR value holders (never <code>null</code>)
+         * @throws Exception
+         *         if an error occurs
+         */
+        public static Value[] createValues( final ValueFactory factory,
+                                            final Object[] values,
+                                            final int jcrPropType ) throws Exception {
+            final List< Value > result = new ArrayList<>();
+
+            if ( ( values == null ) || ( values.length == 0 ) ) {
+                return NO_VALUES;
+            }
+
+            for ( final Object value : values ) {
+                result.add( createValue( factory, value, jcrPropType ) );
+            }
+
+            return result.toArray( new Value[ result.size() ] );
+        }
+    }
 
 }

@@ -23,7 +23,6 @@
  */
 package org.chrysalix.operation;
 
-import org.chrysalix.Chrysalix;
 import org.chrysalix.ChrysalixException;
 import org.chrysalix.ChrysalixI18n;
 import org.chrysalix.transformation.Operation;
@@ -31,22 +30,29 @@ import org.chrysalix.transformation.OperationDescriptor;
 import org.chrysalix.transformation.Transformation;
 import org.chrysalix.transformation.TransformationFactory;
 import org.chrysalix.transformation.ValidationProblem;
+import org.chrysalix.transformation.ValidationProblems;
 import org.chrysalix.transformation.Value;
 import org.chrysalix.transformation.ValueDescriptor;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * A string concatenation operation.
  */
 public final class Concat extends AbstractOperation< String > {
 
+    static final String DESCRIPTION = "Concatenates the string representation of two or more terms";
+    private static final String INPUT_DESCRIPTION = "An input term being concatenated with other terms";
+    private static final String INPUT_NAME = "Input";
+    static final String NAME = "Concat";
+
     /**
      * The input term descriptor.
      */
     public static final ValueDescriptor< Object > TERM_DESCRIPTOR =
         TransformationFactory.createValueDescriptor( TransformationFactory.createId( Concat.class, "input" ),
-                                                     ChrysalixI18n.concatOperationInputDescription.text(),
-                                                     ChrysalixI18n.concatOperationInputName.text(),
+                                                     ChrysalixI18n.localize( INPUT_DESCRIPTION ),
+                                                     ChrysalixI18n.localize( INPUT_NAME ),
                                                      Object.class,
                                                      true,
                                                      2,
@@ -61,37 +67,40 @@ public final class Concat extends AbstractOperation< String > {
      */
     public static final OperationDescriptor< String > DESCRIPTOR =
         new AbstractOperationDescriptor< String >( TransformationFactory.createId( Concat.class ),
-                                                   ChrysalixI18n.concatOperationDescription.text(),
-                                                   ChrysalixI18n.concatOperationName.text(),
+                                                   ChrysalixI18n.localize( DESCRIPTION ),
+                                                   ChrysalixI18n.localize( NAME ),
                                                    String.class,
                                                    INPUT_DESCRIPTORS ) {
 
             /**
              * {@inheritDoc}
              * 
-             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.chrysalix.transformation.Transformation)
+             * @see org.chrysalix.transformation.OperationDescriptor#newInstance(org.modelspace.ModelObject,
+             *      org.chrysalix.transformation.Transformation)
              */
             @Override
-            public Operation< String > newInstance( final Transformation transformation ) {
-                return new Concat( transformation );
+            public Operation< String > newInstance( final ModelObject operation,
+                                                    final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+                return new Concat( operation, transformation );
             }
 
         };
 
     /**
+     * @param operation
+     *        the operation model object (cannot be <code>null</code>)
      * @param transformation
      *        the transformation containing this operation (cannot be <code>null</code>)
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
      * @throws IllegalArgumentException
      *         if the input is <code>null</code>
      */
-    Concat( final Transformation transformation ) {
-        super( DESCRIPTOR, transformation );
-
-        try {
-            addCategory( BuiltInCategory.STRING );
-        } catch ( final ChrysalixException e ) {
-            Chrysalix.LOGGER.error( e, ChrysalixI18n.errorAddingBuiltInCategory, transformationId() );
-        }
+    Concat( final ModelObject operation,
+            final Transformation transformation ) throws ModelspaceException, ChrysalixException {
+        super( operation, transformation );
     }
 
     /**
@@ -102,7 +111,6 @@ public final class Concat extends AbstractOperation< String > {
     @Override
     protected String calculate() throws ChrysalixException {
         assert !problems().isError();
-
         final StringBuilder result = new StringBuilder();
 
         for ( final Value< ? > term : inputs() ) {
@@ -116,19 +124,24 @@ public final class Concat extends AbstractOperation< String > {
     /**
      * {@inheritDoc}
      * 
-     * @see org.chrysalix.operation.AbstractOperation#validate()
+     * @see org.chrysalix.operation.AbstractOperation#problems()
      */
     @Override
-    protected void validate() {
+    public ValidationProblems problems() throws ChrysalixException {
+        this.problems.clear();
+
         // validate number of terms
-        if ( inputs().size() < TERM_DESCRIPTOR.requiredValueCount() ) {
+        if ( inputs().length < TERM_DESCRIPTOR.requiredValueCount() ) {
             final ValidationProblem problem =
                 TransformationFactory.createError( transformationId(),
-                                                   ChrysalixI18n.invalidTermCount.text( name(),
-                                                                                          transformationId(),
-                                                                                          inputs().size() ) );
+                                                   ChrysalixI18n.localize( AbstractOperation.INVALID_TERM_COUNT,
+                                                                           NAME,
+                                                                           transformationId(),
+                                                                           inputs().length ) );
             problems().add( problem );
         }
+
+        return super.problems();
     }
 
 }

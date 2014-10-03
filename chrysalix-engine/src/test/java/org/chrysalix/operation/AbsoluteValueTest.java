@@ -26,21 +26,24 @@ package org.chrysalix.operation;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.chrysalix.ChrysalixException;
-import org.chrysalix.ChrysalixI18n;
-import org.chrysalix.operation.AbsoluteValue;
-import org.chrysalix.transformation.TransformationFactory;
+import org.chrysalix.transformation.TransformationTestFactory;
 import org.chrysalix.transformation.Value;
-import org.chrysalix.transformation.OperationCategory.BuiltInCategory;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.modelspace.ModelObject;
 
+@Ignore
 @SuppressWarnings( { "javadoc", "unchecked" } )
 public final class AbsoluteValueTest {
 
-    private static final String ID = AbsoluteValue.TERM_DESCRIPTOR.id();
+    private static final String ID = AbsoluteValue.TERM_DESCRIPTOR.name();
+    private static TransformationTestFactory FACTORY;
+
     private static Value< Number > DOUBLE_TERM;
     private static Value< Number > DOUBLE4_TERM;
     private static Value< Number > FLOAT_TERM;
@@ -51,27 +54,34 @@ public final class AbsoluteValueTest {
 
     @BeforeClass
     public static void initializeConstants() throws Exception {
-        DOUBLE_TERM = TransformationFactory.createValue( AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
-        DOUBLE4_TERM = TransformationFactory.createValue( AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_4_VALUE );
-        FLOAT_TERM = TransformationFactory.createValue( AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
-        INT_TERM = TransformationFactory.createValue( AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
-        INT4_TERM = TransformationFactory.createValue( AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.INT_4_VALUE );
-        LONG_TERM = TransformationFactory.createValue( AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.LONG_1_VALUE );
-        LONG2_TERM = TransformationFactory.createValue( AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.LONG_2_VALUE );
+        FACTORY = new TransformationTestFactory();
+        DOUBLE_TERM =
+            FACTORY.createNumberValue( "/my/path/double", AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_1_VALUE );
+        DOUBLE4_TERM =
+            FACTORY.createNumberValue( "/my/path/double4", AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.DOUBLE_4_VALUE );
+        FLOAT_TERM =
+            FACTORY.createNumberValue( "/my/path/float", AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.FLOAT_1_VALUE );
+        INT_TERM = FACTORY.createNumberValue( "/my/path/int", AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.INT_1_VALUE );
+        INT4_TERM = FACTORY.createNumberValue( "/my/path/int4", AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.INT_4_VALUE );
+        LONG_TERM = FACTORY.createNumberValue( "/my/path/long", AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.LONG_1_VALUE );
+        LONG2_TERM =
+            FACTORY.createNumberValue( "/my/path/long2", AbsoluteValue.TERM_DESCRIPTOR, OperationTestConstants.LONG_2_VALUE );
     }
 
+    private ModelObject modelObject;
     private AbsoluteValue operation;
 
     @Before
-    public void beforeEach() {
-        this.operation = new AbsoluteValue( OperationTestConstants.TEST_TRANSFORMATION );
+    public void beforeEach() throws Exception {
+        this.modelObject = mock( ModelObject.class );
+        this.operation = new AbsoluteValue( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION );
     }
 
     @Test
     public void shouldAddOneTerm() throws ChrysalixException {
         this.operation.addInput( ID, INT_TERM );
-        assertThat( this.operation.inputs().size(), is( 1 ) );
-        assertThat( ( Value< Number > ) this.operation.inputs().get( 0 ), is( INT_TERM ) );
+        assertThat( this.operation.inputs().length, is( 1 ) );
+        assertThat( ( Value< Number > ) this.operation.inputs()[ 0 ], is( INT_TERM ) );
     }
 
     @Test
@@ -118,18 +128,13 @@ public final class AbsoluteValueTest {
     }
 
     @Test
-    public void shouldCreateOperation() {
-        assertThat( AbsoluteValue.DESCRIPTOR.newInstance( OperationTestConstants.TEST_TRANSFORMATION ),
+    public void shouldCreateOperation() throws Exception {
+        assertThat( AbsoluteValue.DESCRIPTOR.newInstance( this.modelObject, OperationTestConstants.TEST_TRANSFORMATION ),
                     is( instanceOf( AbsoluteValue.class ) ) );
     }
 
     @Test
-    public void shouldHaveCorrectCategory() {
-        assertThat( this.operation.categories().contains( BuiltInCategory.ARITHMETIC ), is( true ) );
-    }
-
-    @Test
-    public void shouldHaveErrorsAfterConstruction() {
+    public void shouldHaveErrorsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isError(), is( true ) );
     }
 
@@ -149,7 +154,7 @@ public final class AbsoluteValueTest {
     }
 
     @Test
-    public void shouldHaveProblemsAfterConstruction() {
+    public void shouldHaveProblemsAfterConstruction() throws Exception {
         assertThat( this.operation.problems().isEmpty(), is( false ) );
     }
 
@@ -158,24 +163,19 @@ public final class AbsoluteValueTest {
         this.operation.get();
     }
 
-    @Test( expected = UnsupportedOperationException.class )
-    public void shouldNotBeAbleToModifyTermsList() {
-        this.operation.inputs().add( INT_TERM );
+    @Test
+    public void shouldNotHaveTermsAfterConstruction() throws Exception {
+        assertThat( this.operation.inputs().length, is( 0 ) );
     }
 
     @Test
-    public void shouldNotHaveTermsAfterConstruction() {
-        assertThat( this.operation.inputs().isEmpty(), is( true ) );
+    public void shouldProvideDescription() throws Exception {
+        assertThat( this.operation.descriptor().description(), is( AbsoluteValue.DESCRIPTION ) );
     }
 
     @Test
-    public void shouldProvideDescription() {
-        assertThat( this.operation.description(), is( ChrysalixI18n.absoluteValueOperationDescription.text() ) );
-    }
-
-    @Test
-    public void shouldProvideName() {
-        assertThat( this.operation.name(), is( ChrysalixI18n.absoluteValueOperationName.text() ) );
+    public void shouldProvideName() throws Exception {
+        assertThat( this.operation.descriptor().name(), is( AbsoluteValue.NAME ) );
     }
 
 }

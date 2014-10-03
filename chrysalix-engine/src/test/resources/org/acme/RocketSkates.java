@@ -25,6 +25,6 @@ package org.acme;
 
 public class RocketSkates {
     
-    private String skates = "skates";
+    private final String skates = "skates";
 
 }

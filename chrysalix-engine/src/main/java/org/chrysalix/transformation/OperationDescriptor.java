@@ -23,6 +23,9 @@
  */
 package org.chrysalix.transformation;
 
+import org.chrysalix.ChrysalixException;
+import org.modelspace.ModelObject;
+import org.modelspace.ModelspaceException;
 
 /**
  * An {@link Operation operation} descriptor.
@@ -38,7 +41,7 @@ public interface OperationDescriptor< T > extends ValueDescriptor< T > {
     String DESCRIPTOR_NAME = "DESCRIPTOR";
 
     /**
-     * An empty collection of operation descriptors.
+     * An empty array of operation descriptors.
      */
     OperationDescriptor< ? >[] NO_DESCRIPTORS = {};
 
@@ -48,10 +51,19 @@ public interface OperationDescriptor< T > extends ValueDescriptor< T > {
     ValueDescriptor< ? >[] inputDescriptors();
 
     /**
+     * Wraps an operation already contained in the specified transformation.
+     * 
+     * @param operation
+     *        the operation model object whose domain object is being created (cannot be <code>null</code>)
      * @param transformation
      *        the owning {@link Transformation transformation} (never <code>null</code>)
      * @return the new operation instance (never <code>null</code>)
+     * @throws ChrysalixException
+     *         if a non-model object error occurs
+     * @throws ModelspaceException
+     *         if an error with the model object occurs
      */
-    Operation< T > newInstance( final Transformation transformation );
+    Operation< T > newInstance( final ModelObject operation,
+                                final Transformation transformation ) throws ChrysalixException, ModelspaceException;
 
 }

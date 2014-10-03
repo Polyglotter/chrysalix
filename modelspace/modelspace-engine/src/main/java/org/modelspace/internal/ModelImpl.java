@@ -116,7 +116,7 @@ class ModelImpl extends ModelObjectImpl implements Model {
                                 final Dependency dependency = new Dependency( dependencyPath, refs, exists );
                                 result.add( dependency );
                             } else throw new ModelspaceException( "A dependency node exists for '%s' but has no source references",
-                                                               absolutePath() );
+                                                                  absolutePath() );
                         }
 
                         return result;
@@ -143,8 +143,8 @@ class ModelImpl extends ModelObjectImpl implements Model {
             public URL run( final Session session ) throws Exception {
                 final Node model = session.getNode( path );
                 return model.hasProperty( ModelspaceLexicon.Model.EXTERNAL_LOCATION )
-                                                                                  ? new URL( model.getProperty( ModelspaceLexicon.Model.EXTERNAL_LOCATION ).getString() )
-                                                                                  : null;
+                                                                                     ? new URL( model.getProperty( ModelspaceLexicon.Model.EXTERNAL_LOCATION ).getString() )
+                                                                                     : null;
             }
         } );
     }
@@ -161,8 +161,8 @@ class ModelImpl extends ModelObjectImpl implements Model {
             @Override
             public Metamodel run( final Session session ) throws Exception {
                 return modelspace.metamodelManager().metamodel( session.getNode( path )
-                                                                    .getProperty( ModelspaceLexicon.Model.METAMODEL )
-                                                                    .getString() );
+                                                                       .getProperty( ModelspaceLexicon.Model.METAMODEL )
+                                                                       .getString() );
             }
         } );
     }
@@ -225,21 +225,11 @@ class ModelImpl extends ModelObjectImpl implements Model {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modelspace.internal.ModelObjectImpl#model()
+     * @see org.modelspace.ModelElement#model()
      */
     @Override
     public Model model() {
         return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.modelspace.internal.ModelObjectImpl#modelspace()
-     */
-    @Override
-    public Modelspace modelspace() {
-        return super.modelspace();
     }
 
     private boolean modelNode( final Node node ) throws Exception {
@@ -257,11 +247,21 @@ class ModelImpl extends ModelObjectImpl implements Model {
     /**
      * {@inheritDoc}
      * 
-     * @see org.modelspace.internal.ModelObjectImpl#modelRelativePath()
+     * @see org.modelspace.ModelElement#modelRelativePath()
      */
     @Override
     public String modelRelativePath() {
         return "";
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see org.modelspace.internal.ModelObjectImpl#modelspace()
+     */
+    @Override
+    public Modelspace modelspace() {
+        return super.modelspace();
     }
 
 }
